@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_project_container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="@drawable/widget_background">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="ACTIVE ENGINEERING"
+        android:textColor="#6366F1"
+        android:textSize="10sp"
+        android:textStyle="bold"
+        android:letterSpacing="0.08" />
+
+    <TextView
+        android:id="@+id/tv_project_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="Project Name"
+        android:textColor="#F8FAFC"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        android:maxLines="1"
+        android:ellipsize="end" />
+
+    <ProgressBar
+        android:id="@+id/pb_project_progress"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="6dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:max="100"
+        android:progress="0"
+        android:progressTint="#6366F1"
+        android:progressBackgroundTint="#1E293B" />
+
+    <TextView
+        android:id="@+id/tv_next_milestone"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Next: Milestone name"
+        android:textColor="#94A3B8"
+        android:textSize="11sp"
+        android:maxLines="1"
+        android:ellipsize="end" />
+</LinearLayout>

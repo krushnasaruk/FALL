@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_tasks_container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="@drawable/widget_background">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="8dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="TODAY\'S PRIORITIES"
+            android:textColor="#38BDF8"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.08" />
+
+        <TextView
+            android:id="@+id/tv_tasks_header_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ProgressOS"
+            android:textColor="#64748B"
+            android:textSize="11sp" />
+    </LinearLayout>
+
+    <!-- Task Item 1 -->
+    <LinearLayout
+        android:id="@+id/ll_task_item_1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingVertical="4dp">
+
+        <TextView
+            android:id="@+id/tv_task_1_priority"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="HIGH"
+            android:textColor="#F59E0B"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            android:layout_marginEnd="6dp" />
+
+        <TextView
+            android:id="@+id/tv_task_1_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Task Title 1"
+            android:textColor="#F8FAFC"
+            android:textSize="13sp"
+            android:maxLines="1"
+            android:ellipsize="end" />
+
+        <TextView
+            android:id="@+id/tv_task_1_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="4:00 PM"
+            android:textColor="#94A3B8"
+            android:textSize="11sp" />
+    </LinearLayout>
+
+    <!-- Task Item 2 -->
+    <LinearLayout
+        android:id="@+id/ll_task_item_2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingVertical="4dp">
+
+        <TextView
+            android:id="@+id/tv_task_2_priority"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="MED"
+            android:textColor="#3B82F6"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            android:layout_marginEnd="6dp" />
+
+        <TextView
+            android:id="@+id/tv_task_2_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Task Title 2"
+            android:textColor="#F8FAFC"
+            android:textSize="13sp"
+            android:maxLines="1"
+            android:ellipsize="end" />
+
+        <TextView
+            android:id="@+id/tv_task_2_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="7:30 PM"
+            android:textColor="#94A3B8"
+            android:textSize="11sp" />
+    </LinearLayout>
+
+    <!-- Task Item 3 -->
+    <LinearLayout
+        android:id="@+id/ll_task_item_3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingVertical="4dp">
+
+        <TextView
+            android:id="@+id/tv_task_3_priority"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="LOW"
+            android:textColor="#64748B"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            android:layout_marginEnd="6dp" />
+
+        <TextView
+            android:id="@+id/tv_task_3_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Task Title 3"
+            android:textColor="#F8FAFC"
+            android:textSize="13sp"
+            android:maxLines="1"
+            android:ellipsize="end" />
+
+        <TextView
+            android:id="@+id/tv_task_3_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textColor="#94A3B8"
+            android:textSize="11sp" />
+    </LinearLayout>
+</LinearLayout>

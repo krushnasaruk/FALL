@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ProgressOS</string>
+    <string name="widget_daily_description">ProgressOS Daily Completion Progress &amp; Remaining Tasks</string>
+    <string name="widget_tasks_description">ProgressOS Today\'s Priority Tasks</string>
+    <string name="widget_streak_description">ProgressOS Technical Learning Streak &amp; Hours</string>
+    <string name="widget_project_description">ProgressOS Active Engineering Project &amp; Milestones</string>
+    <string name="widget_focus_description">ProgressOS Focus Work Timer &amp; Pomodoro Quick Launch</string>
+    <string name="widget_quick_add_description">ProgressOS Instant Task &amp; Note Capture</string>
+</resources>
