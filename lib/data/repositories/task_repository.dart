@@ -297,3 +297,4 @@ final allTasksStreamProvider = StreamProvider<List<TaskWithSubtasks>>((ref) {
   final repo = ref.watch(taskRepositoryProvider);
   return repo.watchAllTasksWithDetails();
 });
+

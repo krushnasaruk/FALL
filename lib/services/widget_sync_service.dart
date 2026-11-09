@@ -170,3 +170,4 @@ final widgetSyncServiceProvider = Provider<WidgetSyncService>((ref) {
   final db = ref.watch(databaseProvider);
   return WidgetSyncService(db);
 });
+

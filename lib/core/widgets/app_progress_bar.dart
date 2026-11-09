@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import '../theme/app_colors.dart';
 import '../theme/app_radii.dart';
-import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 
 class AppProgressBar extends StatelessWidget {
@@ -11,25 +9,29 @@ class AppProgressBar extends StatelessWidget {
   final double height;
   final String? label;
   final bool showPercentage;
+  final Color? textColor;
 
   const AppProgressBar({
     super.key,
     required this.progress,
-    this.progressColor,
+    Color? progressColor,
+    Color? barColor,
     this.backgroundColor,
-    this.height = 8.0,
+    this.height = 5.0,
     this.label,
     this.showPercentage = false,
-  });
+    this.textColor,
+  }) : progressColor = barColor ?? progressColor;
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final clampedProgress = progress.clamp(0.0, 1.0);
-
-    final bg = backgroundColor ??
-        (isDark ? AppColors.darkSurfaceElevated : AppColors.lightSurfaceElevated);
-    final activeColor = progressColor ?? AppColors.primary;
+    final activeColor = progressColor ?? Colors.black87;
+    final bg = backgroundColor ?? activeColor.withOpacity(0.18);
+    final textStyle = AppTypography.caption.copyWith(
+      color: textColor ?? Colors.black54,
+      fontWeight: FontWeight.w600,
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -42,21 +44,19 @@ class AppProgressBar extends StatelessWidget {
               if (label != null)
                 Text(
                   label!,
-                  style: AppTypography.caption.copyWith(
-                    color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
-                  ),
+                  style: textStyle,
                 ),
               if (showPercentage)
                 Text(
                   '${(clampedProgress * 100).toInt()}%',
-                  style: AppTypography.monoSmall.copyWith(
-                    color: activeColor,
+                  style: textStyle.copyWith(
                     fontWeight: FontWeight.w700,
+                    color: textColor ?? activeColor,
                   ),
                 ),
             ],
           ),
-          const SizedBox(height: AppSpacing.xs),
+          const SizedBox(height: 6.0),
         ],
         Container(
           height: height,

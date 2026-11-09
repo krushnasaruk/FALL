@@ -271,3 +271,4 @@ final allSkillsStreamProvider = StreamProvider<List<SkillWithRoadmap>>((ref) {
   final repo = ref.watch(learningRepositoryProvider);
   return repo.watchAllSkillsWithRoadmaps();
 });
+

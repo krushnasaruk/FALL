@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:progress_os/core/theme/app_colors.dart';
 import 'package:progress_os/core/theme/app_theme.dart';
 import 'package:progress_os/core/widgets/app_badges.dart';
 import 'package:progress_os/core/widgets/app_button.dart';
 import 'package:progress_os/core/widgets/app_progress_bar.dart';
 import 'package:progress_os/core/widgets/app_stat_card.dart';
+import 'package:progress_os/core/widgets/avatar_stack.dart';
+import 'package:progress_os/core/widgets/pastel_card.dart';
+import 'package:progress_os/core/widgets/progress_card.dart';
 
 void main() {
   group('Design System Widget Tests', () {
@@ -76,6 +80,51 @@ void main() {
 
       expect(find.text('Progress Test'), findsOneWidget);
       expect(find.text('75%'), findsOneWidget);
+    });
+
+    testWidgets('PastelCard renders child with gradient and wave decoration', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: PastelCard(
+              gradient: AppColors.projectHeroGradient,
+              child: Text('Hero Card Content'),
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('Hero Card Content'), findsOneWidget);
+    });
+
+    testWidgets('ProgressCard renders title, percentage, and date pill', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: ProgressCard(
+              title: 'Customer Journey Map',
+              progress: 0.55,
+              date: '06 Dec, 2026',
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('Customer Journey Map'), findsOneWidget);
+      expect(find.text('55%'), findsOneWidget);
+      expect(find.text('06 Dec, 2026'), findsOneWidget);
+    });
+
+    testWidgets('AvatarStack renders overlapping circles', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: AvatarStack(maxAvatars: 3),
+          ),
+        ),
+      );
+
+      expect(find.byType(AvatarStack), findsOneWidget);
     });
   });
 }

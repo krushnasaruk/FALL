@@ -241,3 +241,4 @@ class ActivityHistory extends Table {
   @override
   Set<Column> get primaryKey => {id};
 }
+

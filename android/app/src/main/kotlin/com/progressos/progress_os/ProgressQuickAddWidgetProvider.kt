@@ -33,3 +33,4 @@ class ProgressQuickAddWidgetProvider : AppWidgetProvider() {
         }
     }
 }
+

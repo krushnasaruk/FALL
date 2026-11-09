@@ -136,3 +136,4 @@ final allNotesStreamProvider = StreamProvider<List<NoteWithDetails>>((ref) {
   final repo = ref.watch(notesRepositoryProvider);
   return repo.watchAllNotes();
 });
+

@@ -67,3 +67,4 @@ ProgressOS uses `flutter_local_notifications` integrated with the `timezone` dat
   - Android `RECEIVE_BOOT_COMPLETED` broadcast receiver wakes up and triggers rescheduling from the Drift SQLite `scheduled_notifications` table.
 - **Deduplication:**
   - Deterministic notification IDs derived from task ID hashes and channel offsets ensure no duplicate alerts are scheduled.
+

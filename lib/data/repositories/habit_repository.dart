@@ -210,3 +210,4 @@ final allGoalsStreamProvider = StreamProvider<List<GoalEntry>>((ref) {
   final repo = ref.watch(habitRepositoryProvider);
   return repo.watchAllGoals();
 });
+

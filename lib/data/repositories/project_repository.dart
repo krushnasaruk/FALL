@@ -264,3 +264,4 @@ final allProjectsStreamProvider = StreamProvider<List<ProjectWithDetails>>((ref)
   final repo = ref.watch(projectRepositoryProvider);
   return repo.watchAllProjectsWithDetails();
 });
+

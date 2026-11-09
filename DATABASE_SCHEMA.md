@@ -181,3 +181,4 @@ erDiagram
 - `action`: Text (`created`, `completed`, `progressed`, `logged`)
 - `summary`: Text (Non-null)
 - `created_at`: Integer (Unix timestamp ms)
+

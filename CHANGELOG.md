@@ -22,3 +22,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Android Home Screen Widgets:** 6 native Kotlin AppWidgetProviders (Daily Progress, Today's Tasks, Learning Streak, Active Project, Focus Timer, Quick Add) with live synchronization via `home_widget`.
 - **Offline Data Backup & Restore:** Full JSON export and import engine.
 - **Optional GitHub Integration:** Secure token storage, repository activity, and commit metrics.
+

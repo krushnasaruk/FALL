@@ -138,3 +138,4 @@ final recentFocusSessionsProvider = StreamProvider<List<FocusSessionWithDetails>
   final repo = ref.watch(focusRepositoryProvider);
   return repo.watchRecentSessions();
 });
+

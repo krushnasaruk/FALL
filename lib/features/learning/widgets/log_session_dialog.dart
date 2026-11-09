@@ -156,3 +156,4 @@ class _LogSessionDialogState extends ConsumerState<LogSessionDialog> {
     );
   }
 }
+

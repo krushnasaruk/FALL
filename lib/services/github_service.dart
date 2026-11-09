@@ -185,3 +185,4 @@ final gitHubProfileProvider = FutureProvider<GitHubProfile?>((ref) async {
   final service = ref.watch(gitHubServiceProvider);
   return await service.getAuthenticatedUser();
 });
+

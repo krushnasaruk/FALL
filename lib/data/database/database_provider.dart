@@ -8,3 +8,4 @@ final databaseProvider = Provider<AppDatabase>((ref) {
   });
   return db;
 });
+

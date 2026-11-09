@@ -44,3 +44,4 @@ class ProgressDailyWidgetProvider : AppWidgetProvider() {
         }
     }
 }
+

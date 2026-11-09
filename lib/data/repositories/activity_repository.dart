@@ -25,3 +25,4 @@ final recentActivitiesStreamProvider = StreamProvider<List<ActivityHistoryEntry>
   final repo = ref.watch(activityRepositoryProvider);
   return repo.watchRecentActivities();
 });
+

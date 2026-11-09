@@ -37,3 +37,4 @@ class ThemeModeNotifier extends StateNotifier<ThemeMode> {
     }
   }
 }
+

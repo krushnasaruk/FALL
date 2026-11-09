@@ -129,3 +129,4 @@ class AppStatusBadge extends StatelessWidget {
     return AppBadge(label: text, color: color);
   }
 }
+

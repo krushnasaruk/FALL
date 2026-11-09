@@ -81,3 +81,4 @@ lib/
 
 - **Home Screen Widgets:** Managed through native Android Kotlin `AppWidgetProvider` classes using `RemoteViews` layouts. `home_widget` synchronizes state between Flutter SharedPreferences / AppGroup storage and the Android widgets.
 - **Notifications:** Built with `flutter_local_notifications` targeting Android 8.0+ notification channels and Android 12+ exact alarm scheduling with `timezone` support.
+

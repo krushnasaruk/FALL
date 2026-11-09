@@ -7,12 +7,13 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_card.dart';
-import '../../../core/widgets/app_progress_bar.dart';
 import '../../../core/widgets/app_text_field.dart';
 import '../../../core/widgets/section_header.dart';
 import '../../../core/widgets/state_views.dart';
 import '../../../data/repositories/habit_repository.dart';
 import '../../../services/widget_sync_service.dart';
+import '../widgets/goal_card.dart';
+import '../widgets/habit_card.dart';
 
 class HabitsScreen extends ConsumerStatefulWidget {
   const HabitsScreen({super.key});
@@ -179,9 +180,43 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen> {
     );
   }
 
+  void _showLogGoalProgressDialog(Goal goal) {
+    final controller = TextEditingController(text: goal.currentValue.toString());
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Log Progress: ${goal.title}', style: AppTypography.titleMedium),
+        content: TextField(
+          controller: controller,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          decoration: InputDecoration(
+            labelText: 'Current Value (${goal.unit})',
+          ),
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final val = double.tryParse(controller.text.trim());
+              if (val != null) {
+                final diff = val - goal.currentValue;
+                await ref.read(habitRepositoryProvider).updateGoalProgress(goal.id, diff);
+              }
+              if (ctx.mounted) Navigator.pop(ctx);
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final habitsAsync = ref.watch(allHabitsStreamProvider);
     final goalsAsync = ref.watch(allGoalsStreamProvider);
     final habitRepo = ref.watch(habitRepositoryProvider);
@@ -256,141 +291,16 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen> {
 
               return Column(
                 children: habits.map((hWithE) {
-                  final habit = hWithE.habit;
-                  final isCheckedToday = hWithE.isCompletedToday;
-                  final streak = hWithE.currentStreak;
-                  final activity = hWithE.last7DaysActivity;
-
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 10.0),
-                    decoration: BoxDecoration(
-                      color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-                      borderRadius: AppRadii.roundedMd,
-                      border: Border.all(
-                        color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                        width: 1.0,
-                      ),
-                    ),
-                    padding: const EdgeInsets.all(14.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: Row(
-                                children: [
-                                  GestureDetector(
-                                    onTap: () async {
-                                      await habitRepo.toggleHabitCheckIn(habit.id, DateTime.now());
-                                      await widgetSync.syncAllWidgets();
-                                    },
-                                    child: Container(
-                                      width: 24.0,
-                                      height: 24.0,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: isCheckedToday ? AppColors.success : Colors.transparent,
-                                        border: Border.all(
-                                          color: isCheckedToday ? AppColors.success : AppColors.darkTextMuted,
-                                          width: 2.0,
-                                        ),
-                                      ),
-                                      child: isCheckedToday
-                                          ? const Icon(Icons.check_rounded, size: 16.0, color: Colors.white)
-                                          : null,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12.0),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          habit.title,
-                                          style: AppTypography.titleSmall.copyWith(
-                                            color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
-                                          ),
-                                        ),
-                                        if (habit.description != null)
-                                          Text(
-                                            habit.description!,
-                                            style: AppTypography.caption.copyWith(color: AppColors.darkTextMuted),
-                                          ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            // Streak badge
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                              decoration: BoxDecoration(
-                                color: streak > 0 ? AppColors.warningSoft : AppColors.darkSurfaceElevated,
-                                borderRadius: AppRadii.roundedSm,
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.local_fire_department_rounded,
-                                    size: 16.0,
-                                    color: streak > 0 ? AppColors.warning : AppColors.darkTextMuted,
-                                  ),
-                                  const SizedBox(width: 4.0),
-                                  Text(
-                                    '$streak d',
-                                    style: AppTypography.caption.copyWith(
-                                      fontWeight: FontWeight.w700,
-                                      color: streak > 0 ? AppColors.warning : AppColors.darkTextMuted,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.delete_outline_rounded, size: 18),
-                              onPressed: () => habitRepo.deleteHabit(habit.id),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12.0),
-
-                        // Past 7 Days Activity Dots
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: List.generate(7, (idx) {
-                            final done = activity[idx];
-                            return Column(
-                              children: [
-                                Text(
-                                  weekDayLabels[idx],
-                                  style: AppTypography.caption.copyWith(
-                                    fontSize: 10.0,
-                                    color: AppColors.darkTextMuted,
-                                  ),
-                                ),
-                                const SizedBox(height: 4.0),
-                                Container(
-                                  width: 18.0,
-                                  height: 18.0,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: done
-                                        ? AppColors.primary
-                                        : (isDark ? AppColors.darkSurfaceElevated : AppColors.lightSurfaceElevated),
-                                  ),
-                                  child: done
-                                      ? const Icon(Icons.check, size: 12, color: Color(0xFF0F172A))
-                                      : null,
-                                ),
-                              ],
-                            );
-                          }),
-                        ),
-                      ],
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12.0),
+                    child: HabitCard(
+                      habitWithEntries: hWithE,
+                      weekDayLabels: weekDayLabels,
+                      onToggleToday: () async {
+                        await habitRepo.toggleHabitCheckIn(hWithE.habit.id, DateTime.now());
+                        await widgetSync.syncAllWidgets();
+                      },
+                      onDelete: () => habitRepo.deleteHabit(hWithE.habit.id),
                     ),
                   );
                 }).toList(),
@@ -444,102 +354,13 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen> {
 
               return Column(
                 children: goals.map((g) {
-                  final progress = (g.targetValue > 0) ? (g.currentValue / g.targetValue).clamp(0.0, 1.0) : 0.0;
-
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 10.0),
-                    padding: const EdgeInsets.all(14.0),
-                    decoration: BoxDecoration(
-                      color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-                      borderRadius: AppRadii.roundedMd,
-                      border: Border.all(
-                        color: g.isAchieved
-                            ? AppColors.success.withOpacity(0.5)
-                            : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
-                        width: 1.0,
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 2.0),
-                              decoration: BoxDecoration(
-                                color: AppColors.infoSoft,
-                                borderRadius: AppRadii.roundedXs,
-                              ),
-                              child: Text(
-                                g.type.toUpperCase(),
-                                style: AppTypography.caption.copyWith(
-                                  color: AppColors.info,
-                                  fontSize: 9.5,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ),
-                            Row(
-                              children: [
-                                if (g.isAchieved)
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 2.0),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.successSoft,
-                                      borderRadius: AppRadii.roundedXs,
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        const Icon(Icons.check_circle_rounded, size: 12, color: AppColors.success),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          'ACHIEVED',
-                                          style: AppTypography.caption.copyWith(
-                                            color: AppColors.success,
-                                            fontWeight: FontWeight.w700,
-                                            fontSize: 9.5,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete_outline_rounded, size: 18),
-                                  onPressed: () => habitRepo.deleteGoal(g.id),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 6.0),
-                        Text(g.title, style: AppTypography.titleSmall),
-                        const SizedBox(height: 8.0),
-
-                        AppProgressBar(
-                          progress: progress,
-                          progressColor: g.isAchieved ? AppColors.success : AppColors.primary,
-                          label: '${g.currentValue.toStringAsFixed(1)} / ${g.targetValue.toStringAsFixed(1)} ${g.unit}',
-                          showPercentage: true,
-                        ),
-                        const SizedBox(height: 8.0),
-
-                        // Increment buttons
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            OutlinedButton.icon(
-                              onPressed: () => habitRepo.updateGoalProgress(g.id, 1.0),
-                              icon: const Icon(Icons.add, size: 14),
-                              label: Text('+1 ${g.unit}', style: AppTypography.caption),
-                              style: OutlinedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                visualDensity: VisualDensity.compact,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12.0),
+                    child: GoalCard(
+                      goal: g,
+                      onIncrement: () => habitRepo.updateGoalProgress(g.id, 1.0),
+                      onLogValue: () => _showLogGoalProgressDialog(g),
+                      onDelete: () => habitRepo.deleteGoal(g.id),
                     ),
                   );
                 }).toList(),

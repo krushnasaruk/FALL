@@ -205,6 +205,7 @@ class _ProjectsScreenState extends ConsumerState<ProjectsScreen> {
                           final item = visible[index];
                           return ProjectCard(
                             projectWithDetails: item,
+                            colorIndex: index,
                             onTap: () {
                               Navigator.of(context).push(
                                 MaterialPageRoute(
@@ -228,3 +229,4 @@ class _ProjectsScreenState extends ConsumerState<ProjectsScreen> {
     );
   }
 }
+
