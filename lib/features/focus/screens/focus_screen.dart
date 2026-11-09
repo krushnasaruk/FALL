@@ -8,6 +8,7 @@ import '../../../core/theme/app_typography.dart';
 import '../../../core/utils/date_formatters.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_card.dart';
+import '../../../core/widgets/pastel_card.dart';
 import '../../../core/widgets/section_header.dart';
 import '../../../core/widgets/state_views.dart';
 import '../../../data/repositories/focus_repository.dart';
@@ -148,7 +149,11 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
           const SizedBox(height: AppSpacing.xl),
 
           // Central Timer Card
-          AppCard(
+          PastelCard(
+            gradient: _currentMode == FocusMode.shortBreak || _currentMode == FocusMode.longBreak
+                ? AppColors.habitPastelGradient
+                : AppColors.taskPastelGradient,
+            borderRadius: AppRadii.cardLg,
             padding: const EdgeInsets.symmetric(vertical: 36.0, horizontal: 20.0),
             child: Column(
               children: [

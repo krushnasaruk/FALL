@@ -6,8 +6,8 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/utils/date_formatters.dart';
 import '../../../core/widgets/app_button.dart';
-import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_text_field.dart';
+import '../../../core/widgets/pastel_card.dart';
 import '../../../core/widgets/state_views.dart';
 import '../../../data/repositories/learning_repository.dart';
 import '../../../data/repositories/notes_repository.dart';
@@ -355,7 +355,9 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
                     final note = item.note;
                     final tags = note.tags.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
 
-                    return AppCard(
+                    return PastelCard(
+                      gradient: AppColors.notePastelGradient,
+                      borderRadius: AppRadii.card,
                       onTap: () => _showNoteModal(noteToEdit: item),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
