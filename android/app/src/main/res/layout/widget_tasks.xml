@@ -18,9 +18,9 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="TODAY\'S PRIORITIES"
-            android:textColor="#38BDF8"
-            android:textSize="11sp"
+            android:text="TODAY'S PRIORITIES"
+            android:textColor="@color/widget_accent"
+            android:textSize="10sp"
             android:textStyle="bold"
             android:letterSpacing="0.08" />
 
@@ -28,10 +28,24 @@
             android:id="@+id/tv_tasks_header_count"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="ProgressOS"
-            android:textColor="#64748B"
-            android:textSize="11sp" />
+            android:text="+ Task"
+            android:paddingHorizontal="8dp"
+            android:paddingVertical="3dp"
+            android:background="@drawable/widget_add_pill"
+            android:textColor="@color/widget_accent"
+            android:textSize="11sp"
+            android:textStyle="bold" />
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/tv_tasks_empty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="No pending priorities today — tap to open Tasks"
+        android:textColor="@color/widget_text_secondary"
+        android:textSize="12sp"
+        android:visibility="gone"
+        android:paddingVertical="6dp" />
 
     <!-- Task Item 1 -->
     <LinearLayout
@@ -47,7 +61,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="HIGH"
-            android:textColor="#F59E0B"
+            android:textColor="#D97706"
             android:textSize="10sp"
             android:textStyle="bold"
             android:layout_marginEnd="6dp" />
@@ -58,7 +72,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Task Title 1"
-            android:textColor="#F8FAFC"
+            android:textColor="@color/widget_text_primary"
             android:textSize="13sp"
             android:maxLines="1"
             android:ellipsize="end" />
@@ -68,7 +82,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="4:00 PM"
-            android:textColor="#94A3B8"
+            android:textColor="@color/widget_text_secondary"
             android:textSize="11sp" />
     </LinearLayout>
 
@@ -97,7 +111,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Task Title 2"
-            android:textColor="#F8FAFC"
+            android:textColor="@color/widget_text_primary"
             android:textSize="13sp"
             android:maxLines="1"
             android:ellipsize="end" />
@@ -107,7 +121,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="7:30 PM"
-            android:textColor="#94A3B8"
+            android:textColor="@color/widget_text_secondary"
             android:textSize="11sp" />
     </LinearLayout>
 
@@ -125,7 +139,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="LOW"
-            android:textColor="#64748B"
+            android:textColor="@color/widget_text_tertiary"
             android:textSize="10sp"
             android:textStyle="bold"
             android:layout_marginEnd="6dp" />
@@ -136,7 +150,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Task Title 3"
-            android:textColor="#F8FAFC"
+            android:textColor="@color/widget_text_primary"
             android:textSize="13sp"
             android:maxLines="1"
             android:ellipsize="end" />
@@ -146,8 +160,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text=""
-            android:textColor="#94A3B8"
+            android:textColor="@color/widget_text_secondary"
             android:textSize="11sp" />
     </LinearLayout>
 </LinearLayout>
-

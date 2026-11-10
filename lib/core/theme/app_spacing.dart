@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// ProgressOS Spacing Tokens
+/// Consistent 4/8dp Multiples Spacing Scale
 class AppSpacing {
   AppSpacing._();
 
@@ -15,9 +15,11 @@ class AppSpacing {
   static const double huge = 40.0;
   static const double massive = 48.0;
 
+  static const double pageHorizontal = 20.0;
+
   // Insets
-  static const EdgeInsets page = EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0);
+  static const EdgeInsets page = EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0);
   static const EdgeInsets card = EdgeInsets.all(16.0);
-  static const EdgeInsets compactCard = EdgeInsets.all(12.0);
+  static const EdgeInsets compactCard = EdgeInsets.all(14.0);
   static const EdgeInsets modal = EdgeInsets.all(24.0);
 }

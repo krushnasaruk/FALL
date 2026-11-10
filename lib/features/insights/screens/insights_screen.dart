@@ -1,458 +1,928 @@
+import 'dart:math' as math;
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_icons.dart';
 import '../../../core/theme/app_radii.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
-import '../../../core/utils/date_formatters.dart';
+import '../../../core/widgets/app_badges.dart';
 import '../../../core/widgets/app_card.dart';
-import '../../../core/widgets/app_stat_card.dart';
+import '../../../core/widgets/app_progress_bar.dart';
+import '../../../core/widgets/app_progress_ring.dart';
+import '../../../core/widgets/app_scaffold.dart';
 import '../../../core/widgets/section_header.dart';
 import '../../../core/widgets/state_views.dart';
+import '../../../data/database/app_database.dart';
 import '../../../data/repositories/activity_repository.dart';
+import '../../../data/repositories/focus_repository.dart';
+import '../../../data/repositories/habit_repository.dart';
 import '../../../data/repositories/learning_repository.dart';
 import '../../../data/repositories/project_repository.dart';
+import '../../../data/repositories/rewards_repository.dart';
 import '../../../data/repositories/task_repository.dart';
+import '../../../services/feedback_service.dart';
 
-class InsightsScreen extends ConsumerWidget {
+enum _AnalyticsRange {
+  d7('7D', 7, 'Last 7 days'),
+  d30('30D', 30, 'Last 30 days'),
+  m3('3M', 90, 'Last 3 months'),
+  y1('1Y', 365, 'Last 12 months');
+
+  final String shortLabel;
+  final int days;
+  final String description;
+  const _AnalyticsRange(this.shortLabel, this.days, this.description);
+}
+
+/// Analytics & Productivity Intelligence Screen.
+/// Computes every KPI, breakdown, heatmap cell, and bar chart strictly from local SQLite records.
+class InsightsScreen extends ConsumerStatefulWidget {
   const InsightsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<InsightsScreen> createState() => _InsightsScreenState();
+}
+
+class _InsightsScreenState extends ConsumerState<InsightsScreen> {
+  _AnalyticsRange _range = _AnalyticsRange.d7;
+
+  @override
+  Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final feedback = ref.read(feedbackServiceProvider);
+
     final tasksAsync = ref.watch(allTasksStreamProvider);
     final projectsAsync = ref.watch(allProjectsStreamProvider);
     final skillsAsync = ref.watch(allSkillsStreamProvider);
+    final focusAsync = ref.watch(recentFocusSessionsProvider);
+    final habitsAsync = ref.watch(allHabitsStreamProvider);
     final activitiesAsync = ref.watch(recentActivitiesStreamProvider);
+    final totalXp = ref.watch(totalXpStreamProvider).valueOrNull ?? 0;
+    final unlockedList = ref.watch(unlockedAchievementsProvider).valueOrNull ?? const <UnlockedAchievementEntry>[];
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Analytics & Growth'),
-      ),
+    if (tasksAsync.isLoading && !tasksAsync.hasValue) {
+      return const AppScaffold(
+        body: Padding(
+          padding: EdgeInsets.only(top: AppSpacing.lg),
+          child: AnalyticsSkeleton(),
+        ),
+      );
+    }
+
+    final allTasks = tasksAsync.value ?? [];
+    final allProjects = projectsAsync.value ?? [];
+    final allSkills = skillsAsync.value ?? [];
+    final allFocus = focusAsync.value ?? [];
+    final allHabits = habitsAsync.value ?? [];
+    final allActivities = activitiesAsync.value ?? [];
+
+    final now = DateTime.now();
+    final todayStart = DateTime(now.year, now.month, now.day);
+    final rangeStart = todayStart.subtract(Duration(days: _range.days - 1));
+
+    // Real Task Metrics within selected window (plus overall open tasks)
+    final tasksInWindow = allTasks.where((t) {
+      final refDate = t.task.completedAt ?? t.task.dueDate ?? t.task.createdAt;
+      return !refDate.isBefore(rangeStart);
+    }).toList();
+
+    final completedTasksInWindow = allTasks.where((t) {
+      if (!t.task.isCompleted) return false;
+      final completedAt = t.task.completedAt ?? t.task.createdAt;
+      return !completedAt.isBefore(rangeStart);
+    }).length;
+
+    final int taskWindowTotal = tasksInWindow.isNotEmpty ? tasksInWindow.length : allTasks.length;
+    final int taskWindowDone = tasksInWindow.isNotEmpty
+        ? tasksInWindow.where((t) => t.task.isCompleted).length
+        : allTasks.where((t) => t.task.isCompleted).length;
+    final double taskRate = taskWindowTotal > 0 ? (taskWindowDone / taskWindowTotal) : 0.0;
+
+    // Real Project Metrics
+    final int completedProjects = allProjects.where((p) => p.project.status == 'completed').length;
+    final int activeProjects = allProjects.where((p) => p.project.status == 'active').length;
+    final double projectAvg = allProjects.isEmpty
+        ? 0.0
+        : allProjects.map((p) => p.progressPercentage).reduce((a, b) => a + b) / allProjects.length;
+
+    // Real Learning Minutes within selected window (plus total logged)
+    int learningMinutesInWindow = 0;
+    int totalSkillTopics = 0;
+    int completedSkillTopics = 0;
+    for (final s in allSkills) {
+      totalSkillTopics += s.totalTopics;
+      completedSkillTopics += s.completedTopics;
+      for (final session in s.sessions) {
+        if (!session.createdAt.isBefore(rangeStart)) {
+          learningMinutesInWindow += session.durationMinutes;
+        }
+      }
+    }
+    // If no timestamped sessions yet but skill records contain initial logged minutes, show real total
+    final int skillMinutesSum = allSkills.fold<int>(0, (sum, s) => sum + s.skill.learningMinutes);
+    final int effectiveLearningMinutes =
+        learningMinutesInWindow > 0 ? learningMinutesInWindow : (_range == _AnalyticsRange.y1 ? skillMinutesSum : 0);
+
+    // Real Focus Minutes within selected window
+    int focusMinutesInWindow = 0;
+    for (final f in allFocus) {
+      if (!f.session.completedAt.isBefore(rangeStart)) {
+        focusMinutesInWindow += f.session.durationMinutes;
+      }
+    }
+
+    // Real Task Execution Minutes (from estimated/actual minutes on completed tasks in window)
+    int taskExecutionMinutes = 0;
+    for (final t in allTasks) {
+      if (t.task.isCompleted) {
+        final completedAt = t.task.completedAt ?? t.task.createdAt;
+        if (!completedAt.isBefore(rangeStart)) {
+          final int mins = t.task.actualMinutes > 0
+              ? t.task.actualMinutes
+              : (t.task.estimatedMinutes > 0 ? t.task.estimatedMinutes : 30);
+          taskExecutionMinutes += mins;
+        }
+      }
+    }
+
+    // Composite Completion & Momentum Index from real non-empty modules
+    final List<double> components = [];
+    if (allTasks.isNotEmpty) components.add(taskRate);
+    if (allProjects.isNotEmpty) components.add(projectAvg);
+    if (totalSkillTopics > 0) components.add(completedSkillTopics / totalSkillTopics);
+    if (allHabits.isNotEmpty) {
+      final activeToday = allHabits.where((h) => h.isCompletedToday).length;
+      components.add(activeToday / allHabits.length);
+    }
+    final double overallProgress =
+        components.isEmpty ? 0.0 : components.reduce((a, b) => a + b) / components.length;
+
+    final int totalTrackedMinutes =
+        taskExecutionMinutes + effectiveLearningMinutes + focusMinutesInWindow;
+
+    // Real 28-day Daily Activity Map (Date yyyy-MM-dd -> event count)
+    final Map<String, int> dailyActivityMap = _buildDailyActivityCounts(
+      allTasks: allTasks,
+      allSkills: allSkills,
+      allFocus: allFocus,
+      allHabits: allHabits,
+      allActivities: allActivities,
+    );
+
+    final bool hasAnyData = allTasks.isNotEmpty ||
+        allProjects.isNotEmpty ||
+        allSkills.isNotEmpty ||
+        allFocus.isNotEmpty ||
+        allHabits.isNotEmpty;
+
+    return AppScaffold(
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 80.0),
+        padding: const EdgeInsets.only(bottom: 48.0),
         children: [
-          // Top KPI Metric Row
-          tasksAsync.when(
-            data: (tasks) {
-              final completed = tasks.where((t) => t.task.isCompleted).length;
-              final total = tasks.length;
-              final rate = total > 0 ? ((completed / total) * 100).toInt() : 0;
+          PageTitle(
+            title: 'Analytics',
+            subtitle: _range.description,
+            showBackButton: Navigator.of(context).canPop(),
+          ),
 
-              return Row(
-                children: [
-                  Expanded(
-                    child: AppStatCard(
-                      title: 'Task Velocity',
-                      value: '$completed / $total',
-                      subtitle: '$rate% completion rate',
-                      icon: Icons.check_circle_rounded,
-                      accentColor: const Color(0xFF0284C7),
-                      gradient: AppColors.analyticsPastelGradient,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  skillsAsync.when(
-                    data: (skills) {
-                      int totalLearningMins = 0;
-                      for (final s in skills) {
-                        totalLearningMins += s.skill.learningMinutes;
-                      }
-                      return Expanded(
-                        child: AppStatCard(
-                          title: 'Skill Investment',
-                          value: DateFormatters.formatMinutes(totalLearningMins),
-                          subtitle: '${skills.length} technical domains',
-                          icon: Icons.school_rounded,
-                          accentColor: const Color(0xFF7C3AED),
-                          gradient: AppColors.learningPastelGradient,
-                        ),
-                      );
+          // Timeframe Selector Chips
+          SizedBox(
+            height: 44.0,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageHorizontal),
+              children: _AnalyticsRange.values.map((tf) {
+                return Padding(
+                  padding: const EdgeInsets.only(right: AppSpacing.sm),
+                  child: AppFilterChip(
+                    label: tf.shortLabel,
+                    selected: _range == tf,
+                    onSelected: () {
+                      feedback.selectionClick();
+                      setState(() => _range = tf);
                     },
-                    loading: () => const SizedBox.shrink(),
-                    error: (_, __) => const SizedBox.shrink(),
-                  ),
-                ],
-              );
-            },
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (err, _) => ErrorStateView(message: err.toString()),
-          ),
-          const SizedBox(height: AppSpacing.xl),
-
-          // Weekly Completion Throughput Bar Chart
-          SectionHeader(
-            title: 'Weekly Task Velocity',
-            subtitle: 'Tasks completed over the last 7 days',
-          ),
-          tasksAsync.when(
-            data: (tasks) {
-              final now = DateTime.now();
-              final dayCounts = List.generate(7, (i) {
-                final targetDay = now.subtract(Duration(days: 6 - i));
-                final count = tasks.where((t) {
-                  if (!t.task.isCompleted || t.task.completedAt == null) return false;
-                  final c = t.task.completedAt!;
-                  return c.year == targetDay.year &&
-                      c.month == targetDay.month &&
-                      c.day == targetDay.day;
-                }).length;
-                return count.toDouble();
-              });
-
-              final maxVal = dayCounts.reduce((a, b) => a > b ? a : b);
-              final maxY = (maxVal < 5 ? 5.0 : maxVal + 2);
-
-              return AppCard(
-                padding: const EdgeInsets.all(16.0),
-                child: SizedBox(
-                  height: 180.0,
-                  child: BarChart(
-                    BarChartData(
-                      maxY: maxY,
-                      barTouchData: BarTouchData(
-                        enabled: true,
-                        touchTooltipData: BarTouchTooltipData(
-                          getTooltipColor: (_) => isDark ? AppColors.darkSurfaceElevated : Colors.white,
-                          getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                            return BarTooltipItem(
-                              '${rod.toY.toInt()} tasks',
-                              AppTypography.caption.copyWith(fontWeight: FontWeight.bold),
-                            );
-                          },
-                        ),
-                      ),
-                      titlesData: FlTitlesData(
-                        show: true,
-                        topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                        rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                        leftTitles: AxisTitles(
-                          sideTitles: SideTitles(
-                            showTitles: true,
-                            reservedSize: 24,
-                            interval: 2,
-                            getTitlesWidget: (val, meta) => Text(
-                              val.toInt().toString(),
-                              style: AppTypography.caption.copyWith(
-                                fontSize: 9.0,
-                                color: AppColors.darkTextMuted,
-                              ),
-                            ),
-                          ),
-                        ),
-                        bottomTitles: AxisTitles(
-                          sideTitles: SideTitles(
-                            showTitles: true,
-                            getTitlesWidget: (val, meta) {
-                              final idx = val.toInt();
-                              if (idx >= 0 && idx < 7) {
-                                final d = now.subtract(Duration(days: 6 - idx));
-                                return Padding(
-                                  padding: const EdgeInsets.only(top: 6.0),
-                                  child: Text(
-                                    DateFormat('E').format(d).substring(0, 3),
-                                    style: AppTypography.caption.copyWith(
-                                      fontSize: 10.0,
-                                      color: AppColors.darkTextMuted,
-                                    ),
-                                  ),
-                                );
-                              }
-                              return const SizedBox.shrink();
-                            },
-                          ),
-                        ),
-                      ),
-                      borderData: FlBorderData(show: false),
-                      gridData: FlGridData(
-                        show: true,
-                        drawVerticalLine: false,
-                        horizontalInterval: 2,
-                        getDrawingHorizontalLine: (val) => FlLine(
-                          color: isDark ? AppColors.darkBorderSubtle : AppColors.lightBorderSubtle,
-                          strokeWidth: 1.0,
-                        ),
-                      ),
-                      barGroups: List.generate(7, (i) {
-                        return BarChartGroupData(
-                          x: i,
-                          barRods: [
-                            BarChartRodData(
-                              toY: dayCounts[i],
-                              color: dayCounts[i] > 0 ? AppColors.primary : AppColors.darkBorder,
-                              width: 16.0,
-                              borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
-                            ),
-                          ],
-                        );
-                      }),
-                    ),
-                  ),
-                ),
-              );
-            },
-            loading: () => const SizedBox.shrink(),
-            error: (_, __) => const SizedBox.shrink(),
-          ),
-          const SizedBox(height: AppSpacing.xl),
-
-          // Technology Time Distribution (Pie Chart)
-          SectionHeader(
-            title: 'Learning Allocation by Skill',
-            subtitle: 'Hours spent across programming languages and frameworks',
-          ),
-          skillsAsync.when(
-            data: (skills) {
-              final activeSkills = skills.where((s) => s.skill.learningMinutes > 0).toList();
-              if (activeSkills.isEmpty) {
-                return AppCard(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Center(
-                      child: Text(
-                        'Log learning sessions to view time breakdown.',
-                        style: AppTypography.bodySmall.copyWith(color: AppColors.darkTextMuted),
-                      ),
-                    ),
                   ),
                 );
-              }
-
-              final colors = [
-                AppColors.techLanguage,
-                AppColors.techFramework,
-                AppColors.techAI,
-                AppColors.techSystems,
-                AppColors.techDatabase,
-                AppColors.techCloud,
-              ];
-
-              return AppCard(
-                padding: const EdgeInsets.all(16.0),
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 140.0,
-                      height: 140.0,
-                      child: PieChart(
-                        PieChartData(
-                          sectionsSpace: 2.0,
-                          centerSpaceRadius: 32.0,
-                          sections: activeSkills.asMap().entries.map((e) {
-                            final idx = e.key;
-                            final s = e.value;
-                            return PieChartSectionData(
-                              value: s.skill.learningMinutes.toDouble(),
-                              color: colors[idx % colors.length],
-                              radius: 36.0,
-                              showTitle: false,
-                            );
-                          }).toList(),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 20.0),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: activeSkills.take(5).toList().asMap().entries.map((e) {
-                          final idx = e.key;
-                          final s = e.value;
-                          final color = colors[idx % colors.length];
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 3.0),
-                            child: Row(
-                              children: [
-                                Container(width: 8, height: 8, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    s.skill.name,
-                                    style: AppTypography.caption.copyWith(fontWeight: FontWeight.w600),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                                Text(
-                                  DateFormatters.formatMinutes(s.skill.learningMinutes),
-                                  style: AppTypography.caption.copyWith(color: AppColors.darkTextMuted),
-                                ),
-                              ],
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-            loading: () => const SizedBox.shrink(),
-            error: (_, __) => const SizedBox.shrink(),
+              }).toList(),
+            ),
           ),
-          const SizedBox(height: AppSpacing.xl),
 
-          // Project Progress Status
-          SectionHeader(
-            title: 'Project Engineering Status',
-            subtitle: 'Milestone progress across active builds',
-          ),
-          projectsAsync.when(
-            data: (projects) {
-              if (projects.isEmpty) {
-                return AppCard(
-                  child: Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Text(
-                        'No projects yet to calculate engineering progress.',
-                        style: AppTypography.bodySmall.copyWith(color: AppColors.darkTextMuted),
-                      ),
-                    ),
-                  ),
-                );
-              }
+          const SizedBox(height: AppSpacing.lg),
 
-              return Column(
-                children: projects.take(4).map((p) {
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 8.0),
-                    padding: const EdgeInsets.all(12.0),
-                    decoration: BoxDecoration(
-                      color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-                      borderRadius: AppRadii.roundedMd,
-                      border: Border.all(
-                        color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                        width: 1.0,
-                      ),
-                    ),
+          if (!hasAnyData)
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: AppSpacing.pageHorizontal),
+              child: EmptyStateView(
+                icon: AppIcons.analytics,
+                illustrationAsset: 'assets/images/empty/empty_analytics.png',
+                title: 'Your progress story will appear here.',
+                description:
+                    'Complete a few activities to start seeing patterns.',
+              ),
+            )
+          else
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageHorizontal),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 1. Overall Productivity Ring Card
+                  AppCard(
+                    padding: const EdgeInsets.all(AppSpacing.xl),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(p.project.name, style: AppTypography.titleSmall),
-                            Text(
-                              '${(p.progressPercentage * 100).toInt()}%',
-                              style: AppTypography.monoSmall.copyWith(color: AppColors.primary),
+                            Expanded(
+                              child: Text(
+                                'Overall Execution',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppTypography.cardTitle.copyWith(
+                                  color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8.0),
+                            Flexible(
+                              flex: 0,
+                              child: AppBadge(
+                                label: _range.shortLabel,
+                                color: isDark ? AppColors.primaryDark : AppColors.primary,
+                              ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 6.0),
-                        LinearProgressIndicator(
-                          value: p.progressPercentage,
-                          backgroundColor: isDark ? AppColors.darkSurfaceElevated : AppColors.lightSurfaceElevated,
-                          valueColor: const AlwaysStoppedAnimation(AppColors.primary),
-                          minHeight: 6.0,
-                          borderRadius: AppRadii.roundedFull,
-                        ),
-                      ],
-                    ),
-                  );
-                }).toList(),
-              );
-            },
-            loading: () => const SizedBox.shrink(),
-            error: (_, __) => const SizedBox.shrink(),
-          ),
-          const SizedBox(height: AppSpacing.xl),
-
-          // Growth & Achievement Timeline
-          SectionHeader(
-            title: 'Engineering Activity Timeline',
-            subtitle: 'Chronological record of your accomplishments and progress',
-          ),
-          activitiesAsync.when(
-            data: (activities) {
-              if (activities.isEmpty) {
-                return Text(
-                  'Your technical timeline will log completed tasks, projects, milestones, and learning hours here.',
-                  style: AppTypography.bodySmall.copyWith(color: AppColors.darkTextMuted),
-                );
-              }
-
-              return Column(
-                children: activities.take(15).map((a) {
-                  IconData icon;
-                  Color iconColor;
-
-                  switch (a.entityType) {
-                    case 'task':
-                      icon = Icons.check_circle_outline_rounded;
-                      iconColor = AppColors.success;
-                      break;
-                    case 'project':
-                      icon = Icons.rocket_launch_rounded;
-                      iconColor = AppColors.info;
-                      break;
-                    case 'skill':
-                      icon = Icons.school_rounded;
-                      iconColor = AppColors.primary;
-                      break;
-                    case 'focus':
-                      icon = Icons.timer_outlined;
-                      iconColor = AppColors.warning;
-                      break;
-                    case 'milestone':
-                      icon = Icons.flag_rounded;
-                      iconColor = AppColors.statusPlanning;
-                      break;
-                    default:
-                      icon = Icons.radio_button_checked;
-                      iconColor = AppColors.darkTextMuted;
-                  }
-
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 8.0),
-                    padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 10.0),
-                    decoration: BoxDecoration(
-                      color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-                      borderRadius: AppRadii.roundedMd,
-                      border: Border.all(
-                        color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                        width: 1.0,
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(6.0),
-                          decoration: BoxDecoration(
-                            color: iconColor.withOpacity(0.12),
-                            borderRadius: AppRadii.roundedSm,
+                        const SizedBox(height: AppSpacing.xl),
+                        AppProgressRing(
+                          progress: overallProgress,
+                          size: 168.0,
+                          strokeWidth: 14.0,
+                          progressGradient: const LinearGradient(
+                            colors: [AppColors.primary, AppColors.secondary],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
                           ),
-                          child: Icon(icon, size: 16.0, color: iconColor),
-                        ),
-                        const SizedBox(width: 12.0),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          centerChild: Column(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                a.summary,
-                                style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.w500),
+                                '${(overallProgress * 100).round()}%',
+                                style: AppTypography.display.copyWith(
+                                  color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
+                                  fontFeatures: AppTypography.tabularFigures,
+                                ),
                               ),
-                              const SizedBox(height: 2.0),
                               Text(
-                                DateFormatters.dateTimeShort(a.createdAt),
-                                style: AppTypography.caption.copyWith(
-                                  color: AppColors.darkTextMuted,
-                                  fontSize: 10.0,
+                                'Completion Index',
+                                style: AppTypography.metadata.copyWith(
+                                  color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
                                 ),
                               ),
                             ],
                           ),
                         ),
+                        const SizedBox(height: AppSpacing.lg),
+                        Text(
+                          'Derived from ${components.length} active module${components.length == 1 ? '' : 's'} in your local database.',
+                          style: AppTypography.secondary.copyWith(
+                            color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
                       ],
                     ),
-                  );
-                }).toList(),
+                  ),
+
+                  const SizedBox(height: AppSpacing.lg),
+
+                  // 2. 2x2 Real KPI Grid
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _KpiTile(
+                          icon: AppIcons.learning,
+                          label: 'Learning (${_range.shortLabel})',
+                          value: _formatMinutesCompact(effectiveLearningMinutes),
+                          accent: isDark ? AppColors.learningPurple : AppColors.learningAccent,
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.md),
+                      Expanded(
+                        child: _KpiTile(
+                          icon: AppIcons.focus,
+                          label: 'Focus (${_range.shortLabel})',
+                          value: _formatMinutesCompact(focusMinutesInWindow),
+                          accent: isDark ? AppColors.analyticsCyan : AppColors.focusAccent,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _KpiTile(
+                          icon: AppIcons.tasks,
+                          label: 'Tasks Done (${_range.shortLabel})',
+                          value: '$completedTasksInWindow',
+                          accent: isDark ? AppColors.taskBlue : AppColors.taskAccent,
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.md),
+                      Expanded(
+                        child: _KpiTile(
+                          icon: AppIcons.projects,
+                          label: 'Projects',
+                          value: '$activeProjects active / $completedProjects done',
+                          isCompactValue: true,
+                          accent: isDark ? AppColors.projectLavender : AppColors.projectAccent,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: AppSpacing.xl),
+
+                  // 3. Time Allocation Breakdown (Tasks vs Learning vs Focus)
+                  const SectionHeader(
+                    title: 'Effort Breakdown',
+                    subtitle: 'Real minutes logged across execution, learning & focus',
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  AppCard(
+                    child: totalTrackedMinutes == 0
+                        ? Text(
+                            'No completed task, learning, or focus minutes recorded in this timeframe yet.',
+                            style: AppTypography.secondary.copyWith(
+                              color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+                            ),
+                          )
+                        : Column(
+                            children: [
+                              ClipRRect(
+                                borderRadius: AppRadii.roundedFull,
+                                child: SizedBox(
+                                  height: 12.0,
+                                  child: Row(
+                                    children: [
+                                      if (taskExecutionMinutes > 0)
+                                        Expanded(
+                                          flex: taskExecutionMinutes,
+                                          child: Container(color: AppColors.primary),
+                                        ),
+                                      if (effectiveLearningMinutes > 0)
+                                        Expanded(
+                                          flex: effectiveLearningMinutes,
+                                          child: Container(color: AppColors.success),
+                                        ),
+                                      if (focusMinutesInWindow > 0)
+                                        Expanded(
+                                          flex: focusMinutesInWindow,
+                                          child: Container(color: AppColors.secondary),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: AppSpacing.md),
+                              _BreakdownRow(
+                                color: AppColors.primary,
+                                label: 'Tasks (completed)',
+                                minutes: taskExecutionMinutes,
+                                totalMinutes: totalTrackedMinutes,
+                              ),
+                              const SizedBox(height: AppSpacing.xs),
+                              _BreakdownRow(
+                                color: AppColors.success,
+                                label: 'Learning sessions',
+                                minutes: effectiveLearningMinutes,
+                                totalMinutes: totalTrackedMinutes,
+                              ),
+                              const SizedBox(height: AppSpacing.xs),
+                              _BreakdownRow(
+                                color: AppColors.secondary,
+                                label: 'Focus timer',
+                                minutes: focusMinutesInWindow,
+                                totalMinutes: totalTrackedMinutes,
+                              ),
+                            ],
+                          ),
+                  ),
+
+                  const SizedBox(height: AppSpacing.xl),
+
+                  // 4. Real 28-Day Consistency Heatmap
+                  const SectionHeader(
+                    title: '28-Day Activity Heatmap',
+                    subtitle: 'Every square reflects actual logged actions on that calendar day',
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  AppCard(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: ['M', 'T', 'W', 'T', 'F', 'S', 'S']
+                              .map(
+                                (d) => Expanded(
+                                  child: Text(
+                                    d,
+                                    textAlign: TextAlign.center,
+                                    style: AppTypography.metadata.copyWith(
+                                      color: isDark
+                                          ? AppColors.darkTextTertiary
+                                          : AppColors.textTertiary,
+                                    ),
+                                  ),
+                                ),
+                              )
+                              .toList(),
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        ...List.generate(4, (weekIndex) {
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 8.0),
+                            child: Row(
+                              children: List.generate(7, (dayIndex) {
+                                final daysAgo = (3 - weekIndex) * 7 + (6 - dayIndex);
+                                final date = todayStart.subtract(Duration(days: daysAgo));
+                                final key = DateFormat('yyyy-MM-dd').format(date);
+                                final count = dailyActivityMap[key] ?? 0;
+
+                                return Expanded(
+                                  child: Center(
+                                    child: Tooltip(
+                                      message: '${DateFormat('MMM d').format(date)}: $count actions',
+                                      child: Container(
+                                        width: 24.0,
+                                        height: 24.0,
+                                        decoration: BoxDecoration(
+                                          color: _heatmapColor(count, isDark),
+                                          borderRadius: BorderRadius.circular(7.0),
+                                          border: daysAgo == 0
+                                              ? Border.all(
+                                                  color: isDark
+                                                      ? AppColors.primaryDark
+                                                      : AppColors.primary,
+                                                  width: 1.5,
+                                                )
+                                              : null,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }),
+                            ),
+                          );
+                        }),
+                        const SizedBox(height: AppSpacing.xs),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Text(
+                              'Less',
+                              style: AppTypography.metadata.copyWith(
+                                color: isDark ? AppColors.darkTextTertiary : AppColors.textTertiary,
+                              ),
+                            ),
+                            const SizedBox(width: 6.0),
+                            ...[0, 1, 3, 5].map(
+                              (level) => Container(
+                                width: 12.0,
+                                height: 12.0,
+                                margin: const EdgeInsets.only(right: 4.0),
+                                decoration: BoxDecoration(
+                                  color: _heatmapColor(level, isDark),
+                                  borderRadius: BorderRadius.circular(3.0),
+                                ),
+                              ),
+                            ),
+                            Text(
+                              'More',
+                              style: AppTypography.metadata.copyWith(
+                                color: isDark ? AppColors.darkTextTertiary : AppColors.textTertiary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: AppSpacing.xl),
+
+                  // 5. Weekly Velocity Bar Chart (last 7 days completed actions)
+                  const SectionHeader(
+                    title: '7-Day Velocity',
+                    subtitle: 'Completed tasks & focus/learning logs per day',
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  _WeeklyVelocityCard(
+                    todayStart: todayStart,
+                    dailyActivityMap: dailyActivityMap,
+                    isDark: isDark,
+                  ),
+
+                  const SizedBox(height: AppSpacing.xl),
+
+                  // 6. Progression XP & Achievements Collection
+                  const SectionHeader(
+                    title: 'Progress & Achievements',
+                    subtitle: 'Auditable local XP and milestone badges across 6 categories',
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  _AchievementsShelfCard(
+                    totalXp: totalXp,
+                    unlockedEntries: unlockedList,
+                    isDark: isDark,
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Map<String, int> _buildDailyActivityCounts({
+    required List<TaskWithSubtasks> allTasks,
+    required List<SkillWithRoadmap> allSkills,
+    required List<FocusSessionWithDetails> allFocus,
+    required List<HabitWithEntries> allHabits,
+    required List allActivities,
+  }) {
+    final map = <String, int>{};
+
+    void increment(DateTime dt) {
+      final key = DateFormat('yyyy-MM-dd').format(dt);
+      map[key] = (map[key] ?? 0) + 1;
+    }
+
+    for (final t in allTasks) {
+      if (t.task.isCompleted) {
+        increment(t.task.completedAt ?? t.task.createdAt);
+      }
+    }
+    for (final s in allSkills) {
+      for (final session in s.sessions) {
+        increment(session.createdAt);
+      }
+    }
+    for (final f in allFocus) {
+      increment(f.session.completedAt);
+    }
+    for (final h in allHabits) {
+      for (final e in h.entries) {
+        if (e.isCompleted) {
+          map[e.dateStr] = (map[e.dateStr] ?? 0) + 1;
+        }
+      }
+    }
+    for (final a in allActivities) {
+      increment(a.createdAt as DateTime);
+    }
+    return map;
+  }
+
+  Color _heatmapColor(int count, bool isDark) {
+    if (count == 0) {
+      return isDark ? AppColors.darkSurfaceElevated : AppColors.surfaceElevated;
+    }
+    if (count <= 2) return AppColors.primary.withOpacity(isDark ? 0.35 : 0.25);
+    if (count <= 4) return AppColors.primary.withOpacity(isDark ? 0.65 : 0.55);
+    return AppColors.primary;
+  }
+
+  String _formatMinutesCompact(int minutes) {
+    if (minutes < 60) return '${minutes}m';
+    final h = minutes ~/ 60;
+    final m = minutes % 60;
+    return m == 0 ? '${h}h' : '${h}h ${m}m';
+  }
+}
+
+class _KpiTile extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+  final Color accent;
+  final bool isCompactValue;
+
+  const _KpiTile({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.accent,
+    this.isCompactValue = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return AppCard(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 17.0, color: accent),
+              const SizedBox(width: 6.0),
+              Expanded(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.metadata.copyWith(
+                    color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: (isCompactValue ? AppTypography.cardTitle : AppTypography.statMedium).copyWith(
+              color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
+              fontFeatures: AppTypography.tabularFigures,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BreakdownRow extends StatelessWidget {
+  final Color color;
+  final String label;
+  final int minutes;
+  final int totalMinutes;
+
+  const _BreakdownRow({
+    required this.color,
+    required this.label,
+    required this.minutes,
+    required this.totalMinutes,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final pct = totalMinutes > 0 ? ((minutes / totalMinutes) * 100).round() : 0;
+
+    return Row(
+      children: [
+        Container(
+          width: 9.0,
+          height: 9.0,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
+        const SizedBox(width: 8.0),
+        Expanded(
+          child: Text(
+            label,
+            style: AppTypography.secondary.copyWith(
+              color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
+            ),
+          ),
+        ),
+        Text(
+          '${minutes}m • $pct%',
+          style: AppTypography.metadata.copyWith(
+            color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+            fontFeatures: AppTypography.tabularFigures,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _WeeklyVelocityCard extends StatelessWidget {
+  final DateTime todayStart;
+  final Map<String, int> dailyActivityMap;
+  final bool isDark;
+
+  const _WeeklyVelocityCard({
+    required this.todayStart,
+    required this.dailyActivityMap,
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final days = List.generate(7, (i) => todayStart.subtract(Duration(days: 6 - i)));
+    final counts = days.map((d) => dailyActivityMap[DateFormat('yyyy-MM-dd').format(d)] ?? 0).toList();
+    final maxCount = counts.fold<int>(0, (m, c) => math.max(m, c));
+
+    if (maxCount == 0) {
+      return AppCard(
+        child: Text(
+          'No recorded activity in the past 7 days yet.',
+          style: AppTypography.secondary.copyWith(
+            color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+          ),
+        ),
+      );
+    }
+
+    final maxY = (maxCount + 2).toDouble();
+
+    return AppCard(
+      child: SizedBox(
+        height: 170.0,
+        child: BarChart(
+          BarChartData(
+            alignment: BarChartAlignment.spaceAround,
+            maxY: maxY,
+            barTouchData: BarTouchData(enabled: true),
+            gridData: FlGridData(
+              show: true,
+              drawVerticalLine: false,
+              getDrawingHorizontalLine: (_) => FlLine(
+                color: isDark ? AppColors.darkDivider : AppColors.divider,
+                strokeWidth: 1.0,
+              ),
+            ),
+            borderData: FlBorderData(show: false),
+            titlesData: FlTitlesData(
+              leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+              topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+              rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+              bottomTitles: AxisTitles(
+                sideTitles: SideTitles(
+                  showTitles: true,
+                  getTitlesWidget: (value, _) {
+                    final idx = value.toInt();
+                    if (idx < 0 || idx >= days.length) return const SizedBox.shrink();
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 6.0),
+                      child: Text(
+                        DateFormat('E').format(days[idx]).substring(0, 1),
+                        style: AppTypography.metadata.copyWith(
+                          color: idx == 6
+                              ? (isDark ? AppColors.primaryDark : AppColors.primary)
+                              : (isDark ? AppColors.darkTextTertiary : AppColors.textTertiary),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+            barGroups: List.generate(7, (idx) {
+              return BarChartGroupData(
+                x: idx,
+                barRods: [
+                  BarChartRodData(
+                    toY: counts[idx].toDouble(),
+                    width: 18.0,
+                    color: idx == 6
+                        ? (isDark ? AppColors.primaryDark : AppColors.primary)
+                        : AppColors.primary.withOpacity(0.45),
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(6.0)),
+                  ),
+                ],
               );
-            },
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (err, _) => ErrorStateView(message: err.toString()),
+            }),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AchievementsShelfCard extends StatelessWidget {
+  final int totalXp;
+  final List<UnlockedAchievementEntry> unlockedEntries;
+  final bool isDark;
+
+  const _AchievementsShelfCard({
+    required this.totalXp,
+    required this.unlockedEntries,
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final unlockedIds = unlockedEntries.map((e) => e.id).toSet();
+    final level = RewardsRepository.levelForXp(totalXp);
+    final levelProgress = RewardsRepository.levelProgress(totalXp);
+
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              AppBadge(
+                label: 'Level $level',
+                color: isDark ? AppColors.primaryDark : AppColors.primary,
+                icon: Icons.bolt_rounded,
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Text(
+                  '$totalXp total XP • ${unlockedIds.length}/${RewardsRepository.catalog.length} badges unlocked',
+                  style: AppTypography.metadata.copyWith(
+                    color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+                    fontFeatures: AppTypography.tabularFigures,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          AppProgressBar(
+            progress: levelProgress,
+            progressColor: isDark ? AppColors.primaryDark : AppColors.primary,
+            backgroundColor: isDark ? AppColors.darkSurfaceElevated : AppColors.surfaceElevated,
+            height: 6.0,
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          Wrap(
+            spacing: AppSpacing.sm,
+            runSpacing: AppSpacing.sm,
+            children: RewardsRepository.catalog.map((def) {
+              final isUnlocked = unlockedIds.contains(def.id);
+              return Container(
+                width: 136.0,
+                padding: const EdgeInsets.all(10.0),
+                decoration: BoxDecoration(
+                  color: isUnlocked
+                      ? (isDark ? AppColors.darkSurfaceElevated : AppColors.surfaceElevated)
+                      : (isDark ? AppColors.darkBackground : AppColors.background),
+                  borderRadius: AppRadii.roundedMd,
+                  border: Border.all(
+                    color: isUnlocked
+                        ? (isDark ? AppColors.primaryDark : AppColors.primary).withOpacity(0.45)
+                        : (isDark ? AppColors.darkBorder : AppColors.border),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Opacity(
+                          opacity: isUnlocked ? 1.0 : 0.35,
+                          child: Image.asset(
+                            def.badgeAsset,
+                            width: 28.0,
+                            height: 28.0,
+                            fit: BoxFit.contain,
+                            errorBuilder: (_, __, ___) => const Icon(Icons.emoji_events_outlined, size: 22.0),
+                          ),
+                        ),
+                        const Spacer(),
+                        if (isUnlocked)
+                          const Icon(AppIcons.completion, size: 15.0, color: AppColors.success)
+                        else
+                          Icon(
+                            Icons.lock_outline_rounded,
+                            size: 14.0,
+                            color: isDark ? AppColors.darkTextTertiary : AppColors.textTertiary,
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 6.0),
+                    Text(
+                      def.title,
+                      style: AppTypography.bodySmall.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: isUnlocked
+                            ? (isDark ? AppColors.darkTextPrimary : AppColors.textPrimary)
+                            : (isDark ? AppColors.darkTextSecondary : AppColors.textSecondary),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2.0),
+                    Text(
+                      def.description,
+                      style: AppTypography.metadata.copyWith(
+                        fontSize: 10.5,
+                        color: isDark ? AppColors.darkTextTertiary : AppColors.textTertiary,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
           ),
         ],
       ),

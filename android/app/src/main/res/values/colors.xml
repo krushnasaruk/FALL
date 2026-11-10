@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="widget_bg">#FFFFFF</color>
+    <color name="widget_border">#EAECF1</color>
+    <color name="widget_text_primary">#171923</color>
+    <color name="widget_text_secondary">#727786</color>
+    <color name="widget_text_tertiary">#A0A5B0</color>
+    <color name="widget_accent">#7167E8</color>
+    <color name="widget_accent_soft">#EEECFC</color>
+    <color name="widget_track">#EAECF1</color>
+    <color name="widget_streak_accent">#B7791F</color>
+    <color name="widget_focus_accent">#1D7FA8</color>
+</resources>
+

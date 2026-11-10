@@ -1,93 +1,64 @@
 import 'package:flutter/material.dart';
+import '../theme/app_colors.dart';
 import '../theme/app_radii.dart';
 
+/// Restrained Pastel Feature Card: soft tinted background with high-contrast text
+/// and subtle hairline border. Zero decorative blobs or heavy drop shadows.
 class PastelCard extends StatelessWidget {
   final Widget child;
-  final Gradient gradient;
+  final Gradient? gradient;
+  final Color? backgroundColor;
+  final Color? borderColor;
   final VoidCallback? onTap;
   final EdgeInsetsGeometry padding;
   final double borderRadius;
   final double? width;
   final double? height;
-  final bool hasOrganicWave;
+  final bool hasOrganicWave; // Kept as optional flag defaulting false for API compatibility
   final Color? waveColor;
 
   const PastelCard({
     super.key,
     required this.child,
-    required this.gradient,
+    this.gradient,
+    this.backgroundColor,
+    this.borderColor,
     this.onTap,
-    this.padding = const EdgeInsets.all(18.0),
+    this.padding = const EdgeInsets.all(16.0),
     this.borderRadius = AppRadii.card,
     this.width,
     this.height,
-    this.hasOrganicWave = true,
+    this.hasOrganicWave = false,
     this.waveColor,
   });
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final effectiveBorder = borderColor ??
+        (isDark ? AppColors.darkBorder : Colors.black.withOpacity(0.05));
+
     return Container(
       width: width,
       height: height,
       decoration: BoxDecoration(
-        gradient: gradient,
+        gradient: isDark && backgroundColor == null ? null : gradient,
+        color: backgroundColor ?? (isDark ? AppColors.darkSurface : null),
         borderRadius: BorderRadius.circular(borderRadius),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 14,
-            offset: const Offset(0, 5),
-          ),
-        ],
+        border: Border.all(color: effectiveBorder, width: 1.0),
       ),
-      child: ClipRRect(
+      child: Material(
+        color: Colors.transparent,
         borderRadius: BorderRadius.circular(borderRadius),
-        child: Stack(
-          children: [
-            // Subtle organic background shape (as seen in the reference cards)
-            if (hasOrganicWave)
-              Positioned(
-                top: -30,
-                right: -20,
-                child: Container(
-                  width: 140,
-                  height: 90,
-                  decoration: BoxDecoration(
-                    color: (waveColor ?? Colors.white).withOpacity(0.22),
-                    borderRadius: const BorderRadius.all(Radius.elliptical(120, 80)),
-                  ),
-                ),
-              ),
-            if (hasOrganicWave)
-              Positioned(
-                top: 15,
-                left: -20,
-                child: Container(
-                  width: 80,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: (waveColor ?? Colors.white).withOpacity(0.12),
-                    borderRadius: const BorderRadius.all(Radius.elliptical(80, 40)),
-                  ),
-                ),
-              ),
-
-            // Content
-            Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: onTap,
-                borderRadius: BorderRadius.circular(borderRadius),
-                splashColor: Colors.white.withOpacity(0.2),
-                highlightColor: Colors.white.withOpacity(0.1),
-                child: Padding(
-                  padding: padding,
-                  child: child,
-                ),
-              ),
-            ),
-          ],
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(borderRadius),
+          splashColor: (isDark ? AppColors.primaryDark : AppColors.primary).withOpacity(0.06),
+          child: Padding(
+            padding: padding,
+            child: child,
+          ),
         ),
       ),
     );

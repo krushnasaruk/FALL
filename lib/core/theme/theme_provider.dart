@@ -9,19 +9,19 @@ final themeModeProvider = StateNotifierProvider<ThemeModeNotifier, ThemeMode>((r
 class ThemeModeNotifier extends StateNotifier<ThemeMode> {
   static const _prefKey = 'app_theme_mode';
 
-  ThemeModeNotifier() : super(ThemeMode.dark) {
+  ThemeModeNotifier() : super(ThemeMode.light) {
     _loadPreference();
   }
 
   Future<void> _loadPreference() async {
     final prefs = await SharedPreferences.getInstance();
     final saved = prefs.getString(_prefKey);
-    if (saved == 'light') {
-      state = ThemeMode.light;
+    if (saved == 'dark') {
+      state = ThemeMode.dark;
     } else if (saved == 'system') {
       state = ThemeMode.system;
     } else {
-      state = ThemeMode.dark;
+      state = ThemeMode.light;
     }
   }
 

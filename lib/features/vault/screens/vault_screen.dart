@@ -1,31 +1,58 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_radii.dart';
+import '../../../core/theme/app_icons.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
-import '../../../core/utils/date_formatters.dart';
+import '../../../core/widgets/app_badges.dart';
 import '../../../core/widgets/app_button.dart';
+import '../../../core/widgets/app_card.dart';
+import '../../../core/widgets/app_interaction.dart';
+import '../../../core/widgets/app_overlays.dart';
+import '../../../core/widgets/app_scaffold.dart';
 import '../../../core/widgets/app_text_field.dart';
-import '../../../core/widgets/pastel_card.dart';
 import '../../../core/widgets/state_views.dart';
 import '../../../data/repositories/learning_repository.dart';
 import '../../../data/repositories/notes_repository.dart';
 import '../../../data/repositories/project_repository.dart';
+import '../../../services/feedback_service.dart';
 
+/// Knowledge Vault & Developer Journal Screen.
+/// Supports structured daily engineering logs (`category == 'journal'`) alongside
+/// general technical notes, code snippets, ideas, and project-linked documentation.
 class VaultScreen extends ConsumerStatefulWidget {
-  const VaultScreen({super.key});
+  final bool initialJournalMode;
+
+  const VaultScreen({
+    super.key,
+    this.initialJournalMode = false,
+  });
 
   @override
   ConsumerState<VaultScreen> createState() => _VaultScreenState();
 }
 
 class _VaultScreenState extends ConsumerState<VaultScreen> {
-  String _searchQuery = '';
-  String _selectedCategory = 'all';
   final _searchController = TextEditingController();
+  late String _selectedCategory;
+  String _searchQuery = '';
 
-  final _categories = ['all', 'quick', 'technical', 'idea', 'resource', 'general'];
+  static const _categories = <String, String>{
+    'all': 'All',
+    'journal': 'Dev Journal',
+    'technical': 'Technical',
+    'idea': 'Ideas',
+    'resource': 'Resources',
+    'quick': 'Quick Note',
+    'general': 'General',
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedCategory = widget.initialJournalMode ? 'journal' : 'all';
+  }
 
   @override
   void dispose() {
@@ -33,432 +60,177 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
     super.dispose();
   }
 
-  void _showNoteModal({NoteWithDetails? noteToEdit}) {
-    final titleController = TextEditingController(text: noteToEdit?.note.title ?? '');
-    final contentController = TextEditingController(text: noteToEdit?.note.content ?? '');
-    final tagsController = TextEditingController(text: noteToEdit?.note.tags ?? '');
-    String category = noteToEdit?.note.category ?? 'general';
-    String? projectId = noteToEdit?.note.projectId;
-    String? skillId = noteToEdit?.note.skillId;
-    bool isPinned = noteToEdit?.note.isPinned ?? false;
-
+  void _openNoteEditor({NoteWithDetails? existing, bool forceJournalTemplate = false}) {
+    final feedback = ref.read(feedbackServiceProvider);
+    feedback.buttonTap();
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setModalState) {
-          final isDark = Theme.of(ctx).brightness == Brightness.dark;
-          final projectsAsync = ref.watch(allProjectsStreamProvider);
-          final skillsAsync = ref.watch(allSkillsStreamProvider);
-
-          return Container(
-            decoration: BoxDecoration(
-              color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(AppRadii.xl)),
-              border: Border.all(
-                color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                width: 1.0,
-              ),
-            ),
-            padding: EdgeInsets.only(
-              top: 20.0,
-              left: 20.0,
-              right: 20.0,
-              bottom: MediaQuery.of(ctx).viewInsets.bottom + 24.0,
-            ),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        noteToEdit == null ? 'Create Vault Note' : 'Edit Note',
-                        style: AppTypography.titleLarge,
-                      ),
-                      Row(
-                        children: [
-                          IconButton(
-                            icon: Icon(
-                              isPinned ? Icons.push_pin : Icons.push_pin_outlined,
-                              color: isPinned ? AppColors.primary : null,
-                            ),
-                            onPressed: () => setModalState(() => isPinned = !isPinned),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.close),
-                            onPressed: () => Navigator.of(ctx).pop(),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-
-                  AppTextField(
-                    label: 'Note Title',
-                    hintText: 'e.g. Flutter 3.24 Performance Tips, Startup Pitch Idea',
-                    controller: titleController,
-                    autofocus: noteToEdit == null,
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-
-                  Row(
-                    children: [
-                      Expanded(
-                        child: DropdownButtonFormField<String>(
-                          value: category,
-                          decoration: const InputDecoration(labelText: 'Category'),
-                          items: const [
-                            DropdownMenuItem(value: 'quick', child: Text('Quick Note')),
-                            DropdownMenuItem(value: 'technical', child: Text('Technical')),
-                            DropdownMenuItem(value: 'idea', child: Text('Idea')),
-                            DropdownMenuItem(value: 'resource', child: Text('Resource Link')),
-                            DropdownMenuItem(value: 'general', child: Text('General')),
-                          ],
-                          onChanged: (val) => setModalState(() => category = val ?? 'general'),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-
-                  // Link to Project or Skill
-                  Row(
-                    children: [
-                      Expanded(
-                        child: projectsAsync.when(
-                          data: (projects) => DropdownButtonFormField<String?>(
-                            value: projectId,
-                            isExpanded: true,
-                            decoration: const InputDecoration(labelText: 'Link Project'),
-                            items: [
-                              const DropdownMenuItem(value: null, child: Text('No Project')),
-                              ...projects.map((p) => DropdownMenuItem(
-                                    value: p.project.id,
-                                    child: Text(p.project.name, overflow: TextOverflow.ellipsis),
-                                  )),
-                            ],
-                            onChanged: (val) => setModalState(() => projectId = val),
-                          ),
-                          loading: () => const SizedBox.shrink(),
-                          error: (_, __) => const SizedBox.shrink(),
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      Expanded(
-                        child: skillsAsync.when(
-                          data: (skills) => DropdownButtonFormField<String?>(
-                            value: skillId,
-                            isExpanded: true,
-                            decoration: const InputDecoration(labelText: 'Link Skill'),
-                            items: [
-                              const DropdownMenuItem(value: null, child: Text('No Skill')),
-                              ...skills.map((s) => DropdownMenuItem(
-                                    value: s.skill.id,
-                                    child: Text(s.skill.name, overflow: TextOverflow.ellipsis),
-                                  )),
-                            ],
-                            onChanged: (val) => setModalState(() => skillId = val),
-                          ),
-                          loading: () => const SizedBox.shrink(),
-                          error: (_, __) => const SizedBox.shrink(),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-
-                  AppTextField(
-                    label: 'Content',
-                    hintText: 'Markdown formatting, code snippets, reference URLs...',
-                    controller: contentController,
-                    maxLines: 6,
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-
-                  AppTextField(
-                    label: 'Tags',
-                    hintText: 'architecture, dart, algorithms (comma separated)',
-                    controller: tagsController,
-                  ),
-                  const SizedBox(height: AppSpacing.xl),
-
-                  AppButton(
-                    label: noteToEdit == null ? 'Save Note' : 'Update Note',
-                    size: AppButtonSize.large,
-                    isFullWidth: true,
-                    onPressed: () async {
-                      if (titleController.text.trim().isNotEmpty) {
-                        final repo = ref.read(notesRepositoryProvider);
-                        if (noteToEdit == null) {
-                          await repo.createNote(
-                            title: titleController.text.trim(),
-                            content: contentController.text.trim(),
-                            category: category,
-                            tags: tagsController.text.trim(),
-                            projectId: projectId,
-                            skillId: skillId,
-                            isPinned: isPinned,
-                          );
-                        } else {
-                          await repo.updateNote(
-                            id: noteToEdit.note.id,
-                            title: titleController.text.trim(),
-                            content: contentController.text.trim(),
-                            category: category,
-                            tags: tagsController.text.trim(),
-                            projectId: projectId,
-                            skillId: skillId,
-                            isPinned: isPinned,
-                          );
-                        }
-                        if (ctx.mounted) Navigator.of(ctx).pop();
-                      }
-                    },
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
+      builder: (_) => _NoteEditorSheet(
+        existing: existing,
+        initialCategory: existing?.note.category ??
+            (forceJournalTemplate || _selectedCategory == 'journal' ? 'journal' : 'technical'),
       ),
     );
+  }
+
+  Future<void> _confirmDelete(NoteWithDetails item) async {
+    final feedback = ref.read(feedbackServiceProvider);
+    feedback.destructiveAction();
+    final confirmed = await ConfirmationDialog.show(
+      context,
+      title: 'Delete Entry',
+      message: 'Remove "${item.note.title}" from your local vault? This cannot be undone.',
+      confirmLabel: 'Delete',
+      isDestructive: true,
+    );
+    if (confirmed) {
+      await ref.read(notesRepositoryProvider).deleteNote(item.note.id);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final feedback = ref.read(feedbackServiceProvider);
     final notesAsync = ref.watch(allNotesStreamProvider);
-    final repo = ref.watch(notesRepositoryProvider);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Knowledge Vault'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add_rounded, color: AppColors.primary),
-            onPressed: () => _showNoteModal(),
-          ),
-        ],
-      ),
+    final isJournalView = _selectedCategory == 'journal';
+
+    return AppScaffold(
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showNoteModal(),
-        backgroundColor: AppColors.primary,
-        foregroundColor: const Color(0xFF0F172A),
-        icon: const Icon(Icons.note_add_rounded),
-        label: const Text('New Note', style: TextStyle(fontWeight: FontWeight.w700)),
+        backgroundColor: isDark ? AppColors.primaryDark : AppColors.primary,
+        foregroundColor: Colors.white,
+        elevation: 2,
+        onPressed: () => _openNoteEditor(forceJournalTemplate: isJournalView),
+        icon: Icon(isJournalView ? AppIcons.journal : AppIcons.add),
+        label: Text(isJournalView ? 'New Journal Entry' : 'New Note'),
       ),
       body: Column(
         children: [
-          // Search Bar
+          PageTitle(
+            title: isJournalView ? 'Developer Journal' : 'Knowledge Vault',
+            subtitle: isJournalView
+                ? 'Daily dev progress, bugs solved & next steps'
+                : 'Technical notes, architecture decisions & references',
+            showBackButton: Navigator.of(context).canPop(),
+          ),
+
+          // Search Box
           Padding(
-            padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 4.0),
-            child: TextField(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageHorizontal),
+            child: SearchField(
               controller: _searchController,
-              style: AppTypography.bodySmall,
-              decoration: InputDecoration(
-                hintText: 'Search vault by title, tags, or content...',
-                prefixIcon: const Icon(Icons.search_rounded, size: 20),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                suffixIcon: _searchQuery.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear, size: 16),
-                        onPressed: () {
-                          setState(() {
-                            _searchController.clear();
-                            _searchQuery = '';
-                          });
-                        },
-                      )
-                    : null,
-              ),
-              onChanged: (val) => setState(() => _searchQuery = val.trim().toLowerCase()),
+              hintText: 'Search titles, notes, tags...',
+              onChanged: (v) => setState(() => _searchQuery = v.trim().toLowerCase()),
+              onClear: () {
+                _searchController.clear();
+                setState(() => _searchQuery = '');
+              },
             ),
           ),
 
-          // Categories Filter
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Row(
-              children: _categories.map((c) {
-                final isSelected = _selectedCategory == c;
+          const SizedBox(height: AppSpacing.md),
+
+          // Category Chips
+          SizedBox(
+            height: 44.0,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageHorizontal),
+              children: _categories.entries.map((entry) {
                 return Padding(
-                  padding: const EdgeInsets.only(right: 8.0),
-                  child: ChoiceChip(
-                    label: Text(c.toUpperCase()),
-                    selected: isSelected,
-                    onSelected: (_) => setState(() => _selectedCategory = c),
-                    labelStyle: AppTypography.caption.copyWith(
-                      color: isSelected
-                          ? const Color(0xFF0F172A)
-                          : (isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
-                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                      fontSize: 10.0,
-                    ),
-                    selectedColor: AppColors.primary,
-                    backgroundColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: AppRadii.roundedMd,
-                      side: BorderSide(
-                        color: isSelected
-                            ? AppColors.primary
-                            : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
-                      ),
-                    ),
-                    showCheckmark: false,
+                  padding: const EdgeInsets.only(right: AppSpacing.sm),
+                  child: AppFilterChip(
+                    label: entry.value,
+                    selected: _selectedCategory == entry.key,
+                    onSelected: () {
+                      feedback.selectionClick();
+                      setState(() => _selectedCategory = entry.key);
+                    },
                   ),
                 );
               }).toList(),
             ),
           ),
 
-          // Notes List
+          const SizedBox(height: AppSpacing.md),
+
           Expanded(
             child: notesAsync.when(
+              loading: () => const TasksSkeleton(),
+              error: (err, _) => ErrorStateView(
+                message: 'Failed to load vault: $err',
+                onRetry: () => ref.invalidate(allNotesStreamProvider),
+              ),
               data: (notes) {
-                var visible = notes;
-                if (_selectedCategory != 'all') {
-                  visible = visible.where((n) => n.note.category == _selectedCategory).toList();
-                }
-                if (_searchQuery.isNotEmpty) {
-                  visible = visible.where((n) {
-                    final title = n.note.title.toLowerCase();
-                    final content = n.note.content.toLowerCase();
-                    final tags = n.note.tags.toLowerCase();
-                    return title.contains(_searchQuery) ||
-                        content.contains(_searchQuery) ||
-                        tags.contains(_searchQuery);
-                  }).toList();
-                }
+                final filtered = notes.where((n) {
+                  final matchCat = _selectedCategory == 'all' || n.note.category == _selectedCategory;
+                  if (!matchCat) return false;
+                  if (_searchQuery.isEmpty) return true;
+                  return n.note.title.toLowerCase().contains(_searchQuery) ||
+                      n.note.content.toLowerCase().contains(_searchQuery) ||
+                      n.note.tags.toLowerCase().contains(_searchQuery);
+                }).toList();
 
-                if (visible.isEmpty) {
+                if (filtered.isEmpty) {
+                  if (_searchQuery.isNotEmpty) {
+                    return EmptyStateView(
+                      icon: AppIcons.search,
+                      illustrationAsset: 'assets/images/empty/empty_search.png',
+                      title: 'No matching notes.',
+                      description: 'Try adjusting your search query.',
+                      actionLabel: 'Clear search',
+                      onAction: () {
+                        _searchController.clear();
+                        setState(() => _searchQuery = '');
+                      },
+                    );
+                  }
                   return EmptyStateView(
-                    icon: Icons.lightbulb_outline_rounded,
-                    title: 'Vault is empty',
-                    description: 'Store snippets, technical architecture insights, or future startup ideas.',
-                    actionLabel: 'Create Note',
-                    onAction: () => _showNoteModal(),
+                    icon: isJournalView ? AppIcons.journal : AppIcons.notes,
+                    illustrationAsset: isJournalView
+                        ? 'assets/images/empty/empty_journal.png'
+                        : 'assets/images/empty/empty_notes.png',
+                    title: isJournalView
+                        ? 'Every project has a story.'
+                        : 'Keep your useful thoughts in one place.',
+                    description: isJournalView
+                        ? 'Document what you built today, issues solved, and next engineering steps.'
+                        : 'Capture architecture specs, snippets, or ideas in one searchable vault.',
+                    actionLabel: isJournalView ? 'Write your first entry' : 'Create a note',
+                    onAction: () => _openNoteEditor(forceJournalTemplate: isJournalView),
                   );
                 }
 
                 return ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 80.0),
-                  itemCount: visible.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 10),
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.pageHorizontal,
+                    AppSpacing.xs,
+                    AppSpacing.pageHorizontal,
+                    96.0,
+                  ),
+                  itemCount: filtered.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.md),
                   itemBuilder: (context, index) {
-                    final item = visible[index];
-                    final note = item.note;
-                    final tags = note.tags.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
-
-                    return PastelCard(
-                      gradient: AppColors.notePastelGradient,
-                      borderRadius: AppRadii.card,
-                      onTap: () => _showNoteModal(noteToEdit: item),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                children: [
-                                  if (note.isPinned) ...[
-                                    const Icon(Icons.push_pin, size: 14, color: AppColors.primary),
-                                    const SizedBox(width: 4),
-                                  ],
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 2.0),
-                                    decoration: BoxDecoration(
-                                      color: isDark ? AppColors.darkSurfaceElevated : AppColors.lightSurfaceElevated,
-                                      borderRadius: AppRadii.roundedXs,
-                                    ),
-                                    child: Text(
-                                      note.category.toUpperCase(),
-                                      style: AppTypography.caption.copyWith(
-                                        fontSize: 9.5,
-                                        fontWeight: FontWeight.w700,
-                                        color: AppColors.primary,
-                                      ),
-                                    ),
-                                  ),
-                                  if (item.project != null) ...[
-                                    const SizedBox(width: 6),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 2.0),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.infoSoft,
-                                        borderRadius: AppRadii.roundedXs,
-                                      ),
-                                      child: Text(
-                                        item.project!.name,
-                                        style: AppTypography.caption.copyWith(
-                                          fontSize: 9.5,
-                                          color: AppColors.info,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                              Row(
-                                children: [
-                                  IconButton(
-                                    icon: const Icon(Icons.delete_outline_rounded, size: 18),
-                                    onPressed: () => repo.deleteNote(note.id),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 6.0),
-                          Text(note.title, style: AppTypography.titleMedium),
-                          const SizedBox(height: 4.0),
-                          Text(
-                            note.content,
-                            style: AppTypography.bodySmall.copyWith(
-                              color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
-                            ),
-                            maxLines: 3,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          if (tags.isNotEmpty) ...[
-                            const SizedBox(height: 8.0),
-                            Wrap(
-                              spacing: 4.0,
-                              children: tags.map((t) => Text(
-                                '#$t',
-                                style: AppTypography.caption.copyWith(
-                                  color: AppColors.darkTextMuted,
-                                  fontSize: 10.5,
-                                ),
-                              )).toList(),
-                            ),
-                          ],
-                          const SizedBox(height: 6.0),
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: Text(
-                              DateFormatters.monthDay(note.updatedAt),
-                              style: AppTypography.caption.copyWith(
-                                color: AppColors.darkTextMuted,
-                                fontSize: 10.0,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                    final item = filtered[index];
+                    return _NoteCard(
+                      item: item,
+                      isDark: isDark,
+                      onTap: () => _openNoteEditor(existing: item),
+                      onTogglePin: () {
+                        feedback.selectionClick();
+                        ref.read(notesRepositoryProvider).togglePin(
+                              item.note.id,
+                              !item.note.isPinned,
+                            );
+                      },
+                      onDelete: () => _confirmDelete(item),
                     );
                   },
                 );
               },
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, _) => ErrorStateView(message: err.toString()),
             ),
           ),
         ],
@@ -467,3 +239,397 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
   }
 }
 
+class _NoteCard extends StatelessWidget {
+  final NoteWithDetails item;
+  final bool isDark;
+  final VoidCallback onTap;
+  final VoidCallback onTogglePin;
+  final VoidCallback onDelete;
+
+  const _NoteCard({
+    required this.item,
+    required this.isDark,
+    required this.onTap,
+    required this.onTogglePin,
+    required this.onDelete,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final note = item.note;
+    final isJournal = note.category == 'journal';
+    final accentColor = isJournal
+        ? (isDark ? AppColors.primaryDark : AppColors.primary)
+        : (isDark ? AppColors.darkTextSecondary : AppColors.textSecondary);
+
+    final tags = note.tags
+        .split(',')
+        .map((t) => t.trim())
+        .where((t) => t.isNotEmpty)
+        .take(3)
+        .toList();
+
+    return AppCard(
+      onTap: onTap,
+      backgroundColor: note.isPinned
+          ? (isDark ? AppColors.darkNoteSurface : AppColors.noteSurface)
+          : null,
+      borderColor: note.isPinned
+          ? (isDark ? AppColors.primaryDark.withOpacity(0.4) : AppColors.noteBorder)
+          : null,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              AppBadge(
+                label: note.category == 'journal'
+                    ? 'Dev Journal'
+                    : note.category.toUpperCase(),
+                color: accentColor,
+                icon: isJournal ? AppIcons.journal : null,
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Text(
+                  DateFormat('MMM d, y • h:mm a').format(note.updatedAt),
+                  style: AppTypography.metadata.copyWith(
+                    color: isDark ? AppColors.darkTextTertiary : AppColors.textTertiary,
+                  ),
+                ),
+              ),
+              IconButton(
+                icon: Icon(
+                  note.isPinned ? Icons.push_pin_rounded : Icons.push_pin_outlined,
+                  size: 18.0,
+                  color: note.isPinned
+                      ? (isDark ? AppColors.primaryDark : AppColors.primary)
+                      : (isDark ? AppColors.darkTextTertiary : AppColors.textTertiary),
+                ),
+                tooltip: note.isPinned ? 'Unpin' : 'Pin',
+                visualDensity: VisualDensity.compact,
+                onPressed: onTogglePin,
+              ),
+              IconButton(
+                icon: Icon(
+                  AppIcons.delete,
+                  size: 18.0,
+                  color: isDark ? AppColors.darkTextTertiary : AppColors.textTertiary,
+                ),
+                tooltip: 'Delete',
+                visualDensity: VisualDensity.compact,
+                onPressed: onDelete,
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            note.title,
+            style: AppTypography.cardTitle.copyWith(
+              color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          if (note.content.isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              note.content,
+              style: AppTypography.secondary.copyWith(
+                color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+                height: 1.45,
+              ),
+              maxLines: 4,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+          if (item.project != null || item.skill != null || tags.isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.sm),
+            Wrap(
+              spacing: 6.0,
+              runSpacing: 6.0,
+              children: [
+                if (item.project != null)
+                  AppBadge(
+                    label: item.project!.name,
+                    icon: AppIcons.projects,
+                    color: AppColors.projectAccent,
+                  ),
+                if (item.skill != null)
+                  AppBadge(
+                    label: item.skill!.name,
+                    icon: AppIcons.learning,
+                    color: AppColors.learningAccent,
+                  ),
+                for (final tag in tags)
+                  AppBadge(
+                    label: '#$tag',
+                    isOutlined: true,
+                    color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+                  ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _NoteEditorSheet extends ConsumerStatefulWidget {
+  final NoteWithDetails? existing;
+  final String initialCategory;
+
+  const _NoteEditorSheet({
+    this.existing,
+    required this.initialCategory,
+  });
+
+  @override
+  ConsumerState<_NoteEditorSheet> createState() => _NoteEditorSheetState();
+}
+
+class _NoteEditorSheetState extends ConsumerState<_NoteEditorSheet> {
+  late final TextEditingController _titleController;
+  late final TextEditingController _contentController;
+  late final TextEditingController _tagsController;
+  late String _category;
+  String? _projectId;
+  String? _skillId;
+  bool _isPinned = false;
+  bool _isSaving = false;
+
+  late String _initialTitle;
+  late String _initialContent;
+
+  @override
+  void initState() {
+    super.initState();
+    final e = widget.existing;
+    _category = e?.note.category ?? widget.initialCategory;
+    _projectId = e?.note.projectId;
+    _skillId = e?.note.skillId;
+    _isPinned = e?.note.isPinned ?? false;
+
+    final defaultJournalTitle = e != null
+        ? e.note.title
+        : (_category == 'journal'
+            ? 'Dev Log — ${DateFormat('MMM d, y').format(DateTime.now())}'
+            : '');
+    final defaultJournalBody = e != null
+        ? e.note.content
+        : (_category == 'journal'
+            ? '## Development Notes\n- \n\n## Problems & Solutions\n- \n\n## Next Steps\n- '
+            : '');
+
+    _initialTitle = defaultJournalTitle;
+    _initialContent = defaultJournalBody;
+    _titleController = TextEditingController(text: defaultJournalTitle);
+    _contentController = TextEditingController(text: defaultJournalBody);
+    _tagsController = TextEditingController(text: e?.note.tags ?? '');
+  }
+
+  bool _hasUnsavedChanges() {
+    return _titleController.text != _initialTitle ||
+        _contentController.text != _initialContent ||
+        _tagsController.text.trim() != (widget.existing?.note.tags ?? '');
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _contentController.dispose();
+    _tagsController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    final title = _titleController.text.trim();
+    if (title.isEmpty) {
+      ref.read(feedbackServiceProvider).validationError();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a title before saving.')),
+      );
+      return;
+    }
+
+    setState(() => _isSaving = true);
+    try {
+      final repo = ref.read(notesRepositoryProvider);
+      if (widget.existing == null) {
+        await repo.createNote(
+          title: title,
+          content: _contentController.text.trim(),
+          category: _category,
+          tags: _tagsController.text.trim(),
+          projectId: _projectId,
+          skillId: _skillId,
+          isPinned: _isPinned,
+        );
+      } else {
+        await repo.updateNote(
+          id: widget.existing!.note.id,
+          title: title,
+          content: _contentController.text.trim(),
+          category: _category,
+          tags: _tagsController.text.trim(),
+          projectId: _projectId,
+          skillId: _skillId,
+          isPinned: _isPinned,
+        );
+      }
+      ref.read(feedbackServiceProvider).buttonTap();
+      if (mounted) Navigator.of(context).pop();
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final projects = ref.watch(allProjectsStreamProvider).value ?? [];
+    final skills = ref.watch(allSkillsStreamProvider).value ?? [];
+
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop) return;
+        if (_isSaving || !_hasUnsavedChanges()) {
+          if (mounted) Navigator.of(context).pop();
+          return;
+        }
+        final choice = await confirmDiscardChanges(context, allowSaveOption: true);
+        if (!context.mounted) return;
+        if (choice == UnsavedChoice.discard) {
+          Navigator.of(context).pop();
+        } else if (choice == UnsavedChoice.save) {
+          await _save();
+        }
+      },
+      child: AppBottomSheet(
+      title: widget.existing == null
+          ? (_category == 'journal' ? 'New Journal Entry' : 'New Note')
+          : 'Edit Entry',
+      headerActions: [
+        IconButton(
+          icon: Icon(
+            _isPinned ? Icons.push_pin_rounded : Icons.push_pin_outlined,
+            color: _isPinned ? AppColors.primary : null,
+          ),
+          tooltip: 'Pin Entry',
+          onPressed: () => setState(() => _isPinned = !_isPinned),
+        ),
+      ],
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AppTextField(
+              label: 'Title',
+              hintText: _category == 'journal' ? 'Dev Log — Today' : 'Note title',
+              controller: _titleController,
+            ),
+            const SizedBox(height: AppSpacing.md),
+
+            Text(
+              'Category',
+              style: AppTypography.metadata.copyWith(
+                color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            Wrap(
+              spacing: 8.0,
+              runSpacing: 8.0,
+              children: const [
+                ('journal', 'Dev Journal'),
+                ('technical', 'Technical'),
+                ('idea', 'Idea'),
+                ('resource', 'Resource'),
+                ('quick', 'Quick'),
+                ('general', 'General'),
+              ].map((cat) {
+                return AppFilterChip(
+                  label: cat.$2,
+                  selected: _category == cat.$1,
+                  onSelected: () => setState(() => _category = cat.$1),
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: AppSpacing.md),
+
+            AppTextField(
+              label: 'Content',
+              hintText: 'Write clean markdown, code snippets, or dev notes...',
+              controller: _contentController,
+              maxLines: 8,
+            ),
+            const SizedBox(height: AppSpacing.md),
+
+            AppTextField(
+              label: 'Tags (comma-separated)',
+              hintText: 'flutter, drift, architecture',
+              controller: _tagsController,
+            ),
+
+            if (projects.isNotEmpty || skills.isNotEmpty) ...[
+              const SizedBox(height: AppSpacing.md),
+              Row(
+                children: [
+                  if (projects.isNotEmpty)
+                    Expanded(
+                      child: DropdownButtonFormField<String?>(
+                        value: _projectId,
+                        isExpanded: true,
+                        decoration: const InputDecoration(labelText: 'Link Project'),
+                        items: [
+                          const DropdownMenuItem(value: null, child: Text('None')),
+                          ...projects.map(
+                            (p) => DropdownMenuItem(
+                              value: p.project.id,
+                              child: Text(p.project.name, overflow: TextOverflow.ellipsis),
+                            ),
+                          ),
+                        ],
+                        onChanged: (v) => setState(() => _projectId = v),
+                      ),
+                    ),
+                  if (projects.isNotEmpty && skills.isNotEmpty)
+                    const SizedBox(width: AppSpacing.md),
+                  if (skills.isNotEmpty)
+                    Expanded(
+                      child: DropdownButtonFormField<String?>(
+                        value: _skillId,
+                        isExpanded: true,
+                        decoration: const InputDecoration(labelText: 'Link Skill'),
+                        items: [
+                          const DropdownMenuItem(value: null, child: Text('None')),
+                          ...skills.map(
+                            (s) => DropdownMenuItem(
+                              value: s.skill.id,
+                              child: Text(s.skill.name, overflow: TextOverflow.ellipsis),
+                            ),
+                          ),
+                        ],
+                        onChanged: (v) => setState(() => _skillId = v),
+                      ),
+                    ),
+                ],
+              ),
+            ],
+
+            const SizedBox(height: AppSpacing.xl),
+            AppButton(
+              label: widget.existing == null ? 'Save Entry' : 'Update Entry',
+              isFullWidth: true,
+              isLoading: _isSaving,
+              onPressed: _save,
+            ),
+          ],
+        ),
+      ),
+    ),
+    );
+  }
+}

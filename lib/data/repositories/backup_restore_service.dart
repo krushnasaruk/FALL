@@ -27,9 +27,11 @@ class BackupRestoreService {
     final focusSessions = await _db.select(_db.focusSessions).get();
     final notes = await _db.select(_db.notes).get();
     final activities = await _db.select(_db.activityHistory).get();
+    final xpEvents = await _db.select(_db.xpEvents).get();
+    final unlockedAchievements = await _db.select(_db.unlockedAchievements).get();
 
     final data = {
-      'version': 1,
+      'version': 2,
       'exported_at': DateTime.now().toIso8601String(),
       'tasks': tasks.map((t) => t.toJson()).toList(),
       'subtasks': subtasks.map((s) => s.toJson()).toList(),
@@ -45,6 +47,8 @@ class BackupRestoreService {
       'focus_sessions': focusSessions.map((f) => f.toJson()).toList(),
       'notes': notes.map((n) => n.toJson()).toList(),
       'activity_history': activities.map((a) => a.toJson()).toList(),
+      'xp_events': xpEvents.map((x) => x.toJson()).toList(),
+      'unlocked_achievements': unlockedAchievements.map((u) => u.toJson()).toList(),
     };
 
     return jsonEncode(data);
@@ -176,6 +180,22 @@ class BackupRestoreService {
           for (final item in (data['activity_history'] as List)) {
             final entry = ActivityHistoryEntry.fromJson(item as Map<String, dynamic>);
             await _db.into(_db.activityHistory).insertOnConflictUpdate(entry);
+          }
+        }
+
+        // XP Events
+        if (data['xp_events'] != null) {
+          for (final item in (data['xp_events'] as List)) {
+            final entry = XpEventEntry.fromJson(item as Map<String, dynamic>);
+            await _db.into(_db.xpEvents).insertOnConflictUpdate(entry);
+          }
+        }
+
+        // Unlocked Achievements
+        if (data['unlocked_achievements'] != null) {
+          for (final item in (data['unlocked_achievements'] as List)) {
+            final entry = UnlockedAchievementEntry.fromJson(item as Map<String, dynamic>);
+            await _db.into(_db.unlockedAchievements).insertOnConflictUpdate(entry);
           }
         }
       });

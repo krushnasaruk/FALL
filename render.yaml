@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: progressos-radar-backend
+    runtime: docker
+    dockerfilePath: ./backend/radar_server/Dockerfile
+    dockerContext: .
+    envVars:
+      - key: RADAR_AUTO_COLLECT
+        value: "true"
+      - key: GEMINI_MODEL
+        value: gemini-3-flash-preview
+      - key: GEMINI_DAILY_BUDGET
+        value: "120"
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GITHUB_TOKEN
+        sync: false
+      - key: YOUTUBE_API_KEY
+        sync: false

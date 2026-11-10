@@ -286,6 +286,27 @@ class TaskRepository {
       ),
     );
   }
+
+  Future<TaskEntry?> duplicateTask(String taskId) async {
+    final taskData = await getTaskById(taskId);
+    if (taskData == null) return null;
+
+    final cloned = await createTask(
+      title: '${taskData.task.title} (Copy)',
+      description: taskData.task.description,
+      priority: taskData.task.priority,
+      dueDate: taskData.task.dueDate,
+      hasDueTime: taskData.task.hasDueTime,
+      reminderAt: taskData.task.reminderAt,
+      projectId: taskData.task.projectId,
+      skillId: taskData.task.skillId,
+      estimatedMinutes: taskData.task.estimatedMinutes,
+      recurrence: taskData.task.recurrence,
+      tags: taskData.task.tags,
+      subtaskTitles: taskData.subtasks.map((s) => s.title).toList(),
+    );
+    return cloned;
+  }
 }
 
 final taskRepositoryProvider = Provider<TaskRepository>((ref) {

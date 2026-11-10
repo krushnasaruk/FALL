@@ -1,0 +1,2191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="1:1 Working Web UI Replica and Mobile UI Studio for FALL v3.0 (Clean Zero Start + Traditional Bottom Nav)">
+  <title>FALL — Interactive Web UI Replica (Traditional Bottom Nav)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'system-ui', '-apple-system', 'sans-serif'],
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+    * {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .tabular-nums {
+      font-variant-numeric: tabular-nums;
+    }
+
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* Master FALL Design Tokens synced directly to lib/core/theme/app_colors.dart */
+    :root {
+      --app-bg: #F8F9FC;
+      --app-surface: #FFFFFF;
+      --app-surface-elevated: #F1F3F9;
+      --app-border: #EAECF1;
+      --app-divider: #EAECF1;
+      --app-text-primary: #171923;
+      --app-text-secondary: #727786;
+      --app-text-tertiary: #A0A5B0;
+      --app-primary: #7167E8;
+      --app-primary-soft: #EEECFC;
+      --app-card-radius: 18px;
+    }
+
+    .dark #phoneScreen {
+      --app-bg: #0D1117;
+      --app-surface: #161B22;
+      --app-surface-elevated: #21262D;
+      --app-border: #30363D;
+      --app-divider: #21262D;
+      --app-text-primary: #F0F6FC;
+      --app-text-secondary: #94A3B8;
+      --app-text-tertiary: #6E7681;
+      --app-primary: #8B83F6;
+      --app-primary-soft: rgba(139, 131, 246, 0.16);
+    }
+
+    #phoneScreen {
+      background-color: var(--app-bg);
+      color: var(--app-text-primary);
+    }
+
+    .phone-card {
+      background-color: var(--app-surface);
+      border: 1px solid var(--app-border);
+      border-radius: var(--app-card-radius);
+    }
+
+    .phone-chassis-shadow {
+      box-shadow: 0 24px 60px -15px rgba(15, 23, 42, 0.25),
+                  0 0 0 10px #1e2433,
+                  0 0 0 12px #334155;
+    }
+  </style>
+</head>
+<body class="bg-[#F1F3F9] text-[#171923] antialiased min-h-screen flex flex-col">
+
+  <!-- STUDIO TOP HEADER -->
+  <header class="bg-white border-b border-[#EAECF1] px-5 py-3 flex flex-wrap items-center justify-between gap-3 sticky top-0 z-50">
+    <div class="flex items-center space-x-3">
+      <div class="w-9 h-9 rounded-xl bg-[#FDF5E2] border border-[#F3E5C8] overflow-hidden flex items-center justify-center shrink-0">
+        <img src="assets/images/fall_logo_light.png" alt="FALL" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='../assets/images/fall_logo_light.png';">
+      </div>
+      <div>
+        <div class="flex items-center space-x-2">
+          <h1 class="font-extrabold text-base tracking-tight text-[#171923]">FALL</h1>
+          <span class="bg-[#EEECFC] text-[#7167E8] text-[11px] font-semibold px-2.5 py-0.5 rounded-full">v3.0 Web Mirror</span>
+        </div>
+        <p class="text-xs text-[#727786]">Traditional Docked Bottom Bar • Clean Zero Start • All 14 Flutter Screens</p>
+      </div>
+    </div>
+
+    <div class="flex items-center flex-wrap gap-2">
+      <!-- Theme Toggle Pill -->
+      <div class="flex items-center bg-[#F1F3F9] p-1 rounded-full border border-[#EAECF1]">
+        <button onclick="setTheme('light')" id="studioBtnLight" class="px-3 py-1 rounded-full text-xs font-semibold transition bg-white text-[#171923] shadow-sm">Light</button>
+        <button onclick="setTheme('dark')" id="studioBtnDark" class="px-3 py-1 rounded-full text-xs font-semibold transition text-[#727786]">Dark</button>
+      </div>
+
+      <!-- Width Presets -->
+      <div class="hidden sm:flex items-center bg-[#F1F3F9] p-1 rounded-full border border-[#EAECF1] text-xs">
+        <button onclick="setDeviceWidth(320)" id="wBtn320" class="w-btn px-2.5 py-1 rounded-full font-medium text-[#727786]">320px</button>
+        <button onclick="setDeviceWidth(360)" id="wBtn360" class="w-btn px-2.5 py-1 rounded-full font-medium text-[#727786]">360px</button>
+        <button onclick="setDeviceWidth(390)" id="wBtn390" class="w-btn px-2.5 py-1 rounded-full font-semibold bg-white text-[#171923] shadow-sm">390px</button>
+        <button onclick="setDeviceWidth(420)" id="wBtn420" class="w-btn px-2.5 py-1 rounded-full font-medium text-[#727786]">420px</button>
+      </div>
+
+      <button onclick="loadEmptyDbState()" class="px-3 py-1.5 rounded-full border border-[#E47C86]/40 bg-[#FDF2F3] hover:bg-[#FCE6E8] text-xs font-semibold text-[#C64552] transition">Reset All to 0</button>
+      <button onclick="resetDemoData()" class="px-3 py-1.5 rounded-full border border-[#EAECF1] bg-white hover:bg-[#F8F9FC] text-xs font-semibold text-[#171923] transition">Load Demo Data</button>
+      <button onclick="copyFlutterSpecs()" class="px-4 py-1.5 rounded-full bg-[#7167E8] hover:opacity-90 text-white text-xs font-semibold transition">Copy Flutter Tokens</button>
+    </div>
+  </header>
+
+  <!-- MAIN WORKSPACE -->
+  <main class="flex-1 max-w-[1440px] w-full mx-auto p-4 md:p-6 flex flex-col lg:flex-row items-center lg:items-start justify-center gap-8">
+
+    <!-- LEFT: MOBILE PHONE SIMULATOR -->
+    <div class="flex flex-col items-center shrink-0">
+      <div id="phoneChassis" style="width: 390px;" class="h-[820px] rounded-[44px] bg-[#161B22] p-2.5 phone-chassis-shadow flex flex-col relative select-none transition-all duration-300">
+
+        <!-- Phone Inner Screen Glass -->
+        <div id="phoneScreen" class="relative w-full h-full rounded-[34px] overflow-hidden flex flex-col transition-colors duration-200">
+
+          <!-- System Status Bar -->
+          <div class="pt-2.5 px-5 pb-1.5 flex items-center justify-between text-[11px] font-semibold z-30 shrink-0">
+            <span id="statusBarClock" class="tabular-nums">9:41</span>
+            <div class="w-20 h-4 bg-black rounded-full flex items-center justify-center space-x-1.5 px-2">
+              <div class="w-1.5 h-1.5 rounded-full bg-[#62B989]"></div>
+              <span class="text-[8.5px] text-white tracking-wider font-bold">FALL</span>
+            </div>
+            <div class="flex items-center space-x-1">
+              <span class="text-[10px]">5G</span>
+              <div class="w-4 h-2.5 border border-current rounded-sm p-[1px] flex items-center">
+                <div class="w-4/5 h-full bg-current rounded-[1px]"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ACTIVE MOBILE SCREEN SCROLL AREA -->
+          <div id="mobileViewport" class="flex-1 overflow-y-auto no-scrollbar relative">
+            <!-- Dynamically rendered -->
+          </div>
+
+          <!-- ROUNDED SQUARE FAB (Matches Flutter FloatingActionButtonThemeData) -->
+          <button id="phoneFab" onclick="handleFabTap()" class="absolute right-4 bottom-[82px] w-[52px] h-[52px] rounded-[16px] text-white flex items-center justify-center shadow-md hover:opacity-95 active:scale-95 transition z-40" style="background-color: var(--app-primary);" title="Quick Add">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14m-7-7h14"></path></svg>
+          </button>
+
+          <!-- TRADITIONAL DOCKED 5-TAB BOTTOM NAVIGATION BAR (Exact match to scaffold_with_nav_bar.dart) -->
+          <nav id="bottomNavDock" class="shrink-0 w-full h-[68px] border-t px-1 flex items-center justify-around z-40 transition-colors" style="background-color: var(--app-surface); border-color: var(--app-divider);">
+            <button onclick="navigateTo('dashboard')" data-tab="dashboard" class="nav-tab-btn flex-1 h-full flex flex-col items-center justify-center gap-0.5 transition">
+              <span class="nav-pill px-3.5 py-1 rounded-full flex items-center justify-center transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10.5L12 3l9 7.5V20a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1v-9.5z"/></svg>
+              </span>
+              <span class="nav-label text-[11px] font-medium leading-none">Home</span>
+            </button>
+            <button onclick="navigateTo('tasks')" data-tab="tasks" class="nav-tab-btn flex-1 h-full flex flex-col items-center justify-center gap-0.5 transition">
+              <span class="nav-pill px-3.5 py-1 rounded-full flex items-center justify-center transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              </span>
+              <span class="nav-label text-[11px] font-medium leading-none">Tasks</span>
+            </button>
+            <button onclick="navigateTo('projects')" data-tab="projects" class="nav-tab-btn flex-1 h-full flex flex-col items-center justify-center gap-0.5 transition">
+              <span class="nav-pill px-3.5 py-1 rounded-full flex items-center justify-center transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg>
+              </span>
+              <span class="nav-label text-[11px] font-medium leading-none">Projects</span>
+            </button>
+            <button onclick="navigateTo('learning')" data-tab="learning" class="nav-tab-btn flex-1 h-full flex flex-col items-center justify-center gap-0.5 transition">
+              <span class="nav-pill px-3.5 py-1 rounded-full flex items-center justify-center transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0v6m-5-3.5V19a7 7 0 0010 0v-2.5"/></svg>
+              </span>
+              <span class="nav-label text-[11px] font-medium leading-none">Learning</span>
+            </button>
+            <button onclick="navigateTo('more')" data-tab="more" class="nav-tab-btn flex-1 h-full flex flex-col items-center justify-center gap-0.5 transition">
+              <span class="nav-pill px-3.5 py-1 rounded-full flex items-center justify-center transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"/></svg>
+              </span>
+              <span class="nav-label text-[11px] font-medium leading-none">More</span>
+            </button>
+          </nav>
+
+          <!-- Floating AppToast -->
+          <div id="phoneToast" class="hidden absolute bottom-20 left-5 right-5 bg-[#171923] dark:bg-white text-white dark:text-[#171923] text-xs font-semibold px-4 py-2.5 rounded-[14px] shadow-lg z-50 text-center transition"></div>
+
+          <!-- IN-PHONE BOTTOM SHEET / MODAL OVERLAY -->
+          <div id="phoneSheetOverlay" class="hidden absolute inset-0 bg-black/45 z-50 flex flex-col justify-end" onclick="if(event.target===this) closePhoneSheet()">
+            <div id="phoneSheetBody" class="bg-white dark:bg-[#161B22] rounded-t-[20px] border-t border-[#EAECF1] dark:border-[#30363D] p-5 max-h-[86%] overflow-y-auto no-scrollbar text-[#171923] dark:text-[#F0F6FC] space-y-4">
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Direct Route Jump Pills under Phone Simulator -->
+      <div class="mt-4 flex flex-wrap justify-center gap-1.5 max-w-md">
+        <button onclick="navigateTo('dashboard')" class="px-2.5 py-1 bg-white border border-[#EAECF1] rounded-full text-xs font-semibold text-[#171923] hover:bg-slate-50">Home</button>
+        <button onclick="navigateTo('tasks')" class="px-2.5 py-1 bg-white border border-[#EAECF1] rounded-full text-xs font-semibold text-[#171923] hover:bg-slate-50">Tasks</button>
+        <button onclick="navigateTo('projects')" class="px-2.5 py-1 bg-white border border-[#EAECF1] rounded-full text-xs font-semibold text-[#171923] hover:bg-slate-50">Projects</button>
+        <button onclick="navigateTo('learning')" class="px-2.5 py-1 bg-white border border-[#EAECF1] rounded-full text-xs font-semibold text-[#171923] hover:bg-slate-50">Learning</button>
+        <button onclick="navigateTo('more')" class="px-2.5 py-1 bg-white border border-[#EAECF1] rounded-full text-xs font-semibold text-[#171923] hover:bg-slate-50">More</button>
+        <button onclick="navigateTo('goals')" class="px-2.5 py-1 bg-white border border-[#EAECF1] rounded-full text-xs font-semibold text-[#171923] hover:bg-slate-50">Goals</button>
+        <button onclick="navigateTo('habits')" class="px-2.5 py-1 bg-white border border-[#EAECF1] rounded-full text-xs font-semibold text-[#171923] hover:bg-slate-50">Habits</button>
+        <button onclick="navigateTo('focus')" class="px-2.5 py-1 bg-white border border-[#EAECF1] rounded-full text-xs font-semibold text-[#171923] hover:bg-slate-50">Focus</button>
+        <button onclick="navigateTo('calendar')" class="px-2.5 py-1 bg-white border border-[#EAECF1] rounded-full text-xs font-semibold text-[#171923] hover:bg-slate-50">Calendar</button>
+        <button onclick="navigateTo('vault')" class="px-2.5 py-1 bg-white border border-[#EAECF1] rounded-full text-xs font-semibold text-[#171923] hover:bg-slate-50">Vault</button>
+        <button onclick="navigateTo('journal')" class="px-2.5 py-1 bg-white border border-[#EAECF1] rounded-full text-xs font-semibold text-[#171923] hover:bg-slate-50">Journal</button>
+        <button onclick="navigateTo('insights')" class="px-2.5 py-1 bg-white border border-[#EAECF1] rounded-full text-xs font-semibold text-[#171923] hover:bg-slate-50">Analytics</button>
+        <button onclick="navigateTo('settings')" class="px-2.5 py-1 bg-white border border-[#EAECF1] rounded-full text-xs font-semibold text-[#171923] hover:bg-slate-50">Settings</button>
+        <button onclick="navigateTo('onboarding')" class="px-2.5 py-1 bg-white border border-[#EAECF1] rounded-full text-xs font-semibold text-[#171923] hover:bg-slate-50">Onboarding</button>
+      </div>
+    </div>
+
+    <!-- RIGHT: LIVE UI INSPECTOR & DESIGN TOKEN EDITOR -->
+    <div class="flex-1 w-full max-w-2xl bg-white border border-[#EAECF1] rounded-[20px] p-6 space-y-5">
+      <div class="flex items-center justify-between border-b border-[#EAECF1] pb-4">
+        <div>
+          <h2 class="text-lg font-bold tracking-tight text-[#171923]">FALL Mobile UI Studio &amp; Token Inspector</h2>
+          <p class="text-xs text-[#727786]">Inspect the traditional bottom navigation layout, test Empty DB vs Seed data, or edit design tokens live.</p>
+        </div>
+        <span id="currentScreenBadge" class="text-xs font-semibold px-3 py-1 rounded-full bg-[#EEECFC] text-[#7167E8]">dashboard</span>
+      </div>
+
+      <!-- Studio Inspector Tabs -->
+      <div class="flex border-b border-[#EAECF1] space-x-5">
+        <button onclick="setStudioTab('tokens')" id="sTabTokens" class="s-tab pb-2.5 text-xs font-bold border-b-2 border-[#7167E8] text-[#171923]">Design Tokens</button>
+        <button onclick="setStudioTab('data')" id="sTabData" class="s-tab pb-2.5 text-xs font-semibold text-[#727786] hover:text-[#171923]">Dashboard Order &amp; Data</button>
+        <button onclick="setStudioTab('code')" id="sTabCode" class="s-tab pb-2.5 text-xs font-semibold text-[#727786] hover:text-[#171923]">Generated Flutter Code</button>
+      </div>
+
+      <!-- TAB 1: DESIGN TOKENS -->
+      <div id="studioPaneTokens" class="space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-[#171923] mb-1.5">Primary Accent (<code>AppColors.primary</code>)</label>
+            <div class="flex items-center space-x-2">
+              <input type="color" id="editPrimary" value="#7167E8" oninput="updateToken('primary', this.value)" class="w-10 h-10 rounded-xl border border-[#EAECF1] cursor-pointer p-0.5 bg-white">
+              <input type="text" id="editPrimaryText" value="#7167E8" readonly class="flex-1 text-xs font-mono bg-[#F8F9FC] border border-[#EAECF1] px-3 py-2 rounded-xl uppercase">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-[#171923] mb-1.5">Light Canvas (<code>AppColors.background</code>)</label>
+            <div class="flex items-center space-x-2">
+              <input type="color" id="editLightBg" value="#F8F9FC" oninput="updateToken('lightBg', this.value)" class="w-10 h-10 rounded-xl border border-[#EAECF1] cursor-pointer p-0.5 bg-white">
+              <input type="text" id="editLightBgText" value="#F8F9FC" readonly class="flex-1 text-xs font-mono bg-[#F8F9FC] border border-[#EAECF1] px-3 py-2 rounded-xl uppercase">
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="flex justify-between items-center mb-1">
+            <label class="text-xs font-semibold text-[#171923]">Card Border Radius (<code>AppRadii.card</code>)</label>
+            <span id="editRadiusLabel" class="text-xs font-semibold text-[#7167E8] bg-[#EEECFC] px-2 py-0.5 rounded">18px</span>
+          </div>
+          <input type="range" min="10" max="26" value="18" oninput="updateToken('radius', this.value)" class="w-full h-2 bg-[#EAECF1] rounded-lg appearance-none cursor-pointer accent-[#7167E8]">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-[#171923] mb-1.5">Palette Presets</label>
+          <div class="grid grid-cols-3 gap-2">
+            <button onclick="applyMood('default')" class="p-2.5 border border-[#EAECF1] rounded-xl text-xs font-semibold hover:bg-[#F8F9FC] flex items-center space-x-2">
+              <span class="w-3.5 h-3.5 rounded-full bg-[#7167E8]"></span><span>FALL Indigo</span>
+            </button>
+            <button onclick="applyMood('sky')" class="p-2.5 border border-[#EAECF1] rounded-xl text-xs font-semibold hover:bg-[#F8F9FC] flex items-center space-x-2">
+              <span class="w-3.5 h-3.5 rounded-full bg-[#2B7FB8]"></span><span>Focus Blue</span>
+            </button>
+            <button onclick="applyMood('emerald')" class="p-2.5 border border-[#EAECF1] rounded-xl text-xs font-semibold hover:bg-[#F8F9FC] flex items-center space-x-2">
+              <span class="w-3.5 h-3.5 rounded-full bg-[#2E8555]"></span><span>Habit Mint</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: LIVE APP DATA -->
+      <div id="studioPaneData" class="space-y-4 hidden">
+        <div>
+          <label class="block text-xs font-semibold text-[#171923] mb-1">User Display Name</label>
+          <input type="text" id="studioNameInput" value="Developer" oninput="updateDisplayName(this.value)" class="w-full px-3 py-2 text-sm bg-[#F8F9FC] border border-[#EAECF1] rounded-xl focus:bg-white focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-[#171923] mb-1.5">Dashboard Sections (Reorder &amp; Toggle)</label>
+          <div id="studioSectionOrderList" class="space-y-2"></div>
+        </div>
+      </div>
+
+      <!-- TAB 3: GENERATED FLUTTER CODE DIFF -->
+      <div id="studioPaneCode" class="space-y-3 hidden">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold text-[#171923]">Live Flutter Token Output</span>
+          <button onclick="copyFlutterSpecs()" class="text-xs font-semibold text-[#7167E8] hover:underline">Copy to Clipboard</button>
+        </div>
+        <pre id="flutterOutputPre" class="w-full p-4 bg-[#0D1117] text-[#F0F6FC] rounded-xl text-xs font-mono overflow-x-auto leading-relaxed max-h-72 no-scrollbar"></pre>
+      </div>
+
+      <!-- Verification Summary -->
+      <div class="bg-[#F8F9FC] border border-[#EAECF1] rounded-2xl p-4 space-y-2">
+        <p class="text-xs font-bold text-[#171923]">Synced Phase 1–8 FALL Modules in This Replica:</p>
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-1.5 text-[11px] font-medium text-[#727786]">
+          <span>✓ Traditional Bottom Nav</span>
+          <span>✓ Light Default + Dark</span>
+          <span>✓ Reorderable Dashboard</span>
+          <span>✓ Tasks (List + Kanban)</span>
+          <span>✓ Projects (4-Tab Detail)</span>
+          <span>✓ Learning Trend Chart</span>
+          <span>✓ Dedicated Goals (/goals)</span>
+          <span>✓ Habits 7-Day Trackers</span>
+          <span>✓ Live Focus Timer Ring</span>
+          <span>✓ Real 28-Day Heatmap</span>
+          <span>✓ Vault &amp; Dev Journal</span>
+          <span>✓ Web Audio Chimes</span>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    const DAY_MS = 86400000;
+    function isoDaysAgo(daysAgo) {
+      const d = new Date(Date.now() - daysAgo * DAY_MS);
+      return d.toISOString().slice(0, 10);
+    }
+
+    const SECTION_LABELS = {
+      hero_progress: "Today's Progress Summary",
+      quick_actions: 'Quick Action Shortcuts',
+      productivity_stats: 'Productivity Summary Grid',
+      todays_priorities: 'Upcoming Tasks',
+      ongoing_projects: 'Active Projects',
+      learning_roadmaps: 'Learning & Focus Summary',
+    };
+
+    const DEFAULT_DATA = {
+      theme: 'light',
+      displayName: 'Developer',
+      tokens: {
+        primary: '#7167E8',
+        lightBg: '#F8F9FC',
+        radius: 18,
+      },
+      feedback: {
+        hapticsEnabled: true,
+        soundEffectsEnabled: true,
+        notificationSoundsEnabled: true,
+        dailyAgenda: true,
+        dailySummary: true,
+      },
+      sectionOrder: [
+        'hero_progress',
+        'quick_actions',
+        'productivity_stats',
+        'todays_priorities',
+        'ongoing_projects',
+        'learning_roadmaps',
+      ],
+      visibleSections: {
+        hero_progress: true,
+        quick_actions: true,
+        productivity_stats: true,
+        todays_priorities: true,
+        ongoing_projects: true,
+        learning_roadmaps: true,
+      },
+      projects: [
+        {
+          id: 'p1',
+          name: 'FALL Core Platform',
+          category: 'Startup',
+          status: 'active',
+          priority: 'high',
+          dueDate: 'Dec 1, 2026',
+          techStack: ['Flutter', 'Dart', 'SQLite', 'Riverpod', 'Kotlin'],
+          notes: 'Local-first personal productivity OS with Drift persistence, 7 Android channels, and 6 native widgets.',
+          milestones: [
+            { id: 'm1', title: 'Design System & Light Tokens', completed: true },
+            { id: 'm2', title: 'Docked Bottom Navigation', completed: true },
+            { id: 'm3', title: 'Notification Snooze/Done', completed: false },
+            { id: 'm4', title: 'Home Widget Deep Links', completed: false },
+          ],
+          activities: [
+            'Completed Milestone: Docked Bottom Navigation',
+            'Added 6 adaptive Android home-screen widgets',
+            'Created project repository architecture'
+          ]
+        }
+      ],
+      tasks: [
+        {
+          id: 't1',
+          title: 'Inspect widget synchronization on Android 16',
+          priority: 'urgent',
+          projectId: 'p1',
+          dueDateStr: 'Today • 4:56 PM',
+          dateKey: isoDaysAgo(0),
+          isToday: true,
+          isCompleted: false,
+          hasReminder: true,
+          estimatedMinutes: 35,
+          subtasks: [
+            { id: 's1', title: 'Check ProgressDailyWidgetProvider', done: false },
+            { id: 's2', title: 'Verify Quick Add vector icon', done: false },
+            { id: 's3', title: 'Verify deep-link extras', done: false },
+          ]
+        },
+        {
+          id: 't2',
+          title: 'Review weekly systems architecture notes',
+          priority: 'medium',
+          projectId: 'p1',
+          dueDateStr: 'Tomorrow • 2:56 PM',
+          dateKey: isoDaysAgo(-1),
+          isToday: false,
+          isCompleted: false,
+          hasReminder: false,
+          estimatedMinutes: 25,
+          subtasks: []
+        },
+        {
+          id: 't3',
+          title: 'Clean up light-mode contrast on badges',
+          priority: 'high',
+          projectId: 'p1',
+          dueDateStr: 'Completed Today',
+          dateKey: isoDaysAgo(0),
+          completedDateKey: isoDaysAgo(0),
+          isToday: true,
+          isCompleted: true,
+          hasReminder: false,
+          estimatedMinutes: 30,
+          subtasks: []
+        }
+      ],
+      skills: [
+        {
+          id: 's1',
+          name: 'Flutter & Dart',
+          category: 'Framework',
+          currentLevel: 'intermediate',
+          targetLevel: 'expert',
+          learningMinutes: 90,
+          sessions: [{ dateKey: isoDaysAgo(0), minutes: 90 }],
+          modules: [
+            {
+              id: 'mod1',
+              title: 'State & Persistence',
+              topics: [
+                { id: 'top1', title: 'Asynchronous streaming & Drift', status: 'in_progress', resources: 'drift.simonbinder.eu' },
+                { id: 'top2', title: 'Riverpod StreamProvider tuning', status: 'not_started', resources: 'riverpod.dev' }
+              ]
+            }
+          ]
+        },
+        {
+          id: 's2',
+          name: 'Machine Learning & LLMs',
+          category: 'AI & ML',
+          currentLevel: 'beginner',
+          targetLevel: 'advanced',
+          learningMinutes: 0,
+          sessions: [],
+          modules: []
+        }
+      ],
+      habits: [
+        {
+          id: 'h1',
+          title: 'Daily Technical Deep Work (45+ mins)',
+          targetDays: 7,
+          reminderTime: '09:00',
+          streak: 1,
+          completedToday: true,
+          weekDays: [false, false, false, false, false, false, true],
+          dateLogs: [isoDaysAgo(0)]
+        }
+      ],
+      goals: [
+        {
+          id: 'g1',
+          title: 'Build 10 hours of startup features this week',
+          type: 'weekly',
+          currentValue: 3.5,
+          targetValue: 10.0,
+          unit: 'hrs',
+          deadline: 'Nov 17, 2026'
+        }
+      ],
+      notes: [
+        {
+          id: 'n1',
+          title: 'Dev Log — Traditional Bottom Nav & APK Release',
+          category: 'journal',
+          tags: ['flutter', 'ui', 'nav'],
+          dateStr: 'Today',
+          isPinned: true,
+          content: '## Development Notes\n- Replaced floating capsule with docked 68dp bottom navigation bar.\n\n## Problems & Solutions\n- Fixed 320px overflow on badges & QuickStatMiniCard using Wrap.\n\n## Next Steps\n- Build signed release APK for Android.'
+        },
+        {
+          id: 'n2',
+          title: 'Drift Schema v1 Compatibility Note',
+          category: 'technical',
+          tags: ['sqlite', 'drift'],
+          dateStr: 'Today',
+          isPinned: false,
+          content: 'Keep schemaVersion = 1 stable by scoping Dev Journal entries inside Notes with category = journal.'
+        }
+      ],
+      focusLogs: []
+    };
+
+    const EMPTY_DATA = {
+      theme: 'light',
+      displayName: 'Developer',
+      tokens: { primary: '#7167E8', lightBg: '#F8F9FC', radius: 18 },
+      feedback: { hapticsEnabled: true, soundEffectsEnabled: true, notificationSoundsEnabled: true, dailyAgenda: true, dailySummary: true },
+      sectionOrder: ['hero_progress', 'quick_actions', 'productivity_stats', 'todays_priorities', 'ongoing_projects', 'learning_roadmaps'],
+      visibleSections: { hero_progress: true, quick_actions: true, productivity_stats: true, todays_priorities: true, ongoing_projects: true, learning_roadmaps: true },
+      projects: [],
+      tasks: [],
+      skills: [],
+      habits: [],
+      goals: [],
+      notes: [],
+      focusLogs: []
+    };
+
+    let state = loadState();
+    function loadState() {
+      try {
+        const raw = localStorage.getItem('fall_web_state_v4');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && Array.isArray(parsed.sectionOrder)) return parsed;
+        }
+      } catch (_) {}
+      return JSON.parse(JSON.stringify(EMPTY_DATA));
+    }
+
+    let currentScreen = 'dashboard';
+    let activeProjectId = state.projects[0]?.id || null;
+    let activeProjectTab = 'overview';
+    let activeSkillId = state.skills[0]?.id || null;
+    let selectedHeroSkillId = state.skills[0]?.id || null;
+    let taskFilterTab = 'today';
+    let taskViewMode = 'list';
+    let projectFilter = 'all';
+    let goalFilter = 'all';
+    let analyticsRange = '7D';
+    let vaultCategory = 'all';
+    let vaultQuery = '';
+    let calendarMonthExpanded = false;
+    let selectedCalOffset = 0;
+
+    let focusMode = 'pomodoro';
+    let focusTotalSeconds = 25 * 60;
+    let focusRemaining = 25 * 60;
+    let focusRunning = false;
+    let focusInterval = null;
+    let focusLinkedTaskId = '';
+    let focusLinkedProjectId = '';
+
+    let onboardingPage = 0;
+
+    function saveState() {
+      try { localStorage.setItem('fall_web_state_v4', JSON.stringify(state)); } catch (_) {}
+      updateFlutterOutput();
+      renderStudioSections();
+    }
+
+    function resetDemoData() {
+      const keepTheme = state.theme;
+      state = JSON.parse(JSON.stringify(DEFAULT_DATA));
+      state.theme = keepTheme;
+      activeProjectId = state.projects[0]?.id || null;
+      activeSkillId = state.skills[0]?.id || null;
+      selectedHeroSkillId = state.skills[0]?.id || null;
+      saveState();
+      applyThemeAndTokens();
+      render();
+      showToast('Loaded sample dataset for preview');
+    }
+
+    function loadEmptyDbState() {
+      const keepTheme = state.theme;
+      state = JSON.parse(JSON.stringify(EMPTY_DATA));
+      state.theme = keepTheme;
+      activeProjectId = null;
+      activeSkillId = null;
+      selectedHeroSkillId = null;
+      saveState();
+      applyThemeAndTokens();
+      render();
+      showToast('All tasks and stats reset to zero');
+    }
+
+    // Subtle synthesized Web Audio chimes matching FALL assets/sounds/*.wav
+    function playChime(type) {
+      if (!state.feedback?.soundEffectsEnabled) return;
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        const notes = type === 'goal' ? [523.25, 659.25, 783.99]
+                    : type === 'focus_complete' ? [587.33, 739.99, 880]
+                    : type === 'focus_start' ? [440, 554.37]
+                    : type === 'reminder' ? [523.25, 659.25]
+                    : [587.33, 880];
+        notes.forEach((freq, i) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.value = freq;
+          const start = ctx.currentTime + i * 0.08;
+          gain.gain.setValueAtTime(0.001, start);
+          gain.gain.exponentialRampToValueAtTime(0.08, start + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.001, start + 0.25);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(start);
+          osc.stop(start + 0.26);
+        });
+      } catch (_) {}
+    }
+
+    // Theme & Tokens
+    function setTheme(theme) {
+      state.theme = theme;
+      saveState();
+      applyThemeAndTokens();
+      render();
+    }
+
+    function applyThemeAndTokens() {
+      const htmlEl = document.documentElement;
+      const btnLight = document.getElementById('studioBtnLight');
+      const btnDark = document.getElementById('studioBtnDark');
+
+      if (state.theme === 'dark') {
+        htmlEl.classList.add('dark');
+        btnDark.classList.add('bg-[#171923]', 'text-white', 'shadow-sm');
+        btnDark.classList.remove('text-[#727786]');
+        btnLight.classList.remove('bg-white', 'text-[#171923]', 'shadow-sm');
+        btnLight.classList.add('text-[#727786]');
+      } else {
+        htmlEl.classList.remove('dark');
+        btnLight.classList.add('bg-white', 'text-[#171923]', 'shadow-sm');
+        btnLight.classList.remove('text-[#727786]');
+        btnDark.classList.remove('bg-[#171923]', 'text-white', 'shadow-sm');
+        btnDark.classList.add('text-[#727786]');
+      }
+
+      const activePrimary = state.theme === 'dark' ? '#8B83F6' : state.tokens.primary;
+      document.documentElement.style.setProperty('--app-primary', activePrimary);
+      document.documentElement.style.setProperty('--app-card-radius', state.tokens.radius + 'px');
+      document.getElementById('phoneScreen').style.backgroundColor =
+        state.theme === 'light' ? state.tokens.lightBg : '#0D1117';
+
+      document.getElementById('editPrimary').value = state.tokens.primary;
+      document.getElementById('editPrimaryText').value = state.tokens.primary;
+      document.getElementById('editLightBg').value = state.tokens.lightBg;
+      document.getElementById('editLightBgText').value = state.tokens.lightBg;
+      document.getElementById('editRadiusLabel').textContent = state.tokens.radius + 'px';
+      document.getElementById('studioNameInput').value = state.displayName;
+      updateFlutterOutput();
+      renderStudioSections();
+    }
+
+    function updateToken(key, val) {
+      if (key === 'primary') state.tokens.primary = val.toUpperCase();
+      if (key === 'lightBg') state.tokens.lightBg = val.toUpperCase();
+      if (key === 'radius') state.tokens.radius = parseInt(val, 10);
+      saveState();
+      applyThemeAndTokens();
+      render();
+    }
+
+    function applyMood(mood) {
+      if (mood === 'sky') state.tokens.primary = '#2B7FB8';
+      else if (mood === 'emerald') state.tokens.primary = '#2E8555';
+      else state.tokens.primary = '#7167E8';
+      state.tokens.lightBg = '#F8F9FC';
+      state.tokens.radius = 18;
+      saveState();
+      applyThemeAndTokens();
+      render();
+      showToast('Updated accent mood');
+    }
+
+    function setDeviceWidth(w) {
+      document.getElementById('phoneChassis').style.width = w + 'px';
+      document.querySelectorAll('.w-btn').forEach(b => {
+        b.className = 'w-btn px-2.5 py-1 rounded-full font-medium text-[#727786]';
+      });
+      const active = document.getElementById('wBtn' + w);
+      if (active) active.className = 'w-btn px-2.5 py-1 rounded-full font-semibold bg-white text-[#171923] shadow-sm';
+    }
+
+    function setStudioTab(tab) {
+      ['tokens', 'data', 'code'].forEach(t => {
+        const cap = t.charAt(0).toUpperCase() + t.slice(1);
+        document.getElementById('studioPane' + cap).classList.toggle('hidden', t !== tab);
+        const btn = document.getElementById('sTab' + cap);
+        btn.className = t === tab
+          ? 's-tab pb-2.5 text-xs font-bold border-b-2 border-[#7167E8] text-[#171923]'
+          : 's-tab pb-2.5 text-xs font-semibold text-[#727786] hover:text-[#171923]';
+      });
+    }
+
+    function updateDisplayName(name) {
+      state.displayName = name.trim() || 'Developer';
+      saveState();
+      if (currentScreen === 'dashboard' || currentScreen === 'more') render();
+    }
+
+    function toggleSection(id, visible) {
+      state.visibleSections[id] = visible;
+      saveState();
+      if (currentScreen === 'dashboard') render();
+    }
+
+    function moveSection(index, delta) {
+      const target = index + delta;
+      if (target < 0 || target >= state.sectionOrder.length) return;
+      const arr = [...state.sectionOrder];
+      const [item] = arr.splice(index, 1);
+      arr.splice(target, 0, item);
+      state.sectionOrder = arr;
+      saveState();
+      if (currentScreen === 'dashboard') render();
+      if (!document.getElementById('phoneSheetOverlay').classList.contains('hidden')) {
+        openCustomizeSheet();
+      }
+    }
+
+    function renderStudioSections() {
+      const box = document.getElementById('studioSectionOrderList');
+      if (!box) return;
+      box.innerHTML = state.sectionOrder.map((id, idx) => `
+        <div class="flex items-center justify-between p-2.5 rounded-xl bg-[#F8F9FC] border border-[#EAECF1]">
+          <div class="flex items-center space-x-2">
+            <button onclick="moveSection(${idx}, -1)" class="w-6 h-6 rounded bg-white border border-[#EAECF1] text-xs font-bold text-[#727786] hover:text-[#171923]" ${idx === 0 ? 'disabled' : ''}>↑</button>
+            <button onclick="moveSection(${idx}, 1)" class="w-6 h-6 rounded bg-white border border-[#EAECF1] text-xs font-bold text-[#727786] hover:text-[#171923]" ${idx === state.sectionOrder.length - 1 ? 'disabled' : ''}>↓</button>
+            <span class="text-xs font-semibold text-[#171923]">${SECTION_LABELS[id] || id}</span>
+          </div>
+          <input type="checkbox" ${state.visibleSections[id] ? 'checked' : ''} onchange="toggleSection('${id}', this.checked)" class="rounded accent-[#7167E8]">
+        </div>
+      `).join('');
+    }
+
+    function updateFlutterOutput() {
+      const pHex = state.tokens.primary.replace('#', '');
+      const bgHex = state.tokens.lightBg.replace('#', '');
+      const out = document.getElementById('flutterOutputPre');
+      if (out) {
+        out.textContent =
+`// Synced from FALL Web UI Studio
+class AppColors {
+  static const Color background = Color(0xFF${bgHex});
+  static const Color primary = Color(0xFF${pHex});
+}
+class AppRadii {
+  static const double card = ${state.tokens.radius}.0;
+}
+// Traditional Docked Bottom NavBar:
+// ScaffoldWithNavBar -> height: 64.0, border-top: 1dp, 5 labeled tabs`;
+      }
+    }
+
+    function copyFlutterSpecs() {
+      const txt = document.getElementById('flutterOutputPre').textContent;
+      navigator.clipboard?.writeText(txt).then(() => showToast('Copied Flutter tokens!')).catch(() => showToast('Ready to copy'));
+    }
+
+    function showToast(msg) {
+      const el = document.getElementById('phoneToast');
+      el.textContent = msg;
+      el.classList.remove('hidden');
+      setTimeout(() => el.classList.add('hidden'), 2200);
+    }
+
+    function openPhoneSheet(html) {
+      document.getElementById('phoneSheetBody').innerHTML = html;
+      document.getElementById('phoneSheetOverlay').classList.remove('hidden');
+    }
+
+    function closePhoneSheet() {
+      document.getElementById('phoneSheetOverlay').classList.add('hidden');
+    }
+
+    function navigateTo(screen, paramId = null) {
+      currentScreen = screen;
+      if (screen === 'projectDetail' && paramId) activeProjectId = paramId;
+      if (screen === 'skillDetail' && paramId) activeSkillId = paramId;
+      if (screen === 'journal') {
+        currentScreen = 'journal';
+        vaultCategory = 'journal';
+      } else if (screen === 'vault' && vaultCategory === 'journal') {
+        vaultCategory = 'all';
+      }
+      document.getElementById('currentScreenBadge').textContent = screen;
+      document.getElementById('mobileViewport').scrollTop = 0;
+      render();
+    }
+
+    function handleFabTap() {
+      if (currentScreen === 'projects') openProjectModal();
+      else if (currentScreen === 'learning') openSkillModal();
+      else if (currentScreen === 'goals') openGoalModal();
+      else if (currentScreen === 'habits') openHabitModal();
+      else if (currentScreen === 'vault' || currentScreen === 'journal') openNoteModal(currentScreen === 'journal');
+      else openTaskModal();
+    }
+
+    function formatMins(m) {
+      if (!m || m <= 0) return '0m';
+      if (m < 60) return m + 'm';
+      const h = Math.floor(m / 60);
+      const rem = m % 60;
+      return rem === 0 ? `${h}h` : `${h}h ${rem}m`;
+    }
+
+    function getProjectProgress(p) {
+      const linkedTasks = state.tasks.filter(t => t.projectId === p.id);
+      const total = p.milestones.length + linkedTasks.length;
+      if (total === 0) return p.status === 'completed' ? 100 : 0;
+      const done = p.milestones.filter(m => m.completed).length + linkedTasks.filter(t => t.isCompleted).length;
+      return Math.round((done / total) * 100);
+    }
+
+    function getSkillProgress(s) {
+      let total = 0, done = 0;
+      s.modules.forEach(m => {
+        total += m.topics.length;
+        done += m.topics.filter(t => t.status === 'completed').length;
+      });
+      return { pct: total > 0 ? Math.round((done / total) * 100) : 0, done, total };
+    }
+
+    function priorityBadge(p) {
+      const cfg = {
+        urgent: { label: 'Urgent', color: '#DC2626', bg: 'rgba(220,38,38,0.12)' },
+        high:   { label: 'High',   color: '#D97706', bg: 'rgba(217,119,6,0.12)' },
+        medium: { label: 'Medium', color: '#3B82F6', bg: 'rgba(59,130,246,0.12)' },
+        low:    { label: 'Low',    color: '#64748B', bg: 'rgba(100,116,139,0.12)' },
+      }[p] || { label: 'Medium', color: '#3B82F6', bg: 'rgba(59,130,246,0.12)' };
+      return `<span class="shrink-0 inline-flex items-center px-2 py-0.5 rounded-[6px] text-[11px] font-semibold" style="color:${cfg.color}; background:${cfg.bg}; border:1px solid ${cfg.color}33">${cfg.label}</span>`;
+    }
+
+    function render() {
+      const viewport = document.getElementById('mobileViewport');
+      const dock = document.getElementById('bottomNavDock');
+      const fab = document.getElementById('phoneFab');
+
+      const shellTabs = ['dashboard', 'tasks', 'projects', 'learning', 'more'];
+      dock.classList.toggle('hidden', !shellTabs.includes(currentScreen));
+
+      const fabScreens = ['dashboard', 'tasks', 'projects', 'learning', 'goals', 'habits', 'vault', 'journal', 'calendar'];
+      fab.classList.toggle('hidden', !fabScreens.includes(currentScreen));
+
+      // Style traditional docked 5-tab bar
+      document.querySelectorAll('.nav-tab-btn').forEach(btn => {
+        const tab = btn.getAttribute('data-tab');
+        const active = tab === currentScreen;
+        const pill = btn.querySelector('.nav-pill');
+        const label = btn.querySelector('.nav-label');
+        if (active) {
+          btn.style.color = state.theme === 'dark' ? '#8B83F6' : state.tokens.primary;
+          pill.style.backgroundColor = state.theme === 'dark' ? 'rgba(139,131,246,0.18)' : '#EEECFC';
+          label.className = 'nav-label text-[11px] font-semibold leading-none';
+        } else {
+          btn.style.color = state.theme === 'dark' ? '#94A3B8' : '#727786';
+          pill.style.backgroundColor = 'transparent';
+          label.className = 'nav-label text-[11px] font-medium leading-none';
+        }
+      });
+
+      switch (currentScreen) {
+        case 'dashboard': viewport.innerHTML = renderDashboard(); break;
+        case 'tasks': viewport.innerHTML = renderTasks(); break;
+        case 'projects': viewport.innerHTML = renderProjects(); break;
+        case 'projectDetail': viewport.innerHTML = renderProjectDetail(); break;
+        case 'learning': viewport.innerHTML = renderLearning(); break;
+        case 'skillDetail': viewport.innerHTML = renderSkillDetail(); break;
+        case 'more': viewport.innerHTML = renderMoreHub(); break;
+        case 'goals': viewport.innerHTML = renderGoals(); break;
+        case 'habits': viewport.innerHTML = renderHabits(); break;
+        case 'focus': viewport.innerHTML = renderFocus(); break;
+        case 'calendar': viewport.innerHTML = renderCalendar(); break;
+        case 'vault': viewport.innerHTML = renderVault(false); break;
+        case 'journal': viewport.innerHTML = renderVault(true); break;
+        case 'insights': viewport.innerHTML = renderInsights(); break;
+        case 'settings': viewport.innerHTML = renderSettings(); break;
+        case 'onboarding': viewport.innerHTML = renderOnboarding(); break;
+      }
+    }
+
+    function renderLogoMark(size = 40) {
+      return `
+        <div style="width:${size}px;height:${size}px;border-radius:${Math.round(size * 0.28)}px" class="bg-[#FDF5E2] dark:bg-[#1E293B] border border-[#F3E5C8] dark:border-[#334155] overflow-hidden flex items-center justify-center shrink-0">
+          <img src="assets/images/fall_logo_light.png" alt="FALL" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='../assets/images/fall_logo_light.png';">
+        </div>`;
+    }
+
+    // ---------------------------------------------------------
+    // 1. HOME / DASHBOARD (Reorderable, Real Data Only)
+    // ---------------------------------------------------------
+    function renderDashboard() {
+      const todayTasks = state.tasks.filter(t => t.isToday);
+      const completedToday = todayTasks.filter(t => t.isCompleted).length;
+      const pct = todayTasks.length > 0 ? Math.round((completedToday / todayTasks.length) * 100) : 0;
+      const openTasks = state.tasks.filter(t => !t.isCompleted);
+      const activeProjects = state.projects.filter(p => p.status === 'active');
+      const totalLearnMins = state.skills.reduce((a, s) => a + s.learningMinutes, 0);
+      const totalFocusMins = state.focusLogs.filter(f => f.dateKey === isoDaysAgo(0)).reduce((a, f) => a + f.minutes, 0);
+      const doneGoals = state.goals.filter(g => g.currentValue >= g.targetValue).length;
+
+      // Real 7-day completed bars
+      const bars = [6, 5, 4, 3, 2, 1, 0].map(offset => {
+        const key = isoDaysAgo(offset);
+        return state.tasks.filter(t => t.isCompleted && t.completedDateKey === key).length;
+      });
+      const maxBar = Math.max(1, ...bars);
+
+      const renderers = {
+        hero_progress: () => `
+          <div onclick="navigateTo('tasks')" style="border-radius:var(--app-card-radius)" class="p-5 bg-[#EDF2FD] dark:bg-[#1A1B2E] border border-[#D8E4FA] dark:border-[#30363D] flex items-center justify-between cursor-pointer">
+            <div>
+              <p class="text-[15px] font-semibold">Today's Progress</p>
+              <p class="text-[32px] font-bold tracking-tight tabular-nums leading-tight mt-1">${pct}%</p>
+              <p class="text-xs text-[#727786] dark:text-[#94A3B8] tabular-nums mt-0.5">${todayTasks.length > 0 ? `${completedToday} of ${todayTasks.length} tasks` : 'No tasks scheduled today'}</p>
+            </div>
+            <div class="flex items-end space-x-1.5 h-12">
+              ${bars.map((v, i) => `
+                <div class="w-2 rounded-full transition-all" style="height:${v === 0 ? 7 : Math.max(12, Math.round((v / maxBar) * 44))}px; background-color:${v === 0 ? (state.theme === 'dark' ? 'rgba(255,255,255,0.1)' : '#CBD5E1') : (i === 6 ? 'var(--app-primary)' : 'rgba(113,103,232,0.5)')}"></div>
+              `).join('')}
+            </div>
+          </div>`,
+
+        quick_actions: () => `
+          <div class="flex items-center space-x-2 overflow-x-auto no-scrollbar pb-0.5">
+            <button onclick="openTaskModal()" class="shrink-0 px-3.5 py-2 phone-card flex items-center space-x-2 text-xs font-semibold">
+              <span class="w-6 h-6 rounded-full bg-[#F0F8FE] dark:bg-[#14212E] text-[#2B7FB8] flex items-center justify-center font-bold">+</span><span>Task</span>
+            </button>
+            <button onclick="navigateTo('focus')" class="shrink-0 px-3.5 py-2 phone-card flex items-center space-x-2 text-xs font-semibold">
+              <span class="w-6 h-6 rounded-full bg-[#EBF8FC] dark:bg-[#13222A] text-[#1D7FA8] flex items-center justify-center">⏱</span><span>Focus</span>
+            </button>
+            <button onclick="navigateTo('learning')" class="shrink-0 px-3.5 py-2 phone-card flex items-center space-x-2 text-xs font-semibold">
+              <span class="w-6 h-6 rounded-full bg-[#F3EFFD] dark:bg-[#1B1A2D] text-[#6B4FD6] flex items-center justify-center">🎓</span><span>Learning</span>
+            </button>
+            <button onclick="navigateTo('habits')" class="shrink-0 px-3.5 py-2 phone-card flex items-center space-x-2 text-xs font-semibold">
+              <span class="w-6 h-6 rounded-full bg-[#EEF9F2] dark:bg-[#14231C] text-[#2E8555] flex items-center justify-center">↻</span><span>Habits</span>
+            </button>
+            <button onclick="navigateTo('journal')" class="shrink-0 px-3.5 py-2 phone-card flex items-center space-x-2 text-xs font-semibold">
+              <span class="w-6 h-6 rounded-full bg-[#EEECFC] dark:bg-[#1A1B2E] text-[#7167E8] flex items-center justify-center">✎</span><span>Journal</span>
+            </button>
+          </div>`,
+
+        productivity_stats: () => `
+          <div class="grid grid-cols-2 gap-3">
+            <div onclick="navigateTo('tasks')" style="border-radius:var(--app-card-radius)" class="p-3.5 bg-[#F0F8FE] dark:bg-[#14212E] border border-[#D7ECFA] dark:border-[#30363D] cursor-pointer space-y-2.5">
+              <div class="flex items-center space-x-2">
+                <span class="w-6 h-6 rounded-lg bg-[#2B7FB8]/15 text-[#2B7FB8] flex items-center justify-center text-xs font-bold">✓</span>
+                <span class="text-xs font-semibold text-[#727786] dark:text-[#94A3B8]">Open Tasks</span>
+              </div>
+              <div class="flex items-center justify-between flex-wrap gap-1">
+                <span class="text-xl font-bold tabular-nums">${openTasks.length}</span>
+                <span class="px-1.5 py-0.5 rounded bg-white/80 dark:bg-white/10 text-[11px] font-semibold text-[#2B7FB8] tabular-nums">${todayTasks.filter(t => !t.isCompleted).length} today</span>
+              </div>
+            </div>
+            <div onclick="navigateTo('focus')" style="border-radius:var(--app-card-radius)" class="p-3.5 bg-[#EBF8FC] dark:bg-[#13222A] border border-[#CCEBF5] dark:border-[#30363D] cursor-pointer space-y-2.5">
+              <div class="flex items-center space-x-2">
+                <span class="w-6 h-6 rounded-lg bg-[#1D7FA8]/15 text-[#1D7FA8] flex items-center justify-center text-xs font-bold">⏱</span>
+                <span class="text-xs font-semibold text-[#727786] dark:text-[#94A3B8]">Focus</span>
+              </div>
+              <div class="flex items-center justify-between flex-wrap gap-1">
+                <span class="text-xl font-bold tabular-nums">${formatMins(totalFocusMins)}</span>
+                <span class="px-1.5 py-0.5 rounded bg-white/80 dark:bg-white/10 text-[11px] font-semibold text-[#1D7FA8] tabular-nums">${state.focusLogs.length} logs</span>
+              </div>
+            </div>
+            <div onclick="navigateTo('learning')" style="border-radius:var(--app-card-radius)" class="p-3.5 bg-[#F3EFFD] dark:bg-[#1B1A2D] border border-[#E2D8FA] dark:border-[#30363D] cursor-pointer space-y-2.5">
+              <div class="flex items-center space-x-2">
+                <span class="w-6 h-6 rounded-lg bg-[#6B4FD6]/15 text-[#6B4FD6] flex items-center justify-center text-xs font-bold">🎓</span>
+                <span class="text-xs font-semibold text-[#727786] dark:text-[#94A3B8]">Learning</span>
+              </div>
+              <div class="flex items-center justify-between flex-wrap gap-1">
+                <span class="text-xl font-bold tabular-nums">${formatMins(totalLearnMins)}</span>
+                <span class="px-1.5 py-0.5 rounded bg-white/80 dark:bg-white/10 text-[11px] font-semibold text-[#6B4FD6] tabular-nums">${state.skills.length} skills</span>
+              </div>
+            </div>
+            <div onclick="navigateTo('goals')" style="border-radius:var(--app-card-radius)" class="p-3.5 bg-[#FFF8E6] dark:bg-[#241E14] border border-[#F7E4B4] dark:border-[#30363D] cursor-pointer space-y-2.5">
+              <div class="flex items-center space-x-2">
+                <span class="w-6 h-6 rounded-lg bg-[#B7791F]/15 text-[#B7791F] flex items-center justify-center text-xs font-bold">⚑</span>
+                <span class="text-xs font-semibold text-[#727786] dark:text-[#94A3B8]">Goals</span>
+              </div>
+              <div class="flex items-center justify-between flex-wrap gap-1">
+                <span class="text-xl font-bold tabular-nums">${state.goals.length}</span>
+                <span class="px-1.5 py-0.5 rounded bg-white/80 dark:bg-white/10 text-[11px] font-semibold text-[#B7791F] tabular-nums">${doneGoals} done</span>
+              </div>
+            </div>
+          </div>`,
+
+        todays_priorities: () => `
+          <div class="space-y-2.5">
+            <div class="flex items-center justify-between">
+              <h3 class="text-lg font-semibold tracking-tight">Upcoming Tasks</h3>
+              <button onclick="navigateTo('tasks')" class="text-xs font-semibold" style="color:var(--app-primary)">See all</button>
+            </div>
+            ${openTasks.length === 0 ? `
+              <div class="phone-card p-5 text-center space-y-1">
+                <p class="text-sm font-semibold">All caught up</p>
+                <p class="text-xs text-[#727786]">Tap + below to schedule your next task.</p>
+              </div>
+            ` : openTasks.slice(0, 4).map(t => `
+              <div class="phone-card p-3.5 flex items-center space-x-3">
+                <button onclick="toggleTask('${t.id}')" class="w-5 h-5 rounded-full border-2 border-[#A0A5B0] shrink-0 hover:border-[#7167E8]"></button>
+                <div class="flex-1 min-w-0 cursor-pointer" onclick="openTaskDetail('${t.id}')">
+                  <p class="text-sm font-semibold truncate">${t.title}</p>
+                  <p class="text-[11.5px] text-[#727786] dark:text-[#94A3B8]">${t.dueDateStr}${t.hasReminder ? ' • 🔔' : ''}</p>
+                </div>
+                ${priorityBadge(t.priority)}
+              </div>
+            `).join('')}
+          </div>`,
+
+        ongoing_projects: () => `
+          <div class="space-y-2.5">
+            <div class="flex items-center justify-between">
+              <h3 class="text-lg font-semibold tracking-tight">Active Projects</h3>
+              <button onclick="navigateTo('projects')" class="text-xs font-semibold" style="color:var(--app-primary)">See all</button>
+            </div>
+            ${activeProjects.length === 0 ? `
+              <div class="phone-card p-4 text-xs text-[#727786]">No active projects yet.</div>
+            ` : activeProjects.slice(0, 2).map(p => {
+              const prog = getProjectProgress(p);
+              return `
+                <div onclick="navigateTo('projectDetail', '${p.id}')" class="phone-card p-4 space-y-2.5 cursor-pointer">
+                  <div class="flex items-center justify-between">
+                    <p class="text-sm font-semibold truncate">${p.name}</p>
+                    <span class="text-xs font-bold tabular-nums" style="color:var(--app-primary)">${prog}%</span>
+                  </div>
+                  <div class="w-full h-1.5 rounded-full bg-[#F1F3F9] dark:bg-[#21262D] overflow-hidden">
+                    <div class="h-full rounded-full" style="width:${prog}%; background-color:var(--app-primary)"></div>
+                  </div>
+                  <p class="text-[11px] text-[#727786]">${p.milestones.filter(m=>m.completed).length}/${p.milestones.length} milestones</p>
+                </div>`;
+            }).join('')}
+          </div>`,
+
+        learning_roadmaps: () => `
+          <div class="space-y-2.5">
+            <div class="flex items-center justify-between">
+              <h3 class="text-lg font-semibold tracking-tight">Learning &amp; Focus</h3>
+              <button onclick="navigateTo('insights')" class="text-xs font-semibold" style="color:var(--app-primary)">Insights</button>
+            </div>
+            <div onclick="navigateTo('learning')" class="phone-card p-4 flex items-center justify-between cursor-pointer">
+              <div>
+                <p class="text-sm font-semibold">${state.skills[0]?.name || 'Add a skill roadmap'}</p>
+                <p class="text-xs text-[#727786]">${formatMins(totalLearnMins)} logged across ${state.skills.length} skills</p>
+              </div>
+              <span class="text-sm font-bold tabular-nums" style="color:var(--app-primary)">→</span>
+            </div>
+          </div>`
+      };
+
+      const sectionsHtml = state.sectionOrder
+        .filter(id => state.visibleSections[id] && renderers[id])
+        .map(id => renderers[id]())
+        .join('');
+
+      return `
+      <div class="p-5 pb-24 space-y-5">
+        <!-- AppHeader matching DashboardScreen -->
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center space-x-3 min-w-0">
+            ${renderLogoMark(42)}
+            <div class="min-w-0">
+              <p class="text-xs text-[#727786] dark:text-[#94A3B8]">Tuesday, Nov 10</p>
+              <h2 class="text-[20px] font-bold tracking-tight truncate">Hello, ${state.displayName}</h2>
+            </div>
+          </div>
+          <div class="flex items-center space-x-2 shrink-0">
+            <button onclick="openRemindersSheet()" class="w-10 h-10 rounded-[14px] phone-card flex items-center justify-center" title="Upcoming Reminders">🔔</button>
+            <button onclick="openCustomizeSheet()" class="w-10 h-10 rounded-[14px] phone-card flex items-center justify-center" title="Customize Dashboard">🎛</button>
+          </div>
+        </div>
+        ${sectionsHtml}
+      </div>`;
+    }
+
+    function openRemindersSheet() {
+      const rem = state.tasks.filter(t => !t.isCompleted && (t.hasReminder || t.dueDateStr));
+      openPhoneSheet(`
+        <div class="flex justify-center"><div class="w-9 h-1 rounded-full bg-[#EAECF1] dark:bg-[#30363D]"></div></div>
+        <h3 class="text-lg font-bold">Upcoming Reminders</h3>
+        ${rem.length === 0 ? `<p class="text-xs text-[#727786]">No upcoming task reminders.</p>` : rem.map(t => `
+          <div class="p-3 rounded-xl bg-[#F8F9FC] dark:bg-[#21262D] border border-[#EAECF1] dark:border-[#30363D] flex items-center justify-between">
+            <div><p class="text-xs font-semibold">${t.title}</p><p class="text-[11px] text-[#727786]">${t.dueDateStr}</p></div>
+            ${priorityBadge(t.priority)}
+          </div>
+        `).join('')}
+      `);
+    }
+
+    function openCustomizeSheet() {
+      openPhoneSheet(`
+        <div class="flex justify-center"><div class="w-9 h-1 rounded-full bg-[#EAECF1] dark:bg-[#30363D]"></div></div>
+        <h3 class="text-lg font-bold">Customize Home Sections</h3>
+        <p class="text-xs text-[#727786]">Reorder sections or toggle visibility on Dashboard.</p>
+        <div class="space-y-2">
+          ${state.sectionOrder.map((id, idx) => `
+            <div class="p-3 rounded-xl bg-[#F8F9FC] dark:bg-[#21262D] border border-[#EAECF1] dark:border-[#30363D] flex items-center justify-between">
+              <div class="flex items-center space-x-2">
+                <button onclick="moveSection(${idx}, -1)" class="px-2 py-0.5 rounded bg-white dark:bg-[#161B22] border border-[#EAECF1] dark:border-[#30363D] text-xs font-bold">↑</button>
+                <button onclick="moveSection(${idx}, 1)" class="px-2 py-0.5 rounded bg-white dark:bg-[#161B22] border border-[#EAECF1] dark:border-[#30363D] text-xs font-bold">↓</button>
+                <span class="text-xs font-semibold">${SECTION_LABELS[id]}</span>
+              </div>
+              <input type="checkbox" ${state.visibleSections[id] ? 'checked' : ''} onchange="toggleSection('${id}', this.checked)" class="accent-[#7167E8]">
+            </div>
+          `).join('')}
+        </div>
+        <button onclick="closePhoneSheet()" class="w-full py-2.5 rounded-full text-xs font-semibold text-white" style="background-color:var(--app-primary)">Done</button>
+      `);
+    }
+
+    // ---------------------------------------------------------
+    // 2. TASKS (List + Kanban Board)
+    // ---------------------------------------------------------
+    function renderTasks() {
+      const filtered = state.tasks.filter(t => {
+        if (taskFilterTab === 'today') return t.isToday && !t.isCompleted;
+        if (taskFilterTab === 'upcoming') return !t.isCompleted;
+        if (taskFilterTab === 'completed') return t.isCompleted;
+        return true;
+      });
+
+      const stripeColor = (p, done) => done ? '#62B989' : ({ urgent: '#DC2626', high: '#D97706', medium: '#3B82F6', low: '#64748B' }[p] || '#3B82F6');
+
+      return `
+      <div class="p-5 pb-24 space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-[26px] font-semibold tracking-tight">Tasks</h2>
+          <button onclick="taskViewMode = taskViewMode==='list'?'kanban':'list'; render()" class="px-3 py-1.5 rounded-[12px] phone-card text-xs font-semibold">
+            ${taskViewMode === 'list' ? '▥ Board' : '☰ List'}
+          </button>
+        </div>
+
+        <div class="flex items-center space-x-2 overflow-x-auto no-scrollbar">
+          ${['today', 'upcoming', 'all', 'completed'].map(tab => `
+            <button onclick="taskFilterTab='${tab}'; render()" class="shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold capitalize transition ${taskFilterTab === tab ? 'text-white' : 'phone-card text-[#727786]'}" style="${taskFilterTab === tab ? 'background-color:var(--app-primary)' : ''}">${tab}</button>
+          `).join('')}
+        </div>
+
+        ${taskViewMode === 'kanban' ? `
+          <div class="flex space-x-3 overflow-x-auto no-scrollbar pb-2">
+            ${['Todo', 'Done'].map(col => {
+              const items = state.tasks.filter(t => col === 'Done' ? t.isCompleted : !t.isCompleted);
+              return `
+                <div class="w-60 shrink-0 phone-card p-3 space-y-2.5">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold uppercase tracking-wider text-[#727786]">${col}</span>
+                    <span class="text-xs font-bold tabular-nums">${items.length}</span>
+                  </div>
+                  ${items.map(t => `
+                    <div onclick="openTaskDetail('${t.id}')" class="p-3 rounded-xl bg-[#F8F9FC] dark:bg-[#21262D] border border-[#EAECF1] dark:border-[#30363D] space-y-1.5 cursor-pointer">
+                      <p class="text-xs font-semibold ${t.isCompleted ? 'line-through text-[#A0A5B0]' : ''}">${t.title}</p>
+                      ${priorityBadge(t.priority)}
+                    </div>
+                  `).join('')}
+                </div>`;
+            }).join('')}
+          </div>
+        ` : (filtered.length === 0 ? `
+          <div class="phone-card p-6 text-center space-y-2">
+            <p class="text-sm font-semibold">No tasks in "${taskFilterTab}"</p>
+            <p class="text-xs text-[#727786]">Create a task or switch filter tabs above.</p>
+          </div>
+        ` : filtered.map(t => {
+          const proj = state.projects.find(p => p.id === t.projectId);
+          return `
+            <div class="phone-card p-3.5 flex items-start space-x-2.5">
+              <div class="w-1 h-10 rounded-full mt-0.5 shrink-0" style="background-color:${stripeColor(t.priority, t.isCompleted)}"></div>
+              <button onclick="toggleTask('${t.id}')" class="w-5 h-5 mt-0.5 rounded-full border-2 shrink-0 flex items-center justify-center text-[10px] font-bold ${t.isCompleted ? 'bg-[#62B989] border-[#62B989] text-white' : 'border-[#A0A5B0]'}">${t.isCompleted ? '✓' : ''}</button>
+              <div class="flex-1 min-w-0 cursor-pointer" onclick="openTaskDetail('${t.id}')">
+                <p class="text-sm font-semibold ${t.isCompleted ? 'line-through text-[#A0A5B0]' : ''}">${t.title}</p>
+                <div class="flex flex-wrap items-center gap-1.5 mt-1.5">
+                  ${priorityBadge(t.priority)}
+                  ${proj ? `<span class="px-2 py-0.5 rounded-[6px] text-[11px] font-semibold bg-[#F3F1FD] dark:bg-[#1A1B2E] text-[#5D52D6]">${proj.name}</span>` : ''}
+                  <span class="text-[11px] text-[#727786]">${t.dueDateStr}${t.hasReminder ? ' • 🔔' : ''}</span>
+                </div>
+              </div>
+            </div>`;
+        }).join(''))}
+      </div>`;
+    }
+
+    function toggleTask(id) {
+      const t = state.tasks.find(x => x.id === id);
+      if (!t) return;
+      t.isCompleted = !t.isCompleted;
+      t.completedDateKey = t.isCompleted ? isoDaysAgo(0) : null;
+      if (t.isCompleted) playChime('task');
+      saveState();
+      render();
+      showToast(t.isCompleted ? 'Task completed!' : 'Reopened task');
+    }
+
+    function openTaskDetail(id) {
+      const t = state.tasks.find(x => x.id === id);
+      if (!t) return;
+      openPhoneSheet(`
+        <div class="flex justify-center"><div class="w-9 h-1 rounded-full bg-[#EAECF1] dark:bg-[#30363D]"></div></div>
+        <div class="flex items-start justify-between gap-2">
+          <h3 class="text-base font-bold">${t.title}</h3>
+          ${priorityBadge(t.priority)}
+        </div>
+        <p class="text-xs text-[#727786]">Schedule: ${t.dueDateStr}</p>
+        ${t.subtasks.length ? `
+          <div class="space-y-2">
+            <p class="text-xs font-semibold">Subtasks (${t.subtasks.filter(s=>s.done).length}/${t.subtasks.length})</p>
+            ${t.subtasks.map(s => `
+              <div onclick="toggleSubtask('${t.id}','${s.id}')" class="p-2.5 rounded-xl bg-[#F8F9FC] dark:bg-[#21262D] border border-[#EAECF1] dark:border-[#30363D] flex items-center space-x-2 cursor-pointer">
+                <span>${s.done ? '☑' : '☐'}</span>
+                <span class="text-xs ${s.done ? 'line-through text-[#A0A5B0]' : ''}">${s.title}</span>
+              </div>
+            `).join('')}
+          </div>` : ''}
+        <div class="flex space-x-2 pt-2">
+          <button onclick="toggleTask('${t.id}'); closePhoneSheet();" class="flex-1 py-2.5 rounded-full text-xs font-semibold text-white" style="background-color:var(--app-primary)">${t.isCompleted ? 'Reopen Task' : 'Mark Complete'}</button>
+          <button onclick="deleteTask('${t.id}')" class="px-4 py-2.5 rounded-full bg-[#FEF2F2] text-[#DC2626] text-xs font-semibold">Delete</button>
+        </div>
+      `);
+    }
+
+    function toggleSubtask(taskId, subId) {
+      const t = state.tasks.find(x => x.id === taskId);
+      const s = t?.subtasks.find(x => x.id === subId);
+      if (s) s.done = !s.done;
+      saveState();
+      openTaskDetail(taskId);
+      render();
+    }
+
+    function deleteTask(id) {
+      state.tasks = state.tasks.filter(x => x.id !== id);
+      saveState();
+      closePhoneSheet();
+      render();
+      showToast('Task removed');
+    }
+
+    function openTaskModal() {
+      openPhoneSheet(`
+        <div class="flex justify-center"><div class="w-9 h-1 rounded-full bg-[#EAECF1] dark:bg-[#30363D]"></div></div>
+        <h3 class="text-lg font-bold">New Task</h3>
+        <input id="ntTitle" placeholder="What needs doing?" class="w-full px-3.5 py-2.5 text-sm rounded-[14px] bg-[#F8F9FC] dark:bg-[#21262D] border border-[#EAECF1] dark:border-[#30363D]">
+        <div class="grid grid-cols-2 gap-2">
+          <select id="ntPriority" class="px-3 py-2 text-xs font-semibold rounded-[12px] bg-[#F8F9FC] dark:bg-[#21262D] border border-[#EAECF1] dark:border-[#30363D]">
+            <option value="medium">Medium Priority</option>
+            <option value="high">High Priority</option>
+            <option value="urgent">Urgent Priority</option>
+            <option value="low">Low Priority</option>
+          </select>
+          <label class="px-3 py-2 rounded-[12px] bg-[#F8F9FC] dark:bg-[#21262D] border border-[#EAECF1] dark:border-[#30363D] flex items-center space-x-2 text-xs font-semibold">
+            <input type="checkbox" id="ntReminder" class="accent-[#7167E8]"><span>Set Reminder</span>
+          </label>
+        </div>
+        <button onclick="createNewTask()" class="w-full py-3 rounded-full text-xs font-semibold text-white" style="background-color:var(--app-primary)">Create Task</button>
+      `);
+    }
+
+    function createNewTask() {
+      const title = document.getElementById('ntTitle').value.trim();
+      if (!title) { showToast('Enter a task title'); return; }
+      state.tasks.unshift({
+        id: 't_' + Date.now(),
+        title,
+        priority: document.getElementById('ntPriority').value,
+        projectId: state.projects[0]?.id || '',
+        dueDateStr: 'Today • Evening',
+        dateKey: isoDaysAgo(0),
+        isToday: true,
+        isCompleted: false,
+        hasReminder: document.getElementById('ntReminder').checked,
+        estimatedMinutes: 30,
+        subtasks: []
+      });
+      saveState();
+      closePhoneSheet();
+      render();
+      showToast('Task saved to SQLite mirror');
+    }
+
+    // ---------------------------------------------------------
+    // 3. PROJECTS + 4-TAB DETAIL (No fake avatar stacks!)
+    // ---------------------------------------------------------
+    function renderProjects() {
+      const list = projectFilter === 'all' ? state.projects : state.projects.filter(p => p.status === projectFilter);
+      return `
+      <div class="p-5 pb-24 space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-[26px] font-semibold tracking-tight">Projects</h2>
+        </div>
+        <div class="flex space-x-2 overflow-x-auto no-scrollbar">
+          ${['all', 'active', 'planning', 'completed'].map(st => `
+            <button onclick="projectFilter='${st}'; render()" class="shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold capitalize ${projectFilter === st ? 'text-white' : 'phone-card text-[#727786]'}" style="${projectFilter === st ? 'background-color:var(--app-primary)' : ''}">${st}</button>
+          `).join('')}
+        </div>
+        ${list.length === 0 ? `
+          <div class="phone-card p-6 text-center space-y-1">
+            <p class="text-sm font-semibold">No projects yet</p>
+            <p class="text-xs text-[#727786]">Tap + below to organize milestones &amp; engineering deliverables.</p>
+          </div>
+        ` : list.map(p => {
+          const pct = getProjectProgress(p);
+          return `
+            <div onclick="navigateTo('projectDetail', '${p.id}')" class="phone-card p-4 space-y-3 cursor-pointer">
+              <div class="flex items-center justify-between gap-2">
+                <span class="px-2 py-0.5 rounded-[6px] text-[11px] font-semibold bg-[#F3F1FD] dark:bg-[#1A1B2E] text-[#5D52D6]">${p.category}</span>
+                <span class="px-2 py-0.5 rounded-[6px] text-[11px] font-semibold bg-[#EEF9F2] dark:bg-[#14231C] text-[#2E8555] capitalize">${p.status}</span>
+              </div>
+              <div>
+                <h3 class="text-base font-bold">${p.name}</h3>
+                <p class="text-xs text-[#727786] truncate">${p.notes}</p>
+              </div>
+              <div class="space-y-1.5">
+                <div class="flex justify-between text-[11px] font-medium text-[#727786] tabular-nums">
+                  <span>${p.milestones.filter(m=>m.completed).length}/${p.milestones.length} milestones • ${state.tasks.filter(t=>t.projectId===p.id).length} tasks</span>
+                  <span class="font-bold" style="color:var(--app-primary)">${pct}%</span>
+                </div>
+                <div class="w-full h-1.5 rounded-full bg-[#F1F3F9] dark:bg-[#21262D] overflow-hidden">
+                  <div class="h-full rounded-full" style="width:${pct}%; background-color:var(--app-primary)"></div>
+                </div>
+              </div>
+              <p class="text-[11px] text-[#727786]">📅 Target ${p.dueDate}</p>
+            </div>`;
+        }).join('')}
+      </div>`;
+    }
+
+    function renderProjectDetail() {
+      const p = state.projects.find(x => x.id === activeProjectId);
+      if (!p) { navigateTo('projects'); return ''; }
+      const pct = getProjectProgress(p);
+      const linkedTasks = state.tasks.filter(t => t.projectId === p.id);
+
+      return `
+      <div class="p-5 pb-20 space-y-4">
+        <div class="flex items-center space-x-3">
+          <button onclick="navigateTo('projects')" class="w-10 h-10 rounded-[14px] phone-card flex items-center justify-center font-bold">←</button>
+          <div class="min-w-0 flex-1">
+            <h2 class="text-lg font-bold truncate">${p.name}</h2>
+            <p class="text-xs text-[#727786]">${p.category} • ${pct}% complete</p>
+          </div>
+        </div>
+
+        <div class="flex space-x-1.5 overflow-x-auto no-scrollbar">
+          ${['overview', 'milestones', 'tasks', 'timeline'].map(tab => `
+            <button onclick="activeProjectTab='${tab}'; render()" class="shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold capitalize ${activeProjectTab === tab ? 'text-white' : 'phone-card text-[#727786]'}" style="${activeProjectTab === tab ? 'background-color:var(--app-primary)' : ''}">${tab}</button>
+          `).join('')}
+        </div>
+
+        ${activeProjectTab === 'overview' ? `
+          <div class="phone-card p-4 space-y-3">
+            <p class="text-xs font-semibold text-[#727786]">Architecture &amp; Summary</p>
+            <p class="text-xs leading-relaxed">${p.notes}</p>
+            <div class="flex flex-wrap gap-1.5">${p.techStack.map(s => `<span class="px-2 py-0.5 rounded bg-[#F1F3F9] dark:bg-[#21262D] text-[11px] font-semibold">${s}</span>`).join('')}</div>
+          </div>
+        ` : activeProjectTab === 'milestones' ? `
+          <div class="space-y-2">
+            ${p.milestones.map(m => `
+              <div onclick="toggleMilestone('${p.id}','${m.id}')" class="phone-card p-3.5 flex items-center space-x-3 cursor-pointer">
+                <span class="w-5 h-5 rounded border-2 flex items-center justify-center text-xs ${m.completed ? 'bg-[#62B989] border-[#62B989] text-white' : 'border-[#A0A5B0]'}">${m.completed ? '✓' : ''}</span>
+                <span class="text-xs font-semibold ${m.completed ? 'line-through text-[#A0A5B0]' : ''}">${m.title}</span>
+              </div>
+            `).join('')}
+          </div>
+        ` : activeProjectTab === 'tasks' ? `
+          <div class="space-y-2">
+            ${linkedTasks.length ? linkedTasks.map(t => `<div class="phone-card p-3 text-xs font-semibold">${t.isCompleted ? '✓ ' : ''}${t.title}</div>`).join('') : '<p class="text-xs text-[#727786]">No linked tasks yet.</p>'}
+          </div>
+        ` : `
+          <div class="space-y-2">
+            ${(p.activities || []).map(a => `<div class="phone-card p-3 text-xs">• ${a}</div>`).join('')}
+          </div>
+        `}
+      </div>`;
+    }
+
+    function toggleMilestone(pid, mid) {
+      const p = state.projects.find(x => x.id === pid);
+      const m = p?.milestones.find(x => x.id === mid);
+      if (m) {
+        m.completed = !m.completed;
+        if (m.completed) playChime('goal');
+        saveState();
+        render();
+      }
+    }
+
+    function openProjectModal() {
+      openPhoneSheet(`
+        <div class="flex justify-center"><div class="w-9 h-1 rounded-full bg-[#EAECF1] dark:bg-[#30363D]"></div></div>
+        <h3 class="text-lg font-bold">New Project</h3>
+        <input id="npName" placeholder="Project name" class="w-full px-3.5 py-2.5 text-sm rounded-[14px] bg-[#F8F9FC] dark:bg-[#21262D] border border-[#EAECF1] dark:border-[#30363D]">
+        <input id="npCategory" placeholder="Category (e.g. Mobile, AI)" class="w-full px-3.5 py-2.5 text-sm rounded-[14px] bg-[#F8F9FC] dark:bg-[#21262D] border border-[#EAECF1] dark:border-[#30363D]">
+        <button onclick="createNewProject()" class="w-full py-3 rounded-full text-xs font-semibold text-white" style="background-color:var(--app-primary)">Create Project</button>
+      `);
+    }
+
+    function createNewProject() {
+      const name = document.getElementById('npName').value.trim();
+      if (!name) return;
+      state.projects.unshift({
+        id: 'p_' + Date.now(),
+        name,
+        category: document.getElementById('npCategory').value.trim() || 'Engineering',
+        status: 'active',
+        dueDate: 'Next Month',
+        techStack: ['Flutter'],
+        notes: 'New local project.',
+        milestones: [{ id: 'm_' + Date.now(), title: 'Initial Architecture', completed: false }],
+        activities: ['Project created']
+      });
+      saveState();
+      closePhoneSheet();
+      render();
+    }
+
+    // ---------------------------------------------------------
+    // 4. LEARNING (Real Trend Chart + Persisted Topic Edits)
+    // ---------------------------------------------------------
+    function renderLearning() {
+      if (state.skills.length === 0) {
+        return `
+        <div class="p-5 pb-24 space-y-5">
+          <h2 class="text-[26px] font-semibold tracking-tight">Learning</h2>
+          <div class="phone-card p-6 text-center space-y-2">
+            <p class="text-sm font-semibold">No skills tracked yet</p>
+            <p class="text-xs text-[#727786]">Add Flutter, Dart, or Systems Design to track topic roadmaps and sessions.</p>
+          </div>
+        </div>`;
+      }
+      const totalMins = state.skills.reduce((a, s) => a + s.learningMinutes, 0);
+      const totalSessions = state.skills.reduce((a, s) => a + s.sessions.length, 0);
+      const hero = state.skills.find(s => s.id === selectedHeroSkillId) || state.skills[0];
+
+      return `
+      <div class="p-5 pb-24 space-y-5">
+        <div class="flex items-center justify-between">
+          <h2 class="text-[26px] font-semibold tracking-tight">Learning</h2>
+          <button onclick="navigateTo('insights')" class="w-10 h-10 rounded-[14px] phone-card flex items-center justify-center">📊</button>
+        </div>
+
+        <!-- Learning Trend Card -->
+        <div style="border-radius:var(--app-card-radius)" class="p-4 bg-[#F3EFFD] dark:bg-[#1B1A2D] border border-[#E2D8FA] dark:border-[#30363D] space-y-3">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <p class="text-xs font-semibold text-[#727786] dark:text-[#94A3B8]">Total Learning Time</p>
+              <p class="text-[28px] font-bold tabular-nums">${formatMins(totalMins)}</p>
+            </div>
+            <span class="px-2.5 py-1 rounded-full phone-card text-[11px] font-semibold text-[#6B4FD6] tabular-nums">${state.skills.length} skills • ${totalSessions} sessions</span>
+          </div>
+          <svg viewBox="0 0 280 56" class="w-full h-14 overflow-visible">
+            <polyline fill="none" stroke="#6B4FD6" stroke-width="2.5" stroke-linecap="round" points="10,48 55,48 100,48 145,48 190,48 235,44 270,${totalMins > 0 ? 12 : 48}"/>
+            <circle cx="270" cy="${totalMins > 0 ? 12 : 48}" r="4" fill="#6B4FD6"/>
+          </svg>
+        </div>
+
+        <div class="space-y-2.5">
+          <div class="flex items-center justify-between">
+            <h3 class="text-base font-semibold">Your Skills</h3>
+          </div>
+          ${state.skills.map(s => {
+            const p = getSkillProgress(s);
+            return `
+              <div onclick="navigateTo('skillDetail', '${s.id}')" class="phone-card p-4 space-y-2.5 cursor-pointer">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-sm font-semibold">${s.name}</p>
+                    <p class="text-[11px] text-[#727786]">${s.category} • ${s.currentLevel} → ${s.targetLevel}</p>
+                  </div>
+                  <span class="text-base font-bold text-[#6B4FD6] tabular-nums">${p.pct}%</span>
+                </div>
+                <div class="w-full h-1.5 rounded-full bg-[#F1F3F9] dark:bg-[#21262D]">
+                  <div class="h-full rounded-full bg-[#6B4FD6]" style="width:${p.pct}%"></div>
+                </div>
+                <div class="flex items-center justify-between text-[11px]">
+                  <span class="px-2 py-0.5 rounded bg-[#F3EFFD] dark:bg-[#1B1A2D] text-[#6B4FD6] font-semibold">${p.done} of ${p.total} topics</span>
+                  <span class="text-[#727786] tabular-nums">${formatMins(s.learningMinutes)}</span>
+                </div>
+              </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+    }
+
+    function renderSkillDetail() {
+      const s = state.skills.find(x => x.id === activeSkillId);
+      if (!s) { navigateTo('learning'); return ''; }
+      return `
+      <div class="p-5 pb-20 space-y-4">
+        <div class="flex items-center space-x-3">
+          <button onclick="navigateTo('learning')" class="w-10 h-10 rounded-[14px] phone-card flex items-center justify-center font-bold">←</button>
+          <div>
+            <h2 class="text-lg font-bold">${s.name}</h2>
+            <p class="text-xs text-[#727786]">${formatMins(s.learningMinutes)} logged</p>
+          </div>
+        </div>
+        <button onclick="logStudySession('${s.id}', 30)" class="w-full py-2.5 rounded-full text-xs font-semibold text-white" style="background-color:var(--app-primary)">+ Log 30m Study Session</button>
+        ${s.modules.map(m => `
+          <div class="phone-card p-4 space-y-2.5">
+            <h4 class="text-sm font-bold">${m.title}</h4>
+            ${m.topics.map(t => `
+              <div onclick="cycleTopic('${s.id}','${m.id}','${t.id}')" class="p-2.5 rounded-xl bg-[#F8F9FC] dark:bg-[#21262D] border border-[#EAECF1] dark:border-[#30363D] flex items-center justify-between cursor-pointer">
+                <span class="text-xs font-medium">${t.title}</span>
+                <span class="px-2 py-0.5 rounded text-[10px] font-semibold text-white ${t.status === 'completed' ? 'bg-[#2E8555]' : 'bg-[#6B4FD6]'}">${t.status.replace('_', ' ')}</span>
+              </div>
+            `).join('')}
+          </div>
+        `).join('')}
+      </div>`;
+    }
+
+    function cycleTopic(sid, mid, tid) {
+      const s = state.skills.find(x => x.id === sid);
+      const m = s?.modules.find(x => x.id === mid);
+      const t = m?.topics.find(x => x.id === tid);
+      if (!t) return;
+      t.status = t.status === 'completed' ? 'not_started' : 'completed';
+      if (t.status === 'completed') playChime('task');
+      saveState();
+      render();
+    }
+
+    function logStudySession(sid, mins) {
+      const s = state.skills.find(x => x.id === sid);
+      if (!s) return;
+      s.learningMinutes += mins;
+      s.sessions.push({ dateKey: isoDaysAgo(0), minutes: mins });
+      playChime('task');
+      saveState();
+      render();
+      showToast(`Logged ${mins}m for ${s.name}`);
+    }
+
+    function openSkillModal() {
+      openPhoneSheet(`
+        <div class="flex justify-center"><div class="w-9 h-1 rounded-full bg-[#EAECF1] dark:bg-[#30363D]"></div></div>
+        <h3 class="text-lg font-bold">Add Skill</h3>
+        <input id="nsName" placeholder="Skill name (e.g. Rust, Kubernetes)" class="w-full px-3.5 py-2.5 text-sm rounded-[14px] bg-[#F8F9FC] dark:bg-[#21262D] border border-[#EAECF1] dark:border-[#30363D]">
+        <button onclick="const n=document.getElementById('nsName').value.trim(); if(n){state.skills.push({id:'sk_'+Date.now(),name:n,category:'Tech',currentLevel:'beginner',targetLevel:'advanced',learningMinutes:0,sessions:[],modules:[]});saveState();closePhoneSheet();render();}" class="w-full py-3 rounded-full text-xs font-semibold text-white" style="background-color:var(--app-primary)">Create Skill</button>
+      `);
+    }
+
+    // ---------------------------------------------------------
+    // 5. MORE HUB (Grouped Utility Directory)
+    // ---------------------------------------------------------
+    function renderMoreHub() {
+      const row = (icon, bg, color, title, sub, route) => `
+        <div onclick="navigateTo('${route}')" class="px-4 py-3.5 flex items-center space-x-3 cursor-pointer hover:bg-[#F8F9FC] dark:hover:bg-[#21262D] transition">
+          <div class="w-10 h-10 rounded-[11px] flex items-center justify-center text-base shrink-0" style="background:${bg}; color:${color}">${icon}</div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-semibold">${title}</p>
+            <p class="text-[11px] text-[#727786] dark:text-[#94A3B8] truncate">${sub}</p>
+          </div>
+          <span class="text-[#A0A5B0]">›</span>
+        </div>`;
+
+      return `
+      <div class="p-5 pb-24 space-y-5">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-[26px] font-semibold tracking-tight">Command Hub</h2>
+            <p class="text-xs text-[#727786]">Tools, reflection &amp; workspace configuration</p>
+          </div>
+          <div class="flex space-x-1">
+            <button onclick="setTheme(state.theme==='dark'?'light':'dark')" class="w-10 h-10 rounded-[14px] phone-card flex items-center justify-center">${state.theme === 'dark' ? '☀' : '🌙'}</button>
+            <button onclick="navigateTo('settings')" class="w-10 h-10 rounded-[14px] phone-card flex items-center justify-center">⚙</button>
+          </div>
+        </div>
+
+        <div onclick="navigateTo('settings')" class="phone-card p-4 flex items-center space-x-3 cursor-pointer">
+          ${renderLogoMark(44)}
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-bold truncate">${state.displayName}</p>
+            <p class="text-[11px] text-[#727786] truncate">FALL Personal Workspace • 100% Local-First</p>
+          </div>
+          <span class="text-[#A0A5B0]">›</span>
+        </div>
+
+        <div class="space-y-1.5">
+          <p class="text-sm font-semibold">Execution &amp; Consistency</p>
+          <div class="phone-card overflow-hidden divide-y divide-[#EAECF1] dark:divide-[#21262D]">
+            ${row('⚑', 'rgba(183,121,31,0.12)', '#B7791F', 'Goals', 'Quarterly & yearly milestone targets', 'goals')}
+            ${row('↻', 'rgba(46,133,85,0.12)', '#2E8555', 'Habits', 'Daily engineering habits & streak tracking', 'habits')}
+            ${row('⏱', 'rgba(29,127,168,0.12)', '#1D7FA8', 'Focus Timer', 'Pomodoro & deep work session logger', 'focus')}
+            ${row('📅', 'rgba(43,127,184,0.12)', '#2B7FB8', 'Calendar & Agenda', 'Date-based schedule, tasks & deadlines', 'calendar')}
+          </div>
+        </div>
+
+        <div class="space-y-1.5">
+          <p class="text-sm font-semibold">Knowledge &amp; Insights</p>
+          <div class="phone-card overflow-hidden divide-y divide-[#EAECF1] dark:divide-[#21262D]">
+            ${row('📖', 'rgba(113,103,232,0.12)', '#7167E8', 'Knowledge Vault', 'Architecture notes, resources & ideas', 'vault')}
+            ${row('✎', 'rgba(107,79,214,0.12)', '#6B4FD6', 'Developer Journal', 'Daily engineering log & solutions', 'journal')}
+            ${row('📊', 'rgba(98,185,137,0.12)', '#62B989', 'Analytics & Insights', 'Real completion rates & 28-day heatmap', 'insights')}
+          </div>
+        </div>
+
+        <div class="space-y-1.5">
+          <p class="text-sm font-semibold">Preferences &amp; System</p>
+          <div class="phone-card overflow-hidden divide-y divide-[#EAECF1] dark:divide-[#21262D]">
+            ${row('⚙', 'rgba(114,119,134,0.12)', '#727786', 'Settings, Backups & Sounds', 'Theme, notifications, chimes & JSON export', 'settings')}
+            ${row('✨', 'rgba(113,103,232,0.12)', '#7167E8', 'Welcome Tour', 'Review FALL workflow overview', 'onboarding')}
+          </div>
+        </div>
+      </div>`;
+    }
+
+    // ---------------------------------------------------------
+    // 6. GOALS (Separated Screen) & 7. HABITS
+    // ---------------------------------------------------------
+    function renderGoals() {
+      const filtered = goalFilter === 'all' ? state.goals : state.goals.filter(g => g.type === goalFilter);
+      return `
+      <div class="p-5 pb-24 space-y-4">
+        <div class="flex items-center space-x-3">
+          <button onclick="navigateTo('more')" class="w-10 h-10 rounded-[14px] phone-card flex items-center justify-center font-bold">←</button>
+          <div>
+            <h2 class="text-xl font-semibold">Goals</h2>
+            <p class="text-xs text-[#727786]">Measurable outcomes &amp; milestone targets</p>
+          </div>
+        </div>
+        <div class="flex space-x-2 overflow-x-auto no-scrollbar">
+          ${['all', 'daily', 'weekly', 'monthly'].map(c => `
+            <button onclick="goalFilter='${c}'; render()" class="shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold capitalize ${goalFilter === c ? 'text-white' : 'phone-card text-[#727786]'}" style="${goalFilter === c ? 'background-color:var(--app-primary)' : ''}">${c}</button>
+          `).join('')}
+        </div>
+        ${filtered.length === 0 ? `
+          <div class="phone-card p-6 text-center space-y-1">
+            <p class="text-sm font-semibold">No goals tracked yet</p>
+            <p class="text-xs text-[#727786]">Goals measure outcomes over time, distinct from daily tasks.</p>
+          </div>
+        ` : filtered.map(g => {
+          const pct = Math.min(100, Math.round((g.currentValue / g.targetValue) * 100));
+          const achieved = g.currentValue >= g.targetValue;
+          return `
+            <div style="border-radius:var(--app-card-radius)" class="p-4 bg-[#FFF8E6] dark:bg-[#241E14] border border-[#F7E4B4] dark:border-[#30363D] space-y-3">
+              <div class="flex items-start justify-between gap-2">
+                <div>
+                  <p class="text-sm font-bold">${g.title}</p>
+                  <p class="text-xs text-[#727786] tabular-nums">${g.currentValue} of ${g.targetValue} ${g.unit}</p>
+                </div>
+                <span class="px-2 py-0.5 rounded bg-white/80 dark:bg-white/10 text-[10px] font-bold uppercase ${achieved ? 'text-[#2E8555]' : 'text-[#B7791F]'}">${g.type}</span>
+              </div>
+              <div class="space-y-1">
+                <div class="flex justify-between text-[11px] font-semibold">
+                  <span>${achieved ? 'Target achieved' : 'Progress'}</span>
+                  <span class="tabular-nums">${pct}%</span>
+                </div>
+                <div class="w-full h-1.5 rounded-full bg-[#B7791F]/20">
+                  <div class="h-full rounded-full ${achieved ? 'bg-[#62B989]' : 'bg-[#B7791F]'}" style="width:${pct}%"></div>
+                </div>
+              </div>
+              <div class="flex items-center space-x-2">
+                <button onclick="incrementGoal('${g.id}', 1)" class="px-3.5 py-1.5 rounded-full text-xs font-semibold text-white" style="background-color:var(--app-primary)">+1 ${g.unit}</button>
+                <button onclick="state.goals = state.goals.filter(x=>x.id!=='${g.id}'); saveState(); render();" class="ml-auto text-xs text-[#DC2626] font-semibold">Delete</button>
+              </div>
+            </div>`;
+        }).join('')}
+      </div>`;
+    }
+
+    function incrementGoal(id, delta) {
+      const g = state.goals.find(x => x.id === id);
+      if (!g) return;
+      const wasDone = g.currentValue >= g.targetValue;
+      g.currentValue = Math.round((g.currentValue + delta) * 10) / 10;
+      if (!wasDone && g.currentValue >= g.targetValue) playChime('goal');
+      saveState();
+      render();
+    }
+
+    function openGoalModal() {
+      openPhoneSheet(`
+        <div class="flex justify-center"><div class="w-9 h-1 rounded-full bg-[#EAECF1] dark:bg-[#30363D]"></div></div>
+        <h3 class="text-lg font-bold">New Measurable Goal</h3>
+        <input id="ngTitle" placeholder="Goal outcome title" class="w-full px-3.5 py-2.5 text-sm rounded-[14px] bg-[#F8F9FC] dark:bg-[#21262D] border border-[#EAECF1] dark:border-[#30363D]">
+        <div class="grid grid-cols-2 gap-2">
+          <input id="ngTarget" type="number" value="10" class="px-3 py-2 text-xs rounded-[12px] bg-[#F8F9FC] dark:bg-[#21262D] border border-[#EAECF1] dark:border-[#30363D]">
+          <input id="ngUnit" value="hrs" placeholder="unit" class="px-3 py-2 text-xs rounded-[12px] bg-[#F8F9FC] dark:bg-[#21262D] border border-[#EAECF1] dark:border-[#30363D]">
+        </div>
+        <button onclick="const t=document.getElementById('ngTitle').value.trim(); if(t){state.goals.unshift({id:'g_'+Date.now(),title:t,type:'weekly',currentValue:0,targetValue:Number(document.getElementById('ngTarget').value)||10,unit:document.getElementById('ngUnit').value||'units'});saveState();closePhoneSheet();render();}" class="w-full py-3 rounded-full text-xs font-semibold text-white" style="background-color:var(--app-primary)">Create Goal</button>
+      `);
+    }
+
+    function renderHabits() {
+      return `
+      <div class="p-5 pb-24 space-y-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-3">
+            <button onclick="navigateTo('more')" class="w-10 h-10 rounded-[14px] phone-card flex items-center justify-center font-bold">←</button>
+            <div>
+              <h2 class="text-xl font-semibold">Habits</h2>
+              <p class="text-xs text-[#727786]">Daily rituals &amp; streaks</p>
+            </div>
+          </div>
+          <button onclick="navigateTo('goals')" class="px-3 py-1.5 rounded-full phone-card text-xs font-semibold">⚑ Goals</button>
+        </div>
+
+        ${state.habits.length === 0 ? `
+          <div class="phone-card p-6 text-center space-y-1">
+            <p class="text-sm font-semibold">No habits yet</p>
+            <p class="text-xs text-[#727786]">Tap + to establish daily engineering habits.</p>
+          </div>
+        ` : state.habits.map(h => `
+          <div style="border-radius:var(--app-card-radius)" class="p-4 bg-[#EEF9F2] dark:bg-[#14231C] border border-[#CDEBD7] dark:border-[#30363D] space-y-3">
+            <div class="flex items-center space-x-3">
+              <button onclick="toggleHabit('${h.id}')" class="w-6 h-6 rounded-full border-2 flex items-center justify-center text-xs font-bold ${h.completedToday ? 'bg-[#2E8555] border-[#2E8555] text-white' : 'border-[#2E8555]'}">${h.completedToday ? '✓' : ''}</button>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-bold">${h.title}</p>
+                <p class="text-[11px] text-[#727786] tabular-nums">${h.weekDays.filter(Boolean).length}/${h.targetDays} this week</p>
+              </div>
+              <span class="px-2 py-0.5 rounded bg-white/80 dark:bg-white/10 text-[11px] font-semibold text-[#2E8555] tabular-nums">🔥 ${h.streak}d</span>
+            </div>
+            <div class="p-2.5 rounded-[12px] phone-card flex justify-between">
+              ${['W', 'T', 'F', 'S', 'S', 'M', 'T'].map((d, i) => `
+                <div class="flex flex-col items-center space-y-1">
+                  <span class="text-[10px] text-[#727786]">${d}</span>
+                  <div class="w-6 h-6 rounded-full flex items-center justify-center text-[11px] ${h.weekDays[i] ? 'bg-[#2E8555] text-white' : 'bg-[#F1F3F9] dark:bg-[#21262D]'}">${h.weekDays[i] ? '✓' : ''}</div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `).join('')}
+      </div>`;
+    }
+
+    function toggleHabit(id) {
+      const h = state.habits.find(x => x.id === id);
+      if (!h) return;
+      h.completedToday = !h.completedToday;
+      h.weekDays[6] = h.completedToday;
+      h.streak = h.completedToday ? Math.max(1, h.streak + (h.streak === 0 ? 1 : 0)) : Math.max(0, h.streak - 1);
+      saveState();
+      render();
+    }
+
+    function openHabitModal() {
+      openPhoneSheet(`
+        <div class="flex justify-center"><div class="w-9 h-1 rounded-full bg-[#EAECF1] dark:bg-[#30363D]"></div></div>
+        <h3 class="text-lg font-bold">New Daily Habit</h3>
+        <input id="nhTitle" placeholder="e.g. Read 20m system architecture docs" class="w-full px-3.5 py-2.5 text-sm rounded-[14px] bg-[#F8F9FC] dark:bg-[#21262D] border border-[#EAECF1] dark:border-[#30363D]">
+        <button onclick="const t=document.getElementById('nhTitle').value.trim(); if(t){state.habits.unshift({id:'h_'+Date.now(),title:t,targetDays:7,streak:0,completedToday:false,weekDays:[false,false,false,false,false,false,false],dateLogs:[]});saveState();closePhoneSheet();render();}" class="w-full py-3 rounded-full text-xs font-semibold text-white" style="background-color:var(--app-primary)">Save Habit</button>
+      `);
+    }
+
+    // ---------------------------------------------------------
+    // 8. FOCUS TIMER
+    // ---------------------------------------------------------
+    function renderFocus() {
+      const mins = String(Math.floor(focusRemaining / 60)).padStart(2, '0');
+      const secs = String(focusRemaining % 60).padStart(2, '0');
+      const progress = 1 - (focusRemaining / focusTotalSeconds);
+      const circ = 2 * Math.PI * 104;
+      const offset = circ * (1 - progress);
+
+      return `
+      <div class="p-5 pb-16 space-y-6">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-3">
+            <button onclick="navigateTo('more')" class="w-10 h-10 rounded-[14px] phone-card flex items-center justify-center font-bold">←</button>
+            <h2 class="text-xl font-semibold">Focus Time</h2>
+          </div>
+          <div class="flex space-x-2">
+            <button onclick="state.feedback.soundEffectsEnabled=!state.feedback.soundEffectsEnabled; saveState(); render();" class="w-10 h-10 rounded-[14px] phone-card flex items-center justify-center">${state.feedback.soundEffectsEnabled ? '🔊' : '🔇'}</button>
+            <button onclick="navigateTo('settings')" class="w-10 h-10 rounded-[14px] phone-card flex items-center justify-center">⚙</button>
+          </div>
+        </div>
+
+        <div class="flex justify-center gap-2 flex-wrap">
+          ${[['pomodoro', 'Pomodoro', 25], ['shortBreak', 'Short Break', 5], ['longBreak', 'Long Break', 15]].map(([k, lbl, m]) => `
+            <button onclick="switchFocusMode('${k}', ${m})" class="px-3.5 py-1.5 rounded-full text-xs font-semibold transition ${focusMode === k ? 'bg-[#1D7FA8] text-white' : 'phone-card text-[#727786]'}">${lbl}</button>
+          `).join('')}
+        </div>
+
+        <div class="flex justify-center">
+          <div class="relative w-60 h-60 flex items-center justify-center">
+            <svg class="w-60 h-60 -rotate-90" viewBox="0 0 240 240">
+              <circle cx="120" cy="120" r="104" fill="none" stroke="${state.theme==='dark'?'#21262D':'#F1F3F9'}" stroke-width="14"/>
+              <circle cx="120" cy="120" r="104" fill="none" stroke="var(--app-primary)" stroke-width="14" stroke-linecap="round" stroke-dasharray="${circ}" stroke-dashoffset="${offset}"/>
+            </svg>
+            <div class="absolute text-center">
+              <p class="text-[44px] font-bold tracking-tight tabular-nums leading-none">${mins}:${secs}</p>
+              <p class="text-xs font-semibold text-[#727786] mt-1">${focusRunning ? 'Focus Session • Active' : 'Focus Session'}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-center space-x-5">
+          <button onclick="resetFocus()" class="w-12 h-12 rounded-[14px] phone-card flex items-center justify-center text-lg">↻</button>
+          <button onclick="toggleFocus()" class="w-16 h-16 rounded-full text-white flex items-center justify-center text-2xl shadow-md" style="background-color:var(--app-primary)">${focusRunning ? '❚❚' : '▶'}</button>
+          <button onclick="completeFocusSession()" class="w-12 h-12 rounded-[14px] phone-card flex items-center justify-center text-lg text-[#62B989]">✓</button>
+        </div>
+
+        <div class="phone-card p-4 space-y-3">
+          <p class="text-xs font-semibold">Session Focus Target</p>
+          <select onchange="focusLinkedTaskId=this.value" class="w-full px-3 py-2 text-xs rounded-xl bg-[#F8F9FC] dark:bg-[#21262D] border border-[#EAECF1] dark:border-[#30363D]">
+            <option value="">General deep work</option>
+            ${state.tasks.filter(t => !t.isCompleted).map(t => `<option value="${t.id}" ${focusLinkedTaskId===t.id?'selected':''}>${t.title}</option>`).join('')}
+          </select>
+        </div>
+      </div>`;
+    }
+
+    function switchFocusMode(mode, mins) {
+      clearInterval(focusInterval);
+      focusRunning = false;
+      focusMode = mode;
+      focusTotalSeconds = mins * 60;
+      focusRemaining = focusTotalSeconds;
+      render();
+    }
+
+    function toggleFocus() {
+      if (focusRunning) {
+        clearInterval(focusInterval);
+        focusRunning = false;
+      } else {
+        playChime('focus_start');
+        focusRunning = true;
+        focusInterval = setInterval(() => {
+          if (focusRemaining > 0) {
+            focusRemaining--;
+            if (currentScreen === 'focus') render();
+          } else {
+            completeFocusSession();
+          }
+        }, 1000);
+      }
+      render();
+    }
+
+    function resetFocus() {
+      clearInterval(focusInterval);
+      focusRunning = false;
+      focusRemaining = focusTotalSeconds;
+      render();
+    }
+
+    function completeFocusSession() {
+      clearInterval(focusInterval);
+      focusRunning = false;
+      const logged = Math.max(1, Math.round((focusTotalSeconds - focusRemaining) / 60) || Math.round(focusTotalSeconds / 60));
+      state.focusLogs.unshift({ id: 'f_' + Date.now(), minutes: logged, dateKey: isoDaysAgo(0), mode: focusMode });
+      playChime('focus_complete');
+      saveState();
+      focusRemaining = focusTotalSeconds;
+      render();
+      showToast(`Completed ${logged}m focus session!`);
+    }
+
+    // ---------------------------------------------------------
+    // 9. CALENDAR & 10. VAULT / DEV JOURNAL
+    // ---------------------------------------------------------
+    function renderCalendar() {
+      const offsets = [-3, -2, -1, 0, 1, 2, 3];
+      const activeKey = isoDaysAgo(-selectedCalOffset);
+      const dayTasks = state.tasks.filter(t => t.dateKey === activeKey);
+
+      return `
+      <div class="p-5 pb-24 space-y-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-2">
+            <button onclick="navigateTo('more')" class="w-10 h-10 rounded-[14px] phone-card flex items-center justify-center font-bold">←</button>
+            <h2 class="text-lg font-bold">Nov 2026</h2>
+          </div>
+          <button onclick="calendarMonthExpanded=!calendarMonthExpanded; render()" class="px-3 py-1.5 rounded-full phone-card text-xs font-semibold">${calendarMonthExpanded ? 'Week' : 'Month'}</button>
+        </div>
+
+        <div class="phone-card p-3 grid grid-cols-7 gap-1 text-center">
+          ${offsets.map(off => {
+            const d = new Date(Date.now() + off * DAY_MS);
+            const sel = off === selectedCalOffset;
+            return `
+              <button onclick="selectedCalOffset=${off}; render()" class="py-2 rounded-[12px] flex flex-col items-center ${sel ? 'text-white' : ''}" style="${sel ? 'background-color:var(--app-primary)' : ''}">
+                <span class="text-[10px] opacity-80">${d.toLocaleDateString('en',{weekday:'short'}).slice(0,2)}</span>
+                <span class="text-sm font-bold tabular-nums">${d.getDate()}</span>
+              </button>`;
+          }).join('')}
+        </div>
+
+        <p class="text-sm font-semibold">Scheduled Tasks (${dayTasks.length})</p>
+        ${dayTasks.length === 0 ? `<div class="phone-card p-5 text-xs text-[#727786] text-center">No events scheduled on this date.</div>` : dayTasks.map(t => `
+          <div class="phone-card p-3.5 flex items-center justify-between">
+            <div><p class="text-sm font-semibold">${t.title}</p><p class="text-xs text-[#727786]">${t.dueDateStr}</p></div>
+            ${priorityBadge(t.priority)}
+          </div>
+        `).join('')}
+      </div>`;
+    }
+
+    function renderVault(journalMode) {
+      const cat = journalMode ? 'journal' : vaultCategory;
+      const items = state.notes.filter(n => (cat === 'all' || n.category === cat) &&
+        (!vaultQuery || n.title.toLowerCase().includes(vaultQuery) || n.content.toLowerCase().includes(vaultQuery)));
+
+      return `
+      <div class="p-5 pb-24 space-y-4">
+        <div class="flex items-center space-x-3">
+          <button onclick="navigateTo('more')" class="w-10 h-10 rounded-[14px] phone-card flex items-center justify-center font-bold">←</button>
+          <div>
+            <h2 class="text-xl font-semibold">${journalMode ? 'Developer Journal' : 'Knowledge Vault'}</h2>
+            <p class="text-xs text-[#727786]">${journalMode ? 'Daily dev logs, bugs solved & next steps' : 'Technical notes & decisions'}</p>
+          </div>
+        </div>
+
+        <input value="${vaultQuery}" oninput="vaultQuery=this.value.toLowerCase(); render()" placeholder="Search titles, notes, tags..." class="w-full px-4 py-2 text-xs rounded-full phone-card focus:outline-none">
+
+        <div class="flex space-x-2 overflow-x-auto no-scrollbar">
+          ${[['all','All'],['journal','Dev Journal'],['technical','Technical'],['idea','Ideas']].map(([k,l]) => `
+            <button onclick="vaultCategory='${k}'; currentScreen='${k==='journal'?'journal':'vault'}'; render()" class="shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold ${(journalMode?'journal':vaultCategory)===k?'text-white':'phone-card text-[#727786]'}" style="${(journalMode?'journal':vaultCategory)===k?'background-color:var(--app-primary)':''}">${l}</button>
+          `).join('')}
+        </div>
+
+        ${items.length === 0 ? `
+          <div class="phone-card p-6 text-center space-y-2">
+            <p class="text-sm font-semibold">${journalMode ? 'No journal entries yet' : 'No notes match your filter'}</p>
+            <button onclick="openNoteModal(${journalMode})" class="px-4 py-1.5 rounded-full phone-card text-xs font-semibold">Create Entry</button>
+          </div>
+        ` : items.map(n => `
+          <div class="phone-card p-4 space-y-2">
+            <div class="flex items-center justify-between text-[11px]">
+              <span class="px-2 py-0.5 rounded bg-[#EEECFC] dark:bg-[#1A1B2E] text-[#7167E8] font-semibold">${n.category === 'journal' ? 'Dev Journal' : n.category.toUpperCase()}</span>
+              <span class="text-[#727786]">${n.dateStr}</span>
+            </div>
+            <p class="text-sm font-bold">${n.title}</p>
+            <p class="text-xs text-[#727786] whitespace-pre-line line-clamp-4">${n.content}</p>
+          </div>
+        `).join('')}
+      </div>`;
+    }
+
+    function openNoteModal(forceJournal = false) {
+      const tpl = forceJournal ? '## Development Notes\n- \n\n## Problems & Solutions\n- \n\n## Next Steps\n- ' : '';
+      openPhoneSheet(`
+        <div class="flex justify-center"><div class="w-9 h-1 rounded-full bg-[#EAECF1] dark:bg-[#30363D]"></div></div>
+        <h3 class="text-lg font-bold">${forceJournal ? 'New Journal Entry' : 'New Note'}</h3>
+        <input id="nnTitle" value="${forceJournal ? 'Dev Log — Today' : ''}" placeholder="Entry title" class="w-full px-3.5 py-2.5 text-sm rounded-[14px] bg-[#F8F9FC] dark:bg-[#21262D] border border-[#EAECF1] dark:border-[#30363D]">
+        <textarea id="nnBody" rows="5" placeholder="Markdown content..." class="w-full px-3.5 py-2.5 text-xs rounded-[14px] bg-[#F8F9FC] dark:bg-[#21262D] border border-[#EAECF1] dark:border-[#30363D]">${tpl}</textarea>
+        <button onclick="const ti=document.getElementById('nnTitle').value.trim(); if(ti){state.notes.unshift({id:'n_'+Date.now(),title:ti,category:'${forceJournal?'journal':'technical'}',dateStr:'Today',isPinned:false,tags:[],content:document.getElementById('nnBody').value});saveState();closePhoneSheet();render();}" class="w-full py-3 rounded-full text-xs font-semibold text-white" style="background-color:var(--app-primary)">Save Entry</button>
+      `);
+    }
+
+    // ---------------------------------------------------------
+    // 11. ANALYTICS & INSIGHTS (Real Computed DB Data Only!)
+    // ---------------------------------------------------------
+    function renderInsights() {
+      const hasAny = state.tasks.length || state.projects.length || state.skills.length || state.focusLogs.length || state.habits.length;
+      if (!hasAny) {
+        return `
+        <div class="p-5 space-y-5">
+          <div class="flex items-center space-x-3">
+            <button onclick="navigateTo('more')" class="w-10 h-10 rounded-[14px] phone-card flex items-center justify-center font-bold">←</button>
+            <div><h2 class="text-xl font-semibold">Analytics</h2><p class="text-xs text-[#727786]">${analyticsRange}</p></div>
+          </div>
+          <div class="phone-card p-6 text-center space-y-1">
+            <p class="text-sm font-semibold">No activity recorded yet</p>
+            <p class="text-xs text-[#727786]">Complete tasks, log learning sessions, or finish focus timers to unlock real insights.</p>
+          </div>
+        </div>`;
+      }
+
+      const learnMins = state.skills.reduce((a, s) => a + s.learningMinutes, 0);
+      const focusMins = state.focusLogs.reduce((a, f) => a + f.minutes, 0);
+      const taskDoneCount = state.tasks.filter(t => t.isCompleted).length;
+      const taskExecMins = state.tasks.filter(t => t.isCompleted).reduce((a, t) => a + (t.estimatedMinutes || 30), 0);
+      const activeProj = state.projects.filter(p => p.status === 'active').length;
+      const doneProj = state.projects.filter(p => p.status === 'completed').length;
+
+      // Composite Completion Index matching InsightsScreen
+      const parts = [];
+      if (state.tasks.length) parts.push(taskDoneCount / state.tasks.length);
+      if (state.projects.length) parts.push(state.projects.map(p => getProjectProgress(p)/100).reduce((a,b)=>a+b,0) / state.projects.length);
+      const totTopics = state.skills.reduce((a, s) => a + getSkillProgress(s).total, 0);
+      const doneTopics = state.skills.reduce((a, s) => a + getSkillProgress(s).done, 0);
+      if (totTopics > 0) parts.push(doneTopics / totTopics);
+      if (state.habits.length) parts.push(state.habits.filter(h => h.completedToday).length / state.habits.length);
+      const overallPct = parts.length ? Math.round((parts.reduce((a,b)=>a+b,0) / parts.length) * 100) : 0;
+
+      const totalEffort = Math.max(1, taskExecMins + learnMins + focusMins);
+      const circ = 2 * Math.PI * 66;
+      const off = circ * (1 - overallPct / 100);
+
+      // 28-day activity map from real items
+      const countsByDay = {};
+      const inc = k => { if (k) countsByDay[k] = (countsByDay[k] || 0) + 1; };
+      state.tasks.filter(t => t.isCompleted).forEach(t => inc(t.completedDateKey || t.dateKey));
+      state.skills.forEach(s => s.sessions.forEach(se => inc(se.dateKey)));
+      state.focusLogs.forEach(f => inc(f.dateKey));
+      state.habits.forEach(h => (h.dateLogs || []).forEach(inc));
+
+      return `
+      <div class="p-5 pb-16 space-y-5">
+        <div class="flex items-center space-x-3">
+          <button onclick="navigateTo('more')" class="w-10 h-10 rounded-[14px] phone-card flex items-center justify-center font-bold">←</button>
+          <div>
+            <h2 class="text-xl font-semibold">Analytics</h2>
+            <p class="text-xs text-[#727786]">Real progress &amp; activity intelligence</p>
+          </div>
+        </div>
+
+        <div class="flex space-x-2">
+          ${['7D', '30D', '3M', '1Y'].map(tf => `
+            <button onclick="analyticsRange='${tf}'; render()" class="px-3.5 py-1.5 rounded-full text-xs font-semibold ${analyticsRange === tf ? 'text-white' : 'phone-card text-[#727786]'}" style="${analyticsRange === tf ? 'background-color:var(--app-primary)' : ''}">${tf}</button>
+          `).join('')}
+        </div>
+
+        <div class="phone-card p-5 text-center space-y-4">
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-semibold">Overall Execution</span>
+            <span class="px-2 py-0.5 rounded bg-[#EEECFC] dark:bg-[#1A1B2E] text-[#7167E8] text-xs font-semibold">${analyticsRange}</span>
+          </div>
+          <div class="relative w-40 h-40 mx-auto flex items-center justify-center">
+            <svg class="w-40 h-40 -rotate-90" viewBox="0 0 160 160">
+              <circle cx="80" cy="80" r="66" fill="none" stroke="${state.theme==='dark'?'#21262D':'#EFF3F8'}" stroke-width="13"/>
+              <circle cx="80" cy="80" r="66" fill="none" stroke="var(--app-primary)" stroke-width="13" stroke-linecap="round" stroke-dasharray="${circ}" stroke-dashoffset="${off}"/>
+            </svg>
+            <div class="absolute">
+              <p class="text-3xl font-bold tabular-nums">${overallPct}%</p>
+              <p class="text-[11px] text-[#727786]">Completion Index</p>
+            </div>
+          </div>
+          <p class="text-xs text-[#727786]">Derived from ${parts.length} active modules in local store.</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div class="phone-card p-4"><p class="text-[11px] text-[#727786]">🎓 Learning</p><p class="text-xl font-bold tabular-nums mt-1">${formatMins(learnMins)}</p></div>
+          <div class="phone-card p-4"><p class="text-[11px] text-[#727786]">⏱ Focus</p><p class="text-xl font-bold tabular-nums mt-1">${formatMins(focusMins)}</p></div>
+          <div class="phone-card p-4"><p class="text-[11px] text-[#727786]">✓ Tasks Done</p><p class="text-xl font-bold tabular-nums mt-1">${taskDoneCount}</p></div>
+          <div class="phone-card p-4"><p class="text-[11px] text-[#727786]">📁 Projects</p><p class="text-sm font-bold tabular-nums mt-1">${activeProj} active / ${doneProj} done</p></div>
+        </div>
+
+        <!-- Real Effort Breakdown -->
+        <div class="phone-card p-4 space-y-2.5">
+          <p class="text-sm font-semibold">Effort Breakdown</p>
+          <div class="h-3 rounded-full overflow-hidden flex bg-[#F1F3F9] dark:bg-[#21262D]">
+            <div style="width:${Math.round(taskExecMins / totalEffort * 100)}%; background:#7167E8"></div>
+            <div style="width:${Math.round(learnMins / totalEffort * 100)}%; background:#62B989"></div>
+            <div style="width:${Math.round(focusMins / totalEffort * 100)}%; background:#70BDEB"></div>
+          </div>
+          <div class="space-y-1 text-xs">
+            <div class="flex justify-between"><span>● Tasks (completed)</span><span class="tabular-nums text-[#727786]">${taskExecMins}m</span></div>
+            <div class="flex justify-between"><span>● Learning sessions</span><span class="tabular-nums text-[#727786]">${learnMins}m</span></div>
+            <div class="flex justify-between"><span>● Focus timer</span><span class="tabular-nums text-[#727786]">${focusMins}m</span></div>
+          </div>
+        </div>
+
+        <!-- Real 28-Day Heatmap -->
+        <div class="phone-card p-4 space-y-2.5">
+          <p class="text-sm font-semibold">28-Day Activity Heatmap</p>
+          <div class="grid grid-cols-7 gap-2 text-center">
+            ${['M','T','W','T','F','S','S'].map(d => `<span class="text-[10px] text-[#A0A5B0]">${d}</span>`).join('')}
+            ${Array.from({length: 28}, (_, i) => {
+              const daysAgo = 27 - i;
+              const c = countsByDay[isoDaysAgo(daysAgo)] || 0;
+              const bg = c === 0 ? (state.theme==='dark'?'#21262D':'#F1F3F9') : c <= 2 ? 'rgba(113,103,232,0.35)' : '#7167E8';
+              return `<div class="h-6 rounded-[6px] ${daysAgo===0 ? 'ring-2 ring-[#7167E8]' : ''}" style="background:${bg}" title="${isoDaysAgo(daysAgo)}: ${c} actions"></div>`;
+            }).join('')}
+          </div>
+        </div>
+      </div>`;
+    }
+
+    // ---------------------------------------------------------
+    // 12. SETTINGS & 13. ONBOARDING
+    // ---------------------------------------------------------
+    function renderSettings() {
+      return `
+      <div class="p-5 pb-16 space-y-5">
+        <div class="flex items-center space-x-3">
+          <button onclick="navigateTo('more')" class="w-10 h-10 rounded-[14px] phone-card flex items-center justify-center font-bold">←</button>
+          <div>
+            <h2 class="text-xl font-semibold">Settings</h2>
+            <p class="text-xs text-[#727786]">Appearance, reminders, sounds &amp; backups</p>
+          </div>
+        </div>
+
+        <div class="space-y-1.5">
+          <p class="text-sm font-semibold">Appearance &amp; Profile</p>
+          <div class="phone-card p-4 space-y-3">
+            <div class="grid grid-cols-2 gap-2">
+              <button onclick="setTheme('light')" class="py-2.5 rounded-xl border text-xs font-semibold ${state.theme==='light'?'border-[#7167E8] bg-[#EEECFC] text-[#7167E8]':'border-[#EAECF1] dark:border-[#30363D]'}">☀ Light</button>
+              <button onclick="setTheme('dark')" class="py-2.5 rounded-xl border text-xs font-semibold ${state.theme==='dark'?'border-[#8B83F6] bg-[#8B83F6]/20 text-[#8B83F6]':'border-[#EAECF1] dark:border-[#30363D]'}">🌙 Dark</button>
+            </div>
+            <input value="${state.displayName}" oninput="updateDisplayName(this.value)" class="w-full px-3 py-2 text-xs rounded-xl bg-[#F8F9FC] dark:bg-[#21262D] border border-[#EAECF1] dark:border-[#30363D]" placeholder="Display name">
+          </div>
+        </div>
+
+        <div class="space-y-1.5">
+          <p class="text-sm font-semibold">Notifications &amp; Reminders</p>
+          <div class="phone-card p-4 space-y-3">
+            <div class="flex flex-wrap gap-1.5">
+              <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-[#ECFDF5] text-[#2E8555]">Alerts Permitted</span>
+              <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-[#F0F8FE] text-[#2B7FB8]">Exact Alarms Ready</span>
+            </div>
+            <label class="flex items-center justify-between text-xs font-semibold">
+              <span>Morning Daily Agenda (8:30 AM)</span>
+              <input type="checkbox" ${state.feedback.dailyAgenda ? 'checked' : ''} onchange="state.feedback.dailyAgenda=this.checked; saveState();" class="accent-[#7167E8]">
+            </label>
+            <label class="flex items-center justify-between text-xs font-semibold">
+              <span>Evening Daily Review (9:00 PM)</span>
+              <input type="checkbox" ${state.feedback.dailySummary ? 'checked' : ''} onchange="state.feedback.dailySummary=this.checked; saveState();" class="accent-[#7167E8]">
+            </label>
+            <button onclick="playChime('reminder'); showToast('Dispatched reminder alert test!')" class="px-3 py-1.5 rounded-full phone-card text-xs font-semibold">🔔 Send Test Alert</button>
+          </div>
+        </div>
+
+        <div class="space-y-1.5">
+          <p class="text-sm font-semibold">Sounds &amp; Vibrations</p>
+          <div class="phone-card p-4 space-y-3">
+            <label class="flex items-center justify-between text-xs font-semibold">
+              <span>Haptic Feedback</span>
+              <input type="checkbox" ${state.feedback.hapticsEnabled ? 'checked' : ''} onchange="state.feedback.hapticsEnabled=this.checked; saveState();" class="accent-[#7167E8]">
+            </label>
+            <label class="flex items-center justify-between text-xs font-semibold">
+              <span>In-App UI Chimes</span>
+              <input type="checkbox" ${state.feedback.soundEffectsEnabled ? 'checked' : ''} onchange="state.feedback.soundEffectsEnabled=this.checked; saveState();" class="accent-[#7167E8]">
+            </label>
+            <button onclick="playChime('reminder'); showToast('Played gentle alert chime')" class="px-3.5 py-1.5 rounded-full bg-[#F1F3F9] dark:bg-[#21262D] text-xs font-semibold">🔊 Preview Alert Chime</button>
+          </div>
+        </div>
+
+        <div class="space-y-1.5">
+          <p class="text-sm font-semibold">Data Management</p>
+          <div class="phone-card p-4 space-y-2.5">
+            <button onclick="loadEmptyDbState()" class="w-full py-2.5 rounded-xl bg-[#FDF2F3] dark:bg-[#2A1619] border border-[#E47C86]/40 text-xs font-semibold text-[#C64552] dark:text-[#F0929B]">Reset All Data to Zero</button>
+          </div>
+        </div>
+
+        <div class="phone-card p-4 flex items-center space-x-3">
+          ${renderLogoMark(40)}
+          <div>
+            <p class="text-sm font-bold">FALL</p>
+            <p class="text-[11px] text-[#727786]">Version 3.0.0 • Offline-First Companion</p>
+          </div>
+        </div>
+      </div>`;
+    }
+
+    function renderOnboarding() {
+      const pages = [
+        { badge: 'Personal Command Center', title: 'FALL', tag: 'Plan. Build. Learn. Grow.', desc: 'Calm clarity for your daily engineering tasks, focus, and growth.' },
+        { badge: 'Private By Default', title: 'Offline First', tag: 'Tasks • Projects • Skills', desc: 'Everything lives locally on your device with fast SQLite persistence and JSON backups.' },
+        { badge: 'Built For Consistency', title: 'Steady Momentum', tag: 'Focus • Habits • Milestones', desc: 'Measure real progress every day with quiet feedback and actionable insights.' }
+      ];
+      const p = pages[onboardingPage];
+      return `
+      <div class="h-full p-6 flex flex-col justify-between text-center">
+        <div class="flex justify-end"><button onclick="navigateTo('dashboard')" class="text-xs font-semibold text-[#727786]">Skip</button></div>
+        <div class="space-y-4">
+          <div class="mx-auto w-24 h-24 rounded-[26px] phone-card flex items-center justify-center p-2">${renderLogoMark(72)}</div>
+          <span class="inline-block px-3 py-1 rounded-full bg-[#EEECFC] dark:bg-[#1A1B2E] text-[#7167E8] text-xs font-semibold">${p.badge}</span>
+          <h1 class="text-3xl font-bold">${p.title}</h1>
+          <p class="text-sm font-semibold" style="color:var(--app-primary)">${p.tag}</p>
+          <p class="text-xs text-[#727786] px-2">${p.desc}</p>
+        </div>
+        <div class="space-y-5">
+          <div class="flex justify-center space-x-1.5">
+            ${pages.map((_, idx) => `<div class="h-1.5 rounded-full transition-all" style="width:${idx===onboardingPage?22:7}px; background:${idx===onboardingPage?'var(--app-primary)':'var(--app-border)'}"></div>`).join('')}
+          </div>
+          <button onclick="if(onboardingPage<2){onboardingPage++; render();}else{onboardingPage=0; navigateTo('dashboard');}" class="w-full py-3.5 rounded-full text-sm font-semibold text-white" style="background-color:var(--app-primary)">${onboardingPage === 2 ? 'Get Started →' : 'Continue →'}</button>
+        </div>
+      </div>`;
+    }
+
+    // Boot
+    applyThemeAndTokens();
+    render();
+  </script>
+</body>
+</html>

@@ -220,6 +220,25 @@ class LearningRepository {
     );
   }
 
+  Future<void> updateTopic({
+    required String id,
+    required String title,
+    String resources = '',
+    String? notes,
+    required String status,
+  }) async {
+    final now = DateTime.now();
+    await (_db.update(_db.learningTopics)..where((t) => t.id.equals(id))).write(
+      LearningTopicsCompanion(
+        title: Value(title.trim()),
+        resources: Value(resources.trim()),
+        notes: Value(notes?.trim()),
+        status: Value(status),
+        completedAt: Value(status == 'completed' ? now : null),
+      ),
+    );
+  }
+
   Future<void> deleteTopic(String topicId) async {
     await (_db.delete(_db.learningTopics)..where((t) => t.id.equals(topicId))).go();
   }

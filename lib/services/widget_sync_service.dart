@@ -7,10 +7,25 @@ import '../data/database/database_provider.dart';
 
 class WidgetSyncService {
   final AppDatabase _db;
+  String? _activeFocusStatus;
 
   WidgetSyncService(this._db);
 
-  /// Synchronizes all native Android home screen widgets with current local database state
+  /// Updates the Focus Timer Android widget immediately (e.g., running/paused/reset).
+  Future<void> syncFocusStatus(String statusText) async {
+    _activeFocusStatus = statusText;
+    try {
+      await HomeWidget.saveWidgetData<String>('focus_time_text', statusText);
+      await HomeWidget.updateWidget(
+        name: 'ProgressFocusWidgetProvider',
+        androidName: 'ProgressFocusWidgetProvider',
+      );
+    } catch (e) {
+      debugPrint('Error syncing focus widget: $e');
+    }
+  }
+
+  /// Synchronizes all native Android home screen widgets with current local database state.
   Future<void> syncAllWidgets() async {
     try {
       final now = DateTime.now();
@@ -39,13 +54,32 @@ class WidgetSyncService {
         if (streak > maxStreak) maxStreak = streak;
       }
 
-      // 3. Query total learning hours
+      // 3. Query total learning hours & lead learning skill roadmap
       final skills = await _db.select(_db.skills).get();
       int totalLearningMinutes = 0;
       for (final s in skills) {
         totalLearningMinutes += s.learningMinutes;
       }
       final learningHours = (totalLearningMinutes / 60.0).toStringAsFixed(1);
+
+      String learningSkillName = 'Start a Skill Roadmap';
+      int learningTopicsDone = 0;
+      int learningTopicsTotal = 0;
+      if (skills.isNotEmpty) {
+        final primarySkill = skills.first;
+        learningSkillName = primarySkill.name;
+        final modules = await (_db.select(_db.learningModules)
+              ..where((m) => m.skillId.equals(primarySkill.id)))
+            .get();
+        if (modules.isNotEmpty) {
+          final modIds = modules.map((m) => m.id).toList();
+          final topics = await (_db.select(_db.learningTopics)
+                ..where((t) => t.moduleId.isIn(modIds)))
+              .get();
+          learningTopicsTotal = topics.length;
+          learningTopicsDone = topics.where((t) => t.status == 'completed').length;
+        }
+      }
 
       // 4. Query active project
       final projects = await _db.select(_db.projects).get();
@@ -71,6 +105,17 @@ class WidgetSyncService {
           }
         }
       }
+
+      // 5. Query today's focus minutes
+      final focusSessions = await _db.select(_db.focusSessions).get();
+      int todayFocusMinutes = 0;
+      for (final f in focusSessions) {
+        if (!f.completedAt.isBefore(todayStart) && f.completedAt.isBefore(todayEnd)) {
+          todayFocusMinutes += f.durationMinutes;
+        }
+      }
+      final focusStatusText = _activeFocusStatus ??
+          (todayFocusMinutes > 0 ? '${todayFocusMinutes}m focused today' : 'Ready · 25:00');
 
       // Save key-values to native SharedPreferences via HomeWidget
       await HomeWidget.saveWidgetData<String>('today_date_str', DateFormat('EEEE, MMM d').format(now));
@@ -99,29 +144,34 @@ class WidgetSyncService {
       // Streak & Skills
       await HomeWidget.saveWidgetData<int>('streak_days', maxStreak);
       await HomeWidget.saveWidgetData<String>('learning_hours', learningHours);
+      await HomeWidget.saveWidgetData<String>('learning_skill_name', learningSkillName);
+      await HomeWidget.saveWidgetData<int>('learning_topics_done', learningTopicsDone);
+      await HomeWidget.saveWidgetData<int>('learning_topics_total', learningTopicsTotal);
 
       // Active Project
       await HomeWidget.saveWidgetData<String>('project_name', projectName);
       await HomeWidget.saveWidgetData<int>('project_progress', projectProgress);
       await HomeWidget.saveWidgetData<String>('next_milestone', nextMilestone);
 
-      // Update Native Widgets
-      await HomeWidget.updateWidget(
-        name: 'ProgressDailyWidgetProvider',
-        androidName: 'ProgressDailyWidgetProvider',
-      );
-      await HomeWidget.updateWidget(
-        name: 'ProgressTasksWidgetProvider',
-        androidName: 'ProgressTasksWidgetProvider',
-      );
-      await HomeWidget.updateWidget(
-        name: 'ProgressStreakWidgetProvider',
-        androidName: 'ProgressStreakWidgetProvider',
-      );
-      await HomeWidget.updateWidget(
-        name: 'ProgressProjectWidgetProvider',
-        androidName: 'ProgressProjectWidgetProvider',
-      );
+      // Focus Timer
+      await HomeWidget.saveWidgetData<String>('focus_time_text', focusStatusText);
+
+      // Update Native Widgets (all 7 providers)
+      const widgetNames = [
+        'ProgressDailyWidgetProvider',
+        'ProgressTasksWidgetProvider',
+        'ProgressStreakWidgetProvider',
+        'ProgressProjectWidgetProvider',
+        'ProgressFocusWidgetProvider',
+        'ProgressQuickAddWidgetProvider',
+        'ProgressLearningWidgetProvider',
+      ];
+      for (final widgetName in widgetNames) {
+        await HomeWidget.updateWidget(
+          name: widgetName,
+          androidName: widgetName,
+        );
+      }
     } catch (e) {
       debugPrint('Error syncing widgets: $e');
     }

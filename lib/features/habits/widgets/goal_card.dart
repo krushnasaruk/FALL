@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_icons.dart';
 import '../../../core/theme/app_radii.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
+import '../../../core/utils/date_formatters.dart';
+import '../../../core/widgets/app_badges.dart';
+import '../../../core/widgets/app_button.dart';
+import '../../../core/widgets/app_overlays.dart';
 import '../../../core/widgets/app_progress_bar.dart';
-import '../../../core/widgets/pastel_card.dart';
 import '../../../data/database/app_database.dart';
 
 typedef Goal = GoalEntry;
 
+/// Reusable Goal Card (Section 7F): outcome title, category cadence, target vs current,
+/// deadline (if configured), progress bar, and incremental log actions.
 class GoalCard extends StatelessWidget {
   final GoalEntry goal;
   final VoidCallback onIncrement;
@@ -24,199 +31,148 @@ class GoalCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final progress = (goal.targetValue > 0)
         ? (goal.currentValue / goal.targetValue).clamp(0.0, 1.0)
         : 0.0;
-    final percentInt = (progress * 100).toInt();
+    final percentInt = (progress * 100).round();
 
-    return PastelCard(
-      gradient: AppColors.goalPastelGradient,
-      borderRadius: AppRadii.card,
-      padding: const EdgeInsets.all(18.0),
+    final surfaceColor = isDark ? AppColors.darkGoalSurface : AppColors.goalSurface;
+    final borderColor = isDark ? AppColors.darkBorder : AppColors.goalBorder;
+    const accent = AppColors.goalAccent;
+    final textPrimary = isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
+    final textSecondary =
+        isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
+
+    final currentStr = goal.currentValue.truncateToDouble() == goal.currentValue
+        ? goal.currentValue.toStringAsFixed(0)
+        : goal.currentValue.toStringAsFixed(1);
+    final targetStr = goal.targetValue.truncateToDouble() == goal.targetValue
+        ? goal.targetValue.toStringAsFixed(0)
+        : goal.targetValue.toStringAsFixed(1);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: surfaceColor,
+        borderRadius: AppRadii.roundedCard,
+        border: Border.all(color: borderColor, width: 1.0),
+      ),
+      padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Top row: Title + Cadence Pill
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              Container(
+                width: 36.0,
+                height: 36.0,
+                decoration: BoxDecoration(
+                  color: isDark ? AppColors.darkSurface : AppColors.surface,
+                  borderRadius: AppRadii.roundedSm,
+                  border: Border.all(color: borderColor),
+                ),
+                child: Icon(
+                  goal.isAchieved ? AppIcons.goalsActive : AppIcons.goals,
+                  size: 18.0,
+                  color: goal.isAchieved ? AppColors.success : accent,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       goal.title,
-                      style: AppTypography.cardHeader.copyWith(
-                        color: const Color(0xFF1E293B),
-                      ),
-                      maxLines: 1,
+                      style: AppTypography.cardTitle.copyWith(color: textPrimary),
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 3.0),
+                    const SizedBox(height: 2.0),
                     Text(
-                      '${goal.currentValue.toStringAsFixed(goal.currentValue.truncateToDouble() == goal.currentValue ? 0 : 1)} of ${goal.targetValue.toStringAsFixed(0)} ${goal.unit}',
-                      style: AppTypography.cardSub.copyWith(
-                        color: const Color(0xFF64748B),
-                        fontWeight: FontWeight.w600,
+                      '$currentStr of $targetStr ${goal.unit}',
+                      style: AppTypography.secondary.copyWith(
+                        fontSize: 12.5,
+                        color: textSecondary,
+                        fontFeatures: AppTypography.tabularFigures,
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(width: 8.0),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 4.0),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.85),
-                  borderRadius: BorderRadius.circular(16.0),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.03),
-                      blurRadius: 4,
-                      offset: const Offset(0, 1),
-                    ),
-                  ],
-                ),
-                child: Text(
-                  goal.type.replaceAll('_', ' ').toUpperCase(),
-                  style: const TextStyle(
-                    fontSize: 9.5,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.5,
-                    color: Color(0xFFB45309),
+              const SizedBox(width: AppSpacing.sm),
+              AppBadge(
+                label: goal.type.replaceAll('_', ' ').toUpperCase(),
+                color: goal.isAchieved ? AppColors.success : accent,
+              ),
+            ],
+          ),
+
+          if (goal.deadline != null) ...[
+            const SizedBox(height: AppSpacing.sm),
+            Row(
+              children: [
+                Icon(AppIcons.calendar, size: 12.0, color: textSecondary),
+                const SizedBox(width: 4.0),
+                Expanded(
+                  child: Text(
+                    'Deadline ${DateFormatters.monthDayYear(goal.deadline!)}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTypography.metadata.copyWith(color: textSecondary),
                   ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
+          ],
 
-          const SizedBox(height: 16.0),
-
-          // Progress Row
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Progress',
-                style: AppTypography.cardSub.copyWith(
-                  color: const Color(0xFF475569),
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              Text(
-                '$percentInt%',
-                style: AppTypography.cardPercent.copyWith(
-                  color: const Color(0xFF1E293B),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6.0),
+          const SizedBox(height: AppSpacing.md),
           AppProgressBar(
             progress: progress,
-            height: 5.0,
-            barColor: const Color(0xFF1E293B),
-            backgroundColor: Colors.white.withOpacity(0.55),
+            height: 6.0,
+            barColor: goal.isAchieved ? AppColors.success : accent,
+            backgroundColor: accent.withOpacity(0.16),
+            label: goal.isAchieved ? 'Target achieved' : 'Progress',
+            showPercentage: true,
+            textColor: textSecondary,
           ),
 
-          const SizedBox(height: 14.0),
-
-          // Bottom Action Row: Log & +1 quick button & options
+          const SizedBox(height: AppSpacing.md),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Log progress text button
-              GestureDetector(
-                onTap: onLogValue,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.85),
-                    borderRadius: BorderRadius.circular(16.0),
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.edit_note_rounded, size: 14, color: Color(0xFF334155)),
-                      SizedBox(width: 4),
-                      Text(
-                        'Set Value',
-                        style: TextStyle(
-                          fontSize: 11.0,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF334155),
-                        ),
-                      ),
-                    ],
-                  ),
+              Expanded(
+                child: Wrap(
+                  spacing: AppSpacing.sm,
+                  runSpacing: AppSpacing.xs,
+                  children: [
+                    SecondaryButton(
+                      label: 'Update ($percentInt%)',
+                      size: AppButtonSize.small,
+                      icon: AppIcons.edit,
+                      onPressed: onLogValue,
+                    ),
+                    PrimaryButton(
+                      label: '+1 ${goal.unit}',
+                      size: AppButtonSize.small,
+                      onPressed: onIncrement,
+                    ),
+                  ],
                 ),
               ),
-
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // +1 quick button
-                  GestureDetector(
-                    onTap: onIncrement,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 5.0),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF1E293B),
-                        borderRadius: BorderRadius.circular(16.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.08),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.add, size: 13, color: Colors.white),
-                          SizedBox(width: 3),
-                          Text(
-                            '+1',
-                            style: TextStyle(
-                              fontSize: 11.5,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  IconButton(
-                    icon: const Icon(Icons.more_horiz_rounded, size: 20, color: Color(0xFF64748B)),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    onPressed: () {
-                      showModalBottomSheet(
-                        context: context,
-                        builder: (ctx) => SafeArea(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              ListTile(
-                                leading: const Icon(Icons.delete_outline_rounded, color: Colors.red),
-                                title: const Text('Delete Goal', style: TextStyle(color: Colors.red)),
-                                onTap: () {
-                                  Navigator.pop(ctx);
-                                  onDelete();
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ],
+              IconButton(
+                icon: const Icon(AppIcons.delete, size: 19.0, color: AppColors.error),
+                tooltip: 'Delete goal',
+                onPressed: () async {
+                  final ok = await ConfirmationDialog.show(
+                    context,
+                    title: 'Delete goal?',
+                    message: 'Remove "${goal.title}" permanently?',
+                  );
+                  if (ok) onDelete();
+                },
               ),
             ],
           ),

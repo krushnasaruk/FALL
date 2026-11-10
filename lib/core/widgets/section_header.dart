@@ -24,7 +24,7 @@ class SectionHeader extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -36,16 +36,17 @@ class SectionHeader extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: AppTypography.titleMedium.copyWith(
-                    color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+                  style: AppTypography.sectionTitle.copyWith(
+                    color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
                   ),
                 ),
                 if (subtitle != null) ...[
                   const SizedBox(height: 2.0),
                   Text(
                     subtitle!,
-                    style: AppTypography.caption.copyWith(
-                      color: isDark ? AppColors.darkTextMuted : AppColors.lightTextMuted,
+                    style: AppTypography.secondary.copyWith(
+                      fontSize: 12.5,
+                      color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
                     ),
                   ),
                 ],
@@ -58,13 +59,14 @@ class SectionHeader extends StatelessWidget {
             TextButton(
               onPressed: onAction,
               style: TextButton.styleFrom(
-                visualDensity: VisualDensity.compact,
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                minimumSize: const Size(48.0, 44.0),
+                padding: const EdgeInsets.symmetric(horizontal: 10.0),
               ),
               child: Text(
                 actionLabel!,
-                style: AppTypography.caption.copyWith(
-                  color: AppColors.primary,
+                style: AppTypography.secondary.copyWith(
+                  fontSize: 13.0,
+                  color: isDark ? AppColors.primaryDark : AppColors.primary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -74,4 +76,3 @@ class SectionHeader extends StatelessWidget {
     );
   }
 }
-

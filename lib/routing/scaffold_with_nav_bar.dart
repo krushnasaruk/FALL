@@ -1,9 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../core/theme/app_colors.dart';
+import '../core/theme/app_icons.dart';
+import '../core/theme/app_radii.dart';
 import '../core/theme/app_typography.dart';
+import '../core/widgets/fall_logo.dart';
+import '../features/tasks/widgets/task_form_sheet.dart';
+import '../services/feedback_service.dart';
 
-class ScaffoldWithNavBar extends StatelessWidget {
+class ScaffoldWithNavBar extends ConsumerStatefulWidget {
   final StatefulNavigationShell navigationShell;
 
   const ScaffoldWithNavBar({
@@ -11,10 +18,81 @@ class ScaffoldWithNavBar extends StatelessWidget {
     required this.navigationShell,
   });
 
+  @override
+  ConsumerState<ScaffoldWithNavBar> createState() => _ScaffoldWithNavBarState();
+}
+
+class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar>
+    with WidgetsBindingObserver {
+  static const _channel = MethodChannel('com.progressos.progress_os/feedback');
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _consumePendingWidgetAction());
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _consumePendingWidgetAction();
+    }
+  }
+
+  Future<void> _consumePendingWidgetAction() async {
+    try {
+      final action = await _channel.invokeMethod<String>('consumeLaunchAction');
+      if (!mounted || action == null || action.isEmpty) return;
+
+      switch (action) {
+        case 'new_task':
+          widget.navigationShell.goBranch(1);
+          await TaskFormSheet.show(context);
+          break;
+        case 'open_tasks':
+          widget.navigationShell.goBranch(1);
+          break;
+        case 'open_projects':
+          widget.navigationShell.goBranch(2);
+          break;
+        case 'open_learning':
+          widget.navigationShell.goBranch(3);
+          break;
+        case 'open_habits':
+          if (mounted) context.push('/habits');
+          break;
+        case 'open_focus':
+          if (mounted) context.push('/focus');
+          break;
+        case 'new_note':
+          if (mounted) context.push('/vault');
+          break;
+        case 'open_goals':
+          if (mounted) context.push('/goals');
+          break;
+        case 'open_radar':
+          if (mounted) context.push('/radar');
+          break;
+        default:
+          break;
+      }
+    } catch (_) {
+      // Safe no-op on non-Android platforms & tests
+    }
+  }
+
   void _onTap(int index) {
-    navigationShell.goBranch(
+    ref.read(feedbackServiceProvider).selectionClick();
+    widget.navigationShell.goBranch(
       index,
-      initialLocation: index == navigationShell.currentIndex,
+      initialLocation: index == widget.navigationShell.currentIndex,
     );
   }
 
@@ -28,152 +106,155 @@ class ScaffoldWithNavBar extends StatelessWidget {
         body: Row(
           children: [
             NavigationRail(
-              selectedIndex: navigationShell.currentIndex,
+              selectedIndex: widget.navigationShell.currentIndex,
               onDestinationSelected: _onTap,
               backgroundColor: isDark ? AppColors.darkSurface : AppColors.surface,
-              indicatorColor: AppColors.primarySoft,
+              indicatorColor: isDark ? AppColors.darkProjectSurface : AppColors.primarySoft,
               labelType: NavigationRailLabelType.all,
-              leading: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16.0),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(6.0),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        borderRadius: BorderRadius.circular(6.0),
-                      ),
-                      child: const Icon(
-                        Icons.terminal_rounded,
-                        size: 18.0,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(width: 8.0),
-                    Text(
-                      'ProgressOS',
-                      style: AppTypography.titleSmall.copyWith(
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: -0.2,
-                      ),
-                    ),
-                  ],
-                ),
+              leading: const Padding(
+                padding: EdgeInsets.symmetric(vertical: 16.0),
+                child: FallLogo(size: 28.0, showText: true),
               ),
               destinations: const [
                 NavigationRailDestination(
-                  icon: Icon(Icons.home_outlined),
-                  selectedIcon: Icon(Icons.home_rounded, color: AppColors.primary),
+                  icon: Icon(AppIcons.home),
+                  selectedIcon: Icon(AppIcons.homeActive, color: AppColors.primary),
                   label: Text('Home'),
                 ),
                 NavigationRailDestination(
-                  icon: Icon(Icons.check_circle_outline_rounded),
-                  selectedIcon: Icon(Icons.check_circle_rounded, color: AppColors.primary),
+                  icon: Icon(AppIcons.tasks),
+                  selectedIcon: Icon(AppIcons.tasksActive, color: AppColors.primary),
                   label: Text('Tasks'),
                 ),
                 NavigationRailDestination(
-                  icon: Icon(Icons.school_outlined),
-                  selectedIcon: Icon(Icons.school_rounded, color: AppColors.primary),
-                  label: Text('Learning'),
-                ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.rocket_launch_outlined),
-                  selectedIcon: Icon(Icons.rocket_launch_rounded, color: AppColors.primary),
+                  icon: Icon(AppIcons.projects),
+                  selectedIcon: Icon(AppIcons.projectsActive, color: AppColors.primary),
                   label: Text('Projects'),
                 ),
                 NavigationRailDestination(
-                  icon: Icon(Icons.insights_rounded),
-                  selectedIcon: Icon(Icons.insights_rounded, color: AppColors.primary),
-                  label: Text('Insights'),
+                  icon: Icon(AppIcons.learning),
+                  selectedIcon: Icon(AppIcons.learningActive, color: AppColors.primary),
+                  label: Text('Learning'),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(AppIcons.more),
+                  selectedIcon: Icon(AppIcons.moreActive, color: AppColors.primary),
+                  label: Text('More'),
                 ),
               ],
             ),
             const VerticalDivider(width: 1, thickness: 1),
-            Expanded(child: navigationShell),
+            Expanded(child: widget.navigationShell),
           ],
         ),
       );
     }
 
-    // Mobile Layout: Floating White Capsule Dock (matching reference image)
-    final activeIndex = navigationShell.currentIndex;
+    final activeIndex = widget.navigationShell.currentIndex;
 
     const navItems = [
-      _NavItem(icon: Icons.home_outlined, activeIcon: Icons.home_rounded, tooltip: 'Home'),
-      _NavItem(icon: Icons.check_circle_outline_rounded, activeIcon: Icons.check_circle_rounded, tooltip: 'Tasks'),
-      _NavItem(icon: Icons.auto_awesome_outlined, activeIcon: Icons.auto_awesome_rounded, tooltip: 'Learning'),
-      _NavItem(icon: Icons.folder_open_rounded, activeIcon: Icons.folder_rounded, tooltip: 'Projects'),
-      _NavItem(icon: Icons.person_outline_rounded, activeIcon: Icons.person_rounded, tooltip: 'Insights'),
+      _NavItem(
+        icon: AppIcons.home,
+        activeIcon: AppIcons.homeActive,
+        label: 'Home',
+      ),
+      _NavItem(
+        icon: AppIcons.tasks,
+        activeIcon: AppIcons.tasksActive,
+        label: 'Tasks',
+      ),
+      _NavItem(
+        icon: AppIcons.projects,
+        activeIcon: AppIcons.projectsActive,
+        label: 'Projects',
+      ),
+      _NavItem(
+        icon: AppIcons.learning,
+        activeIcon: AppIcons.learningActive,
+        label: 'Learning',
+      ),
+      _NavItem(
+        icon: AppIcons.more,
+        activeIcon: AppIcons.moreActive,
+        label: 'More',
+      ),
     ];
 
-    return Scaffold(
-      extendBody: true,
-      body: navigationShell,
-      bottomNavigationBar: SafeArea(
-        child: Container(
-          height: 64.0,
-          margin: const EdgeInsets.fromLTRB(20.0, 0.0, 20.0, 14.0),
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1E293B) : Colors.white,
-            borderRadius: BorderRadius.circular(32.0),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(isDark ? 0.35 : 0.08),
-                blurRadius: 20.0,
-                offset: const Offset(0, 8),
-              ),
-            ],
-            border: Border.all(
-              color: isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9),
-              width: 1.0,
-            ),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: List.generate(navItems.length, (index) {
-              final item = navItems[index];
-              final isSelected = activeIndex == index;
+    final navSurface = isDark ? AppColors.darkSurface : AppColors.surface;
+    final topBorder = isDark ? AppColors.darkBorder : AppColors.divider;
+    final activeAccent = isDark ? AppColors.primaryDark : AppColors.primary;
+    final activePill = isDark
+        ? AppColors.primaryDark.withOpacity(0.16)
+        : AppColors.primarySoft;
+    final inactiveColor = isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
 
-              return GestureDetector(
-                onTap: () => _onTap(index),
-                behavior: HitTestBehavior.opaque,
-                child: SizedBox(
-                  width: 52.0,
-                  height: 64.0,
-                  child: Center(
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 250),
-                      curve: Curves.easeOutCubic,
-                      width: isSelected ? 44.0 : 36.0,
-                      height: isSelected ? 44.0 : 36.0,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: isSelected
-                            ? (isDark ? Colors.white : const Color(0xFF19213D))
-                            : Colors.transparent,
-                        boxShadow: isSelected
-                            ? [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.12),
-                                  blurRadius: 8.0,
-                                  offset: const Offset(0, 3),
-                                ),
-                              ]
-                            : null,
-                      ),
-                      child: Icon(
-                        isSelected ? item.activeIcon : item.icon,
-                        size: 21.0,
-                        color: isSelected
-                            ? (isDark ? const Color(0xFF19213D) : Colors.white)
-                            : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
+    return Scaffold(
+      body: widget.navigationShell,
+      bottomNavigationBar: DecoratedBox(
+        decoration: BoxDecoration(
+          color: navSurface,
+          border: Border(top: BorderSide(color: topBorder, width: 1.0)),
+        ),
+        child: SafeArea(
+          top: false,
+          child: SizedBox(
+            height: 64.0,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: List.generate(navItems.length, (index) {
+                final item = navItems[index];
+                final isSelected = activeIndex == index;
+
+                return Expanded(
+                  child: Semantics(
+                    selected: isSelected,
+                    button: true,
+                    label: '${item.label} tab',
+                    child: InkWell(
+                      onTap: () => _onTap(index),
+                      borderRadius: AppRadii.roundedMd,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            AnimatedContainer(
+                              duration: const Duration(milliseconds: 180),
+                              curve: Curves.easeOutCubic,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14.0,
+                                vertical: 4.0,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isSelected ? activePill : Colors.transparent,
+                                borderRadius: AppRadii.roundedFull,
+                              ),
+                              child: Icon(
+                                isSelected ? item.activeIcon : item.icon,
+                                size: 22.0,
+                                color: isSelected ? activeAccent : inactiveColor,
+                              ),
+                            ),
+                            const SizedBox(height: 2.0),
+                            Text(
+                              item.label,
+                              style: AppTypography.metadata.copyWith(
+                                fontSize: 11.0,
+                                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                                color: isSelected ? activeAccent : inactiveColor,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-              );
-            }),
+                );
+              }),
+            ),
           ),
         ),
       ),
@@ -184,11 +265,11 @@ class ScaffoldWithNavBar extends StatelessWidget {
 class _NavItem {
   final IconData icon;
   final IconData activeIcon;
-  final String tooltip;
+  final String label;
 
   const _NavItem({
     required this.icon,
     required this.activeIcon,
-    required this.tooltip,
+    required this.label,
   });
 }

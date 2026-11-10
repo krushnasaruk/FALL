@@ -70,3 +70,4 @@ class AvatarStack extends StatelessWidget {
     );
   }
 }
+

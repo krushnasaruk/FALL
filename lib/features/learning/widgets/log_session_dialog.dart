@@ -81,12 +81,12 @@ class _LogSessionDialogState extends ConsumerState<LogSessionDialog> {
 
     return AlertDialog(
       backgroundColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-      shape: RoundedRectangleBorder(borderRadius: AppRadii.roundedLg),
+      shape: const RoundedRectangleBorder(borderRadius: AppRadii.roundedLg),
       title: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(6.0),
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: AppColors.primarySoft,
               borderRadius: AppRadii.roundedSm,
             ),
@@ -98,7 +98,7 @@ class _LogSessionDialogState extends ConsumerState<LogSessionDialog> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text('Log Learning Time', style: AppTypography.titleMedium),
+                const Text('Log Learning Time', style: AppTypography.titleMedium),
                 Text(widget.skillName, style: AppTypography.caption.copyWith(color: AppColors.primary)),
               ],
             ),

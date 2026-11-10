@@ -16,21 +16,37 @@ class ProgressQuickAddWidgetProvider : AppWidgetProvider() {
         for (widgetId in appWidgetIds) {
             val views = RemoteViews(context.packageName, R.layout.widget_quick_add)
 
-            // Direct deep link intent to launch into app with action=new
-            val intent = Intent(context, MainActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-                putExtra("action", "new_task")
-            }
-            val pendingIntent = PendingIntent.getActivity(
-                context,
-                5,
-                intent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            views.setOnClickPendingIntent(
+                R.id.btn_quick_task,
+                buildActionIntent(context, "new_task", 50)
             )
-            views.setOnClickPendingIntent(R.id.widget_quick_add_container, pendingIntent)
+            views.setOnClickPendingIntent(
+                R.id.btn_quick_note,
+                buildActionIntent(context, "new_note", 51)
+            )
+            views.setOnClickPendingIntent(
+                R.id.btn_quick_focus,
+                buildActionIntent(context, "open_focus", 52)
+            )
+            views.setOnClickPendingIntent(
+                R.id.btn_quick_learn,
+                buildActionIntent(context, "open_learning", 53)
+            )
 
             appWidgetManager.updateAppWidget(widgetId, views)
         }
     }
-}
 
+    private fun buildActionIntent(context: Context, action: String, reqCode: Int): PendingIntent {
+        val intent = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            putExtra("action", action)
+        }
+        return PendingIntent.getActivity(
+            context,
+            reqCode,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+    }
+}

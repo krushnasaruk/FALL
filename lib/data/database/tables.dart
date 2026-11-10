@@ -242,3 +242,132 @@ class ActivityHistory extends Table {
   Set<Column> get primaryKey => {id};
 }
 
+// Auditable XP Reward Ledger Table (duplicate-guarded by unique sourceKey)
+@DataClassName('XpEventEntry')
+class XpEvents extends Table {
+  TextColumn get id => text()();
+  TextColumn get sourceKey => text().unique()();
+  TextColumn get sourceType => text()(); // task, learning, focus, habit, milestone, goal
+  IntColumn get amount => integer()();
+  TextColumn get summary => text().withLength(min: 1, max: 240)();
+  DateTimeColumn get createdAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+// Unlocked Achievement Badges Table
+@DataClassName('UnlockedAchievementEntry')
+class UnlockedAchievements extends Table {
+  TextColumn get id => text()();
+  TextColumn get category => text()(); // consistency, learning, focus, projects, exploration, milestones
+  TextColumn get title => text().withLength(min: 1, max: 120)();
+  TextColumn get description => text().withLength(min: 1, max: 260)();
+  DateTimeColumn get unlockedAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+// ProgressOS Radar: Synced & Cached Technology Discoveries (Zero Secrets Stored)
+@DataClassName('RadarDiscoveryEntry')
+class RadarDiscoveries extends Table {
+  TextColumn get id => text()();
+  TextColumn get canonicalUrl => text().unique()();
+  TextColumn get title => text()();
+  TextColumn get discoveryType => text()(); // repo, video, research, article, product, community, model
+  TextColumn get primaryCategory => text()(); // A..R
+  TextColumn get categoriesJson => text().withDefault(const Constant('[]'))();
+  TextColumn get tagsJson => text().withDefault(const Constant('[]'))();
+  TextColumn get priorityTier => text().withDefault(const Constant('P1'))();
+  TextColumn get sourceName => text()();
+  TextColumn get sourceDomain => text().withDefault(const Constant(''))();
+  TextColumn get authorOrOrg => text().nullable()();
+  TextColumn get publishedAtIso => text().nullable()();
+  DateTimeColumn get discoveredAt => dateTime()();
+  TextColumn get rawSummary => text().withDefault(const Constant(''))();
+  TextColumn get plainEnglishSummary => text().nullable()();
+  TextColumn get whyItMatters => text().nullable()();
+  TextColumn get whoItIsFor => text().nullable()();
+  TextColumn get howItCompares => text().nullable()();
+  TextColumn get practicalTakeaway => text().nullable()();
+  TextColumn get tryItSuggestion => text().nullable()();
+  TextColumn get beginnerNote => text().nullable()();
+  TextColumn get analysisSource => text().withDefault(const Constant('source_reported'))();
+  TextColumn get primaryMetricLabel => text().nullable()();
+  RealColumn get primaryMetricValue => real().nullable()();
+  TextColumn get secondaryMetricLabel => text().nullable()();
+  RealColumn get secondaryMetricValue => real().nullable()();
+  TextColumn get metricDeltaLabel => text().nullable()();
+  RealColumn get metricDeltaValue => real().nullable()();
+  TextColumn get sourcesJson => text().withDefault(const Constant('[]'))();
+  RealColumn get rankScore => real().withDefault(const Constant(0.0))();
+  BoolColumn get isExploratory => boolean().withDefault(const Constant(false))();
+  BoolColumn get isBookmarked => boolean().withDefault(const Constant(false))();
+  TextColumn get bookmarkCollection => text().nullable()();
+  TextColumn get bookmarkNote => text().nullable()();
+  BoolColumn get isRead => boolean().withDefault(const Constant(false))();
+  BoolColumn get isExplored => boolean().withDefault(const Constant(false))();
+  BoolColumn get isHidden => boolean().withDefault(const Constant(false))();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+// ProgressOS Radar: Configurable 18 Topic Preferences (A..R across P0..P3)
+@DataClassName('RadarTopicPrefEntry')
+class RadarTopicPrefs extends Table {
+  TextColumn get categoryCode => text()();
+  TextColumn get categoryName => text()();
+  TextColumn get priorityLevel => text().withDefault(const Constant('P1'))();
+  BoolColumn get isMuted => boolean().withDefault(const Constant(false))();
+  TextColumn get boostKeywordsJson => text().withDefault(const Constant('[]'))();
+  TextColumn get mutedKeywordsJson => text().withDefault(const Constant('[]'))();
+  RealColumn get affinityAdjustment => real().withDefault(const Constant(0.0))();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {categoryCode};
+}
+
+// ProgressOS Radar: Followed Topics, Repos, Orgs & Creators
+@DataClassName('RadarFollowEntry')
+class RadarFollows extends Table {
+  TextColumn get id => text()();
+  TextColumn get followType => text()(); // topic, creator, repo, org
+  TextColumn get targetKey => text()();
+  TextColumn get displayName => text()();
+  DateTimeColumn get createdAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+// ProgressOS Radar: User Feedback & Engagement Log (Relevant / Not Relevant / Explored)
+@DataClassName('RadarFeedbackLogEntry')
+class RadarFeedbackLogs extends Table {
+  TextColumn get id => text()();
+  TextColumn get discoveryId => text()();
+  TextColumn get action => text()(); // relevant, not_relevant, more_like_this, hide, explored, opened
+  TextColumn get categoryCode => text()();
+  DateTimeColumn get createdAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+// ProgressOS Radar: Cached Daily Briefings & Weekly Recaps
+@DataClassName('RadarBriefingEntry')
+class RadarBriefings extends Table {
+  TextColumn get id => text()();
+  TextColumn get briefingType => text()(); // daily, weekly
+  TextColumn get briefingDate => text()();
+  TextColumn get headline => text()();
+  TextColumn get sectionsJson => text()();
+  TextColumn get generatedBy => text().withDefault(const Constant('radar_curator'))();
+  DateTimeColumn get createdAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+

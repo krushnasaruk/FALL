@@ -41,3 +41,18 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Secrets, Build Binaries & Backend Radar Local State (Never commit API keys, keystores, APKs or runtime DB)
+.env
+*.env
+!.env.example
+!backend/radar_server/.env.example
+*.jks
+*.keystore
+*.p12
+*.apk
+*.aab
+backend/radar_server/.env
+backend/**/__pycache__/
+backend/radar_server/data/*.sqlite*
+backend/radar_server/dist/

@@ -6773,6 +6773,3933 @@ class ActivityHistoryCompanion extends UpdateCompanion<ActivityHistoryEntry> {
   }
 }
 
+class $XpEventsTable extends XpEvents
+    with TableInfo<$XpEventsTable, XpEventEntry> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $XpEventsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _sourceKeyMeta =
+      const VerificationMeta('sourceKey');
+  @override
+  late final GeneratedColumn<String> sourceKey = GeneratedColumn<String>(
+      'source_key', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
+  static const VerificationMeta _sourceTypeMeta =
+      const VerificationMeta('sourceType');
+  @override
+  late final GeneratedColumn<String> sourceType = GeneratedColumn<String>(
+      'source_type', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _amountMeta = const VerificationMeta('amount');
+  @override
+  late final GeneratedColumn<int> amount = GeneratedColumn<int>(
+      'amount', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _summaryMeta =
+      const VerificationMeta('summary');
+  @override
+  late final GeneratedColumn<String> summary = GeneratedColumn<String>(
+      'summary', aliasedName, false,
+      additionalChecks:
+          GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 240),
+      type: DriftSqlType.string,
+      requiredDuringInsert: true);
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, sourceKey, sourceType, amount, summary, createdAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'xp_events';
+  @override
+  VerificationContext validateIntegrity(Insertable<XpEventEntry> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('source_key')) {
+      context.handle(_sourceKeyMeta,
+          sourceKey.isAcceptableOrUnknown(data['source_key']!, _sourceKeyMeta));
+    } else if (isInserting) {
+      context.missing(_sourceKeyMeta);
+    }
+    if (data.containsKey('source_type')) {
+      context.handle(
+          _sourceTypeMeta,
+          sourceType.isAcceptableOrUnknown(
+              data['source_type']!, _sourceTypeMeta));
+    } else if (isInserting) {
+      context.missing(_sourceTypeMeta);
+    }
+    if (data.containsKey('amount')) {
+      context.handle(_amountMeta,
+          amount.isAcceptableOrUnknown(data['amount']!, _amountMeta));
+    } else if (isInserting) {
+      context.missing(_amountMeta);
+    }
+    if (data.containsKey('summary')) {
+      context.handle(_summaryMeta,
+          summary.isAcceptableOrUnknown(data['summary']!, _summaryMeta));
+    } else if (isInserting) {
+      context.missing(_summaryMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  XpEventEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return XpEventEntry(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      sourceKey: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}source_key'])!,
+      sourceType: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}source_type'])!,
+      amount: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}amount'])!,
+      summary: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}summary'])!,
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+    );
+  }
+
+  @override
+  $XpEventsTable createAlias(String alias) {
+    return $XpEventsTable(attachedDatabase, alias);
+  }
+}
+
+class XpEventEntry extends DataClass implements Insertable<XpEventEntry> {
+  final String id;
+  final String sourceKey;
+  final String sourceType;
+  final int amount;
+  final String summary;
+  final DateTime createdAt;
+  const XpEventEntry(
+      {required this.id,
+      required this.sourceKey,
+      required this.sourceType,
+      required this.amount,
+      required this.summary,
+      required this.createdAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['source_key'] = Variable<String>(sourceKey);
+    map['source_type'] = Variable<String>(sourceType);
+    map['amount'] = Variable<int>(amount);
+    map['summary'] = Variable<String>(summary);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  XpEventsCompanion toCompanion(bool nullToAbsent) {
+    return XpEventsCompanion(
+      id: Value(id),
+      sourceKey: Value(sourceKey),
+      sourceType: Value(sourceType),
+      amount: Value(amount),
+      summary: Value(summary),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory XpEventEntry.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return XpEventEntry(
+      id: serializer.fromJson<String>(json['id']),
+      sourceKey: serializer.fromJson<String>(json['sourceKey']),
+      sourceType: serializer.fromJson<String>(json['sourceType']),
+      amount: serializer.fromJson<int>(json['amount']),
+      summary: serializer.fromJson<String>(json['summary']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'sourceKey': serializer.toJson<String>(sourceKey),
+      'sourceType': serializer.toJson<String>(sourceType),
+      'amount': serializer.toJson<int>(amount),
+      'summary': serializer.toJson<String>(summary),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  XpEventEntry copyWith(
+          {String? id,
+          String? sourceKey,
+          String? sourceType,
+          int? amount,
+          String? summary,
+          DateTime? createdAt}) =>
+      XpEventEntry(
+        id: id ?? this.id,
+        sourceKey: sourceKey ?? this.sourceKey,
+        sourceType: sourceType ?? this.sourceType,
+        amount: amount ?? this.amount,
+        summary: summary ?? this.summary,
+        createdAt: createdAt ?? this.createdAt,
+      );
+  XpEventEntry copyWithCompanion(XpEventsCompanion data) {
+    return XpEventEntry(
+      id: data.id.present ? data.id.value : this.id,
+      sourceKey: data.sourceKey.present ? data.sourceKey.value : this.sourceKey,
+      sourceType:
+          data.sourceType.present ? data.sourceType.value : this.sourceType,
+      amount: data.amount.present ? data.amount.value : this.amount,
+      summary: data.summary.present ? data.summary.value : this.summary,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('XpEventEntry(')
+          ..write('id: $id, ')
+          ..write('sourceKey: $sourceKey, ')
+          ..write('sourceType: $sourceType, ')
+          ..write('amount: $amount, ')
+          ..write('summary: $summary, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, sourceKey, sourceType, amount, summary, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is XpEventEntry &&
+          other.id == this.id &&
+          other.sourceKey == this.sourceKey &&
+          other.sourceType == this.sourceType &&
+          other.amount == this.amount &&
+          other.summary == this.summary &&
+          other.createdAt == this.createdAt);
+}
+
+class XpEventsCompanion extends UpdateCompanion<XpEventEntry> {
+  final Value<String> id;
+  final Value<String> sourceKey;
+  final Value<String> sourceType;
+  final Value<int> amount;
+  final Value<String> summary;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const XpEventsCompanion({
+    this.id = const Value.absent(),
+    this.sourceKey = const Value.absent(),
+    this.sourceType = const Value.absent(),
+    this.amount = const Value.absent(),
+    this.summary = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  XpEventsCompanion.insert({
+    required String id,
+    required String sourceKey,
+    required String sourceType,
+    required int amount,
+    required String summary,
+    required DateTime createdAt,
+    this.rowid = const Value.absent(),
+  })  : id = Value(id),
+        sourceKey = Value(sourceKey),
+        sourceType = Value(sourceType),
+        amount = Value(amount),
+        summary = Value(summary),
+        createdAt = Value(createdAt);
+  static Insertable<XpEventEntry> custom({
+    Expression<String>? id,
+    Expression<String>? sourceKey,
+    Expression<String>? sourceType,
+    Expression<int>? amount,
+    Expression<String>? summary,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (sourceKey != null) 'source_key': sourceKey,
+      if (sourceType != null) 'source_type': sourceType,
+      if (amount != null) 'amount': amount,
+      if (summary != null) 'summary': summary,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  XpEventsCompanion copyWith(
+      {Value<String>? id,
+      Value<String>? sourceKey,
+      Value<String>? sourceType,
+      Value<int>? amount,
+      Value<String>? summary,
+      Value<DateTime>? createdAt,
+      Value<int>? rowid}) {
+    return XpEventsCompanion(
+      id: id ?? this.id,
+      sourceKey: sourceKey ?? this.sourceKey,
+      sourceType: sourceType ?? this.sourceType,
+      amount: amount ?? this.amount,
+      summary: summary ?? this.summary,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (sourceKey.present) {
+      map['source_key'] = Variable<String>(sourceKey.value);
+    }
+    if (sourceType.present) {
+      map['source_type'] = Variable<String>(sourceType.value);
+    }
+    if (amount.present) {
+      map['amount'] = Variable<int>(amount.value);
+    }
+    if (summary.present) {
+      map['summary'] = Variable<String>(summary.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('XpEventsCompanion(')
+          ..write('id: $id, ')
+          ..write('sourceKey: $sourceKey, ')
+          ..write('sourceType: $sourceType, ')
+          ..write('amount: $amount, ')
+          ..write('summary: $summary, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $UnlockedAchievementsTable extends UnlockedAchievements
+    with TableInfo<$UnlockedAchievementsTable, UnlockedAchievementEntry> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $UnlockedAchievementsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _categoryMeta =
+      const VerificationMeta('category');
+  @override
+  late final GeneratedColumn<String> category = GeneratedColumn<String>(
+      'category', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+      'title', aliasedName, false,
+      additionalChecks:
+          GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 120),
+      type: DriftSqlType.string,
+      requiredDuringInsert: true);
+  static const VerificationMeta _descriptionMeta =
+      const VerificationMeta('description');
+  @override
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
+      'description', aliasedName, false,
+      additionalChecks:
+          GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 260),
+      type: DriftSqlType.string,
+      requiredDuringInsert: true);
+  static const VerificationMeta _unlockedAtMeta =
+      const VerificationMeta('unlockedAt');
+  @override
+  late final GeneratedColumn<DateTime> unlockedAt = GeneratedColumn<DateTime>(
+      'unlocked_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, category, title, description, unlockedAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'unlocked_achievements';
+  @override
+  VerificationContext validateIntegrity(
+      Insertable<UnlockedAchievementEntry> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('category')) {
+      context.handle(_categoryMeta,
+          category.isAcceptableOrUnknown(data['category']!, _categoryMeta));
+    } else if (isInserting) {
+      context.missing(_categoryMeta);
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+          _titleMeta, title.isAcceptableOrUnknown(data['title']!, _titleMeta));
+    } else if (isInserting) {
+      context.missing(_titleMeta);
+    }
+    if (data.containsKey('description')) {
+      context.handle(
+          _descriptionMeta,
+          description.isAcceptableOrUnknown(
+              data['description']!, _descriptionMeta));
+    } else if (isInserting) {
+      context.missing(_descriptionMeta);
+    }
+    if (data.containsKey('unlocked_at')) {
+      context.handle(
+          _unlockedAtMeta,
+          unlockedAt.isAcceptableOrUnknown(
+              data['unlocked_at']!, _unlockedAtMeta));
+    } else if (isInserting) {
+      context.missing(_unlockedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  UnlockedAchievementEntry map(Map<String, dynamic> data,
+      {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return UnlockedAchievementEntry(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      category: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}category'])!,
+      title: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
+      description: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}description'])!,
+      unlockedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}unlocked_at'])!,
+    );
+  }
+
+  @override
+  $UnlockedAchievementsTable createAlias(String alias) {
+    return $UnlockedAchievementsTable(attachedDatabase, alias);
+  }
+}
+
+class UnlockedAchievementEntry extends DataClass
+    implements Insertable<UnlockedAchievementEntry> {
+  final String id;
+  final String category;
+  final String title;
+  final String description;
+  final DateTime unlockedAt;
+  const UnlockedAchievementEntry(
+      {required this.id,
+      required this.category,
+      required this.title,
+      required this.description,
+      required this.unlockedAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['category'] = Variable<String>(category);
+    map['title'] = Variable<String>(title);
+    map['description'] = Variable<String>(description);
+    map['unlocked_at'] = Variable<DateTime>(unlockedAt);
+    return map;
+  }
+
+  UnlockedAchievementsCompanion toCompanion(bool nullToAbsent) {
+    return UnlockedAchievementsCompanion(
+      id: Value(id),
+      category: Value(category),
+      title: Value(title),
+      description: Value(description),
+      unlockedAt: Value(unlockedAt),
+    );
+  }
+
+  factory UnlockedAchievementEntry.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return UnlockedAchievementEntry(
+      id: serializer.fromJson<String>(json['id']),
+      category: serializer.fromJson<String>(json['category']),
+      title: serializer.fromJson<String>(json['title']),
+      description: serializer.fromJson<String>(json['description']),
+      unlockedAt: serializer.fromJson<DateTime>(json['unlockedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'category': serializer.toJson<String>(category),
+      'title': serializer.toJson<String>(title),
+      'description': serializer.toJson<String>(description),
+      'unlockedAt': serializer.toJson<DateTime>(unlockedAt),
+    };
+  }
+
+  UnlockedAchievementEntry copyWith(
+          {String? id,
+          String? category,
+          String? title,
+          String? description,
+          DateTime? unlockedAt}) =>
+      UnlockedAchievementEntry(
+        id: id ?? this.id,
+        category: category ?? this.category,
+        title: title ?? this.title,
+        description: description ?? this.description,
+        unlockedAt: unlockedAt ?? this.unlockedAt,
+      );
+  UnlockedAchievementEntry copyWithCompanion(
+      UnlockedAchievementsCompanion data) {
+    return UnlockedAchievementEntry(
+      id: data.id.present ? data.id.value : this.id,
+      category: data.category.present ? data.category.value : this.category,
+      title: data.title.present ? data.title.value : this.title,
+      description:
+          data.description.present ? data.description.value : this.description,
+      unlockedAt:
+          data.unlockedAt.present ? data.unlockedAt.value : this.unlockedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('UnlockedAchievementEntry(')
+          ..write('id: $id, ')
+          ..write('category: $category, ')
+          ..write('title: $title, ')
+          ..write('description: $description, ')
+          ..write('unlockedAt: $unlockedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, category, title, description, unlockedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is UnlockedAchievementEntry &&
+          other.id == this.id &&
+          other.category == this.category &&
+          other.title == this.title &&
+          other.description == this.description &&
+          other.unlockedAt == this.unlockedAt);
+}
+
+class UnlockedAchievementsCompanion
+    extends UpdateCompanion<UnlockedAchievementEntry> {
+  final Value<String> id;
+  final Value<String> category;
+  final Value<String> title;
+  final Value<String> description;
+  final Value<DateTime> unlockedAt;
+  final Value<int> rowid;
+  const UnlockedAchievementsCompanion({
+    this.id = const Value.absent(),
+    this.category = const Value.absent(),
+    this.title = const Value.absent(),
+    this.description = const Value.absent(),
+    this.unlockedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  UnlockedAchievementsCompanion.insert({
+    required String id,
+    required String category,
+    required String title,
+    required String description,
+    required DateTime unlockedAt,
+    this.rowid = const Value.absent(),
+  })  : id = Value(id),
+        category = Value(category),
+        title = Value(title),
+        description = Value(description),
+        unlockedAt = Value(unlockedAt);
+  static Insertable<UnlockedAchievementEntry> custom({
+    Expression<String>? id,
+    Expression<String>? category,
+    Expression<String>? title,
+    Expression<String>? description,
+    Expression<DateTime>? unlockedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (category != null) 'category': category,
+      if (title != null) 'title': title,
+      if (description != null) 'description': description,
+      if (unlockedAt != null) 'unlocked_at': unlockedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  UnlockedAchievementsCompanion copyWith(
+      {Value<String>? id,
+      Value<String>? category,
+      Value<String>? title,
+      Value<String>? description,
+      Value<DateTime>? unlockedAt,
+      Value<int>? rowid}) {
+    return UnlockedAchievementsCompanion(
+      id: id ?? this.id,
+      category: category ?? this.category,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      unlockedAt: unlockedAt ?? this.unlockedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (category.present) {
+      map['category'] = Variable<String>(category.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (description.present) {
+      map['description'] = Variable<String>(description.value);
+    }
+    if (unlockedAt.present) {
+      map['unlocked_at'] = Variable<DateTime>(unlockedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('UnlockedAchievementsCompanion(')
+          ..write('id: $id, ')
+          ..write('category: $category, ')
+          ..write('title: $title, ')
+          ..write('description: $description, ')
+          ..write('unlockedAt: $unlockedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $RadarDiscoveriesTable extends RadarDiscoveries
+    with TableInfo<$RadarDiscoveriesTable, RadarDiscoveryEntry> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $RadarDiscoveriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _canonicalUrlMeta =
+      const VerificationMeta('canonicalUrl');
+  @override
+  late final GeneratedColumn<String> canonicalUrl = GeneratedColumn<String>(
+      'canonical_url', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+      'title', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _discoveryTypeMeta =
+      const VerificationMeta('discoveryType');
+  @override
+  late final GeneratedColumn<String> discoveryType = GeneratedColumn<String>(
+      'discovery_type', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _primaryCategoryMeta =
+      const VerificationMeta('primaryCategory');
+  @override
+  late final GeneratedColumn<String> primaryCategory = GeneratedColumn<String>(
+      'primary_category', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _categoriesJsonMeta =
+      const VerificationMeta('categoriesJson');
+  @override
+  late final GeneratedColumn<String> categoriesJson = GeneratedColumn<String>(
+      'categories_json', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant('[]'));
+  static const VerificationMeta _tagsJsonMeta =
+      const VerificationMeta('tagsJson');
+  @override
+  late final GeneratedColumn<String> tagsJson = GeneratedColumn<String>(
+      'tags_json', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant('[]'));
+  static const VerificationMeta _priorityTierMeta =
+      const VerificationMeta('priorityTier');
+  @override
+  late final GeneratedColumn<String> priorityTier = GeneratedColumn<String>(
+      'priority_tier', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant('P1'));
+  static const VerificationMeta _sourceNameMeta =
+      const VerificationMeta('sourceName');
+  @override
+  late final GeneratedColumn<String> sourceName = GeneratedColumn<String>(
+      'source_name', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _sourceDomainMeta =
+      const VerificationMeta('sourceDomain');
+  @override
+  late final GeneratedColumn<String> sourceDomain = GeneratedColumn<String>(
+      'source_domain', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(''));
+  static const VerificationMeta _authorOrOrgMeta =
+      const VerificationMeta('authorOrOrg');
+  @override
+  late final GeneratedColumn<String> authorOrOrg = GeneratedColumn<String>(
+      'author_or_org', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _publishedAtIsoMeta =
+      const VerificationMeta('publishedAtIso');
+  @override
+  late final GeneratedColumn<String> publishedAtIso = GeneratedColumn<String>(
+      'published_at_iso', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _discoveredAtMeta =
+      const VerificationMeta('discoveredAt');
+  @override
+  late final GeneratedColumn<DateTime> discoveredAt = GeneratedColumn<DateTime>(
+      'discovered_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _rawSummaryMeta =
+      const VerificationMeta('rawSummary');
+  @override
+  late final GeneratedColumn<String> rawSummary = GeneratedColumn<String>(
+      'raw_summary', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(''));
+  static const VerificationMeta _plainEnglishSummaryMeta =
+      const VerificationMeta('plainEnglishSummary');
+  @override
+  late final GeneratedColumn<String> plainEnglishSummary =
+      GeneratedColumn<String>('plain_english_summary', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _whyItMattersMeta =
+      const VerificationMeta('whyItMatters');
+  @override
+  late final GeneratedColumn<String> whyItMatters = GeneratedColumn<String>(
+      'why_it_matters', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _whoItIsForMeta =
+      const VerificationMeta('whoItIsFor');
+  @override
+  late final GeneratedColumn<String> whoItIsFor = GeneratedColumn<String>(
+      'who_it_is_for', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _howItComparesMeta =
+      const VerificationMeta('howItCompares');
+  @override
+  late final GeneratedColumn<String> howItCompares = GeneratedColumn<String>(
+      'how_it_compares', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _practicalTakeawayMeta =
+      const VerificationMeta('practicalTakeaway');
+  @override
+  late final GeneratedColumn<String> practicalTakeaway =
+      GeneratedColumn<String>('practical_takeaway', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _tryItSuggestionMeta =
+      const VerificationMeta('tryItSuggestion');
+  @override
+  late final GeneratedColumn<String> tryItSuggestion = GeneratedColumn<String>(
+      'try_it_suggestion', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _beginnerNoteMeta =
+      const VerificationMeta('beginnerNote');
+  @override
+  late final GeneratedColumn<String> beginnerNote = GeneratedColumn<String>(
+      'beginner_note', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _analysisSourceMeta =
+      const VerificationMeta('analysisSource');
+  @override
+  late final GeneratedColumn<String> analysisSource = GeneratedColumn<String>(
+      'analysis_source', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant('source_reported'));
+  static const VerificationMeta _primaryMetricLabelMeta =
+      const VerificationMeta('primaryMetricLabel');
+  @override
+  late final GeneratedColumn<String> primaryMetricLabel =
+      GeneratedColumn<String>('primary_metric_label', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _primaryMetricValueMeta =
+      const VerificationMeta('primaryMetricValue');
+  @override
+  late final GeneratedColumn<double> primaryMetricValue =
+      GeneratedColumn<double>('primary_metric_value', aliasedName, true,
+          type: DriftSqlType.double, requiredDuringInsert: false);
+  static const VerificationMeta _secondaryMetricLabelMeta =
+      const VerificationMeta('secondaryMetricLabel');
+  @override
+  late final GeneratedColumn<String> secondaryMetricLabel =
+      GeneratedColumn<String>('secondary_metric_label', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _secondaryMetricValueMeta =
+      const VerificationMeta('secondaryMetricValue');
+  @override
+  late final GeneratedColumn<double> secondaryMetricValue =
+      GeneratedColumn<double>('secondary_metric_value', aliasedName, true,
+          type: DriftSqlType.double, requiredDuringInsert: false);
+  static const VerificationMeta _metricDeltaLabelMeta =
+      const VerificationMeta('metricDeltaLabel');
+  @override
+  late final GeneratedColumn<String> metricDeltaLabel = GeneratedColumn<String>(
+      'metric_delta_label', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _metricDeltaValueMeta =
+      const VerificationMeta('metricDeltaValue');
+  @override
+  late final GeneratedColumn<double> metricDeltaValue = GeneratedColumn<double>(
+      'metric_delta_value', aliasedName, true,
+      type: DriftSqlType.double, requiredDuringInsert: false);
+  static const VerificationMeta _sourcesJsonMeta =
+      const VerificationMeta('sourcesJson');
+  @override
+  late final GeneratedColumn<String> sourcesJson = GeneratedColumn<String>(
+      'sources_json', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant('[]'));
+  static const VerificationMeta _rankScoreMeta =
+      const VerificationMeta('rankScore');
+  @override
+  late final GeneratedColumn<double> rankScore = GeneratedColumn<double>(
+      'rank_score', aliasedName, false,
+      type: DriftSqlType.double,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0.0));
+  static const VerificationMeta _isExploratoryMeta =
+      const VerificationMeta('isExploratory');
+  @override
+  late final GeneratedColumn<bool> isExploratory = GeneratedColumn<bool>(
+      'is_exploratory', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("is_exploratory" IN (0, 1))'),
+      defaultValue: const Constant(false));
+  static const VerificationMeta _isBookmarkedMeta =
+      const VerificationMeta('isBookmarked');
+  @override
+  late final GeneratedColumn<bool> isBookmarked = GeneratedColumn<bool>(
+      'is_bookmarked', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("is_bookmarked" IN (0, 1))'),
+      defaultValue: const Constant(false));
+  static const VerificationMeta _bookmarkCollectionMeta =
+      const VerificationMeta('bookmarkCollection');
+  @override
+  late final GeneratedColumn<String> bookmarkCollection =
+      GeneratedColumn<String>('bookmark_collection', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _bookmarkNoteMeta =
+      const VerificationMeta('bookmarkNote');
+  @override
+  late final GeneratedColumn<String> bookmarkNote = GeneratedColumn<String>(
+      'bookmark_note', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _isReadMeta = const VerificationMeta('isRead');
+  @override
+  late final GeneratedColumn<bool> isRead = GeneratedColumn<bool>(
+      'is_read', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("is_read" IN (0, 1))'),
+      defaultValue: const Constant(false));
+  static const VerificationMeta _isExploredMeta =
+      const VerificationMeta('isExplored');
+  @override
+  late final GeneratedColumn<bool> isExplored = GeneratedColumn<bool>(
+      'is_explored', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("is_explored" IN (0, 1))'),
+      defaultValue: const Constant(false));
+  static const VerificationMeta _isHiddenMeta =
+      const VerificationMeta('isHidden');
+  @override
+  late final GeneratedColumn<bool> isHidden = GeneratedColumn<bool>(
+      'is_hidden', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("is_hidden" IN (0, 1))'),
+      defaultValue: const Constant(false));
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        canonicalUrl,
+        title,
+        discoveryType,
+        primaryCategory,
+        categoriesJson,
+        tagsJson,
+        priorityTier,
+        sourceName,
+        sourceDomain,
+        authorOrOrg,
+        publishedAtIso,
+        discoveredAt,
+        rawSummary,
+        plainEnglishSummary,
+        whyItMatters,
+        whoItIsFor,
+        howItCompares,
+        practicalTakeaway,
+        tryItSuggestion,
+        beginnerNote,
+        analysisSource,
+        primaryMetricLabel,
+        primaryMetricValue,
+        secondaryMetricLabel,
+        secondaryMetricValue,
+        metricDeltaLabel,
+        metricDeltaValue,
+        sourcesJson,
+        rankScore,
+        isExploratory,
+        isBookmarked,
+        bookmarkCollection,
+        bookmarkNote,
+        isRead,
+        isExplored,
+        isHidden
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'radar_discoveries';
+  @override
+  VerificationContext validateIntegrity(
+      Insertable<RadarDiscoveryEntry> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('canonical_url')) {
+      context.handle(
+          _canonicalUrlMeta,
+          canonicalUrl.isAcceptableOrUnknown(
+              data['canonical_url']!, _canonicalUrlMeta));
+    } else if (isInserting) {
+      context.missing(_canonicalUrlMeta);
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+          _titleMeta, title.isAcceptableOrUnknown(data['title']!, _titleMeta));
+    } else if (isInserting) {
+      context.missing(_titleMeta);
+    }
+    if (data.containsKey('discovery_type')) {
+      context.handle(
+          _discoveryTypeMeta,
+          discoveryType.isAcceptableOrUnknown(
+              data['discovery_type']!, _discoveryTypeMeta));
+    } else if (isInserting) {
+      context.missing(_discoveryTypeMeta);
+    }
+    if (data.containsKey('primary_category')) {
+      context.handle(
+          _primaryCategoryMeta,
+          primaryCategory.isAcceptableOrUnknown(
+              data['primary_category']!, _primaryCategoryMeta));
+    } else if (isInserting) {
+      context.missing(_primaryCategoryMeta);
+    }
+    if (data.containsKey('categories_json')) {
+      context.handle(
+          _categoriesJsonMeta,
+          categoriesJson.isAcceptableOrUnknown(
+              data['categories_json']!, _categoriesJsonMeta));
+    }
+    if (data.containsKey('tags_json')) {
+      context.handle(_tagsJsonMeta,
+          tagsJson.isAcceptableOrUnknown(data['tags_json']!, _tagsJsonMeta));
+    }
+    if (data.containsKey('priority_tier')) {
+      context.handle(
+          _priorityTierMeta,
+          priorityTier.isAcceptableOrUnknown(
+              data['priority_tier']!, _priorityTierMeta));
+    }
+    if (data.containsKey('source_name')) {
+      context.handle(
+          _sourceNameMeta,
+          sourceName.isAcceptableOrUnknown(
+              data['source_name']!, _sourceNameMeta));
+    } else if (isInserting) {
+      context.missing(_sourceNameMeta);
+    }
+    if (data.containsKey('source_domain')) {
+      context.handle(
+          _sourceDomainMeta,
+          sourceDomain.isAcceptableOrUnknown(
+              data['source_domain']!, _sourceDomainMeta));
+    }
+    if (data.containsKey('author_or_org')) {
+      context.handle(
+          _authorOrOrgMeta,
+          authorOrOrg.isAcceptableOrUnknown(
+              data['author_or_org']!, _authorOrOrgMeta));
+    }
+    if (data.containsKey('published_at_iso')) {
+      context.handle(
+          _publishedAtIsoMeta,
+          publishedAtIso.isAcceptableOrUnknown(
+              data['published_at_iso']!, _publishedAtIsoMeta));
+    }
+    if (data.containsKey('discovered_at')) {
+      context.handle(
+          _discoveredAtMeta,
+          discoveredAt.isAcceptableOrUnknown(
+              data['discovered_at']!, _discoveredAtMeta));
+    } else if (isInserting) {
+      context.missing(_discoveredAtMeta);
+    }
+    if (data.containsKey('raw_summary')) {
+      context.handle(
+          _rawSummaryMeta,
+          rawSummary.isAcceptableOrUnknown(
+              data['raw_summary']!, _rawSummaryMeta));
+    }
+    if (data.containsKey('plain_english_summary')) {
+      context.handle(
+          _plainEnglishSummaryMeta,
+          plainEnglishSummary.isAcceptableOrUnknown(
+              data['plain_english_summary']!, _plainEnglishSummaryMeta));
+    }
+    if (data.containsKey('why_it_matters')) {
+      context.handle(
+          _whyItMattersMeta,
+          whyItMatters.isAcceptableOrUnknown(
+              data['why_it_matters']!, _whyItMattersMeta));
+    }
+    if (data.containsKey('who_it_is_for')) {
+      context.handle(
+          _whoItIsForMeta,
+          whoItIsFor.isAcceptableOrUnknown(
+              data['who_it_is_for']!, _whoItIsForMeta));
+    }
+    if (data.containsKey('how_it_compares')) {
+      context.handle(
+          _howItComparesMeta,
+          howItCompares.isAcceptableOrUnknown(
+              data['how_it_compares']!, _howItComparesMeta));
+    }
+    if (data.containsKey('practical_takeaway')) {
+      context.handle(
+          _practicalTakeawayMeta,
+          practicalTakeaway.isAcceptableOrUnknown(
+              data['practical_takeaway']!, _practicalTakeawayMeta));
+    }
+    if (data.containsKey('try_it_suggestion')) {
+      context.handle(
+          _tryItSuggestionMeta,
+          tryItSuggestion.isAcceptableOrUnknown(
+              data['try_it_suggestion']!, _tryItSuggestionMeta));
+    }
+    if (data.containsKey('beginner_note')) {
+      context.handle(
+          _beginnerNoteMeta,
+          beginnerNote.isAcceptableOrUnknown(
+              data['beginner_note']!, _beginnerNoteMeta));
+    }
+    if (data.containsKey('analysis_source')) {
+      context.handle(
+          _analysisSourceMeta,
+          analysisSource.isAcceptableOrUnknown(
+              data['analysis_source']!, _analysisSourceMeta));
+    }
+    if (data.containsKey('primary_metric_label')) {
+      context.handle(
+          _primaryMetricLabelMeta,
+          primaryMetricLabel.isAcceptableOrUnknown(
+              data['primary_metric_label']!, _primaryMetricLabelMeta));
+    }
+    if (data.containsKey('primary_metric_value')) {
+      context.handle(
+          _primaryMetricValueMeta,
+          primaryMetricValue.isAcceptableOrUnknown(
+              data['primary_metric_value']!, _primaryMetricValueMeta));
+    }
+    if (data.containsKey('secondary_metric_label')) {
+      context.handle(
+          _secondaryMetricLabelMeta,
+          secondaryMetricLabel.isAcceptableOrUnknown(
+              data['secondary_metric_label']!, _secondaryMetricLabelMeta));
+    }
+    if (data.containsKey('secondary_metric_value')) {
+      context.handle(
+          _secondaryMetricValueMeta,
+          secondaryMetricValue.isAcceptableOrUnknown(
+              data['secondary_metric_value']!, _secondaryMetricValueMeta));
+    }
+    if (data.containsKey('metric_delta_label')) {
+      context.handle(
+          _metricDeltaLabelMeta,
+          metricDeltaLabel.isAcceptableOrUnknown(
+              data['metric_delta_label']!, _metricDeltaLabelMeta));
+    }
+    if (data.containsKey('metric_delta_value')) {
+      context.handle(
+          _metricDeltaValueMeta,
+          metricDeltaValue.isAcceptableOrUnknown(
+              data['metric_delta_value']!, _metricDeltaValueMeta));
+    }
+    if (data.containsKey('sources_json')) {
+      context.handle(
+          _sourcesJsonMeta,
+          sourcesJson.isAcceptableOrUnknown(
+              data['sources_json']!, _sourcesJsonMeta));
+    }
+    if (data.containsKey('rank_score')) {
+      context.handle(_rankScoreMeta,
+          rankScore.isAcceptableOrUnknown(data['rank_score']!, _rankScoreMeta));
+    }
+    if (data.containsKey('is_exploratory')) {
+      context.handle(
+          _isExploratoryMeta,
+          isExploratory.isAcceptableOrUnknown(
+              data['is_exploratory']!, _isExploratoryMeta));
+    }
+    if (data.containsKey('is_bookmarked')) {
+      context.handle(
+          _isBookmarkedMeta,
+          isBookmarked.isAcceptableOrUnknown(
+              data['is_bookmarked']!, _isBookmarkedMeta));
+    }
+    if (data.containsKey('bookmark_collection')) {
+      context.handle(
+          _bookmarkCollectionMeta,
+          bookmarkCollection.isAcceptableOrUnknown(
+              data['bookmark_collection']!, _bookmarkCollectionMeta));
+    }
+    if (data.containsKey('bookmark_note')) {
+      context.handle(
+          _bookmarkNoteMeta,
+          bookmarkNote.isAcceptableOrUnknown(
+              data['bookmark_note']!, _bookmarkNoteMeta));
+    }
+    if (data.containsKey('is_read')) {
+      context.handle(_isReadMeta,
+          isRead.isAcceptableOrUnknown(data['is_read']!, _isReadMeta));
+    }
+    if (data.containsKey('is_explored')) {
+      context.handle(
+          _isExploredMeta,
+          isExplored.isAcceptableOrUnknown(
+              data['is_explored']!, _isExploredMeta));
+    }
+    if (data.containsKey('is_hidden')) {
+      context.handle(_isHiddenMeta,
+          isHidden.isAcceptableOrUnknown(data['is_hidden']!, _isHiddenMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  RadarDiscoveryEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return RadarDiscoveryEntry(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      canonicalUrl: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}canonical_url'])!,
+      title: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
+      discoveryType: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}discovery_type'])!,
+      primaryCategory: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}primary_category'])!,
+      categoriesJson: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}categories_json'])!,
+      tagsJson: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}tags_json'])!,
+      priorityTier: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}priority_tier'])!,
+      sourceName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}source_name'])!,
+      sourceDomain: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}source_domain'])!,
+      authorOrOrg: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}author_or_org']),
+      publishedAtIso: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}published_at_iso']),
+      discoveredAt: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}discovered_at'])!,
+      rawSummary: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}raw_summary'])!,
+      plainEnglishSummary: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}plain_english_summary']),
+      whyItMatters: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}why_it_matters']),
+      whoItIsFor: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}who_it_is_for']),
+      howItCompares: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}how_it_compares']),
+      practicalTakeaway: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}practical_takeaway']),
+      tryItSuggestion: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}try_it_suggestion']),
+      beginnerNote: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}beginner_note']),
+      analysisSource: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}analysis_source'])!,
+      primaryMetricLabel: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}primary_metric_label']),
+      primaryMetricValue: attachedDatabase.typeMapping.read(
+          DriftSqlType.double, data['${effectivePrefix}primary_metric_value']),
+      secondaryMetricLabel: attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}secondary_metric_label']),
+      secondaryMetricValue: attachedDatabase.typeMapping.read(
+          DriftSqlType.double,
+          data['${effectivePrefix}secondary_metric_value']),
+      metricDeltaLabel: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}metric_delta_label']),
+      metricDeltaValue: attachedDatabase.typeMapping.read(
+          DriftSqlType.double, data['${effectivePrefix}metric_delta_value']),
+      sourcesJson: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}sources_json'])!,
+      rankScore: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}rank_score'])!,
+      isExploratory: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_exploratory'])!,
+      isBookmarked: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_bookmarked'])!,
+      bookmarkCollection: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}bookmark_collection']),
+      bookmarkNote: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}bookmark_note']),
+      isRead: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_read'])!,
+      isExplored: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_explored'])!,
+      isHidden: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_hidden'])!,
+    );
+  }
+
+  @override
+  $RadarDiscoveriesTable createAlias(String alias) {
+    return $RadarDiscoveriesTable(attachedDatabase, alias);
+  }
+}
+
+class RadarDiscoveryEntry extends DataClass
+    implements Insertable<RadarDiscoveryEntry> {
+  final String id;
+  final String canonicalUrl;
+  final String title;
+  final String discoveryType;
+  final String primaryCategory;
+  final String categoriesJson;
+  final String tagsJson;
+  final String priorityTier;
+  final String sourceName;
+  final String sourceDomain;
+  final String? authorOrOrg;
+  final String? publishedAtIso;
+  final DateTime discoveredAt;
+  final String rawSummary;
+  final String? plainEnglishSummary;
+  final String? whyItMatters;
+  final String? whoItIsFor;
+  final String? howItCompares;
+  final String? practicalTakeaway;
+  final String? tryItSuggestion;
+  final String? beginnerNote;
+  final String analysisSource;
+  final String? primaryMetricLabel;
+  final double? primaryMetricValue;
+  final String? secondaryMetricLabel;
+  final double? secondaryMetricValue;
+  final String? metricDeltaLabel;
+  final double? metricDeltaValue;
+  final String sourcesJson;
+  final double rankScore;
+  final bool isExploratory;
+  final bool isBookmarked;
+  final String? bookmarkCollection;
+  final String? bookmarkNote;
+  final bool isRead;
+  final bool isExplored;
+  final bool isHidden;
+  const RadarDiscoveryEntry(
+      {required this.id,
+      required this.canonicalUrl,
+      required this.title,
+      required this.discoveryType,
+      required this.primaryCategory,
+      required this.categoriesJson,
+      required this.tagsJson,
+      required this.priorityTier,
+      required this.sourceName,
+      required this.sourceDomain,
+      this.authorOrOrg,
+      this.publishedAtIso,
+      required this.discoveredAt,
+      required this.rawSummary,
+      this.plainEnglishSummary,
+      this.whyItMatters,
+      this.whoItIsFor,
+      this.howItCompares,
+      this.practicalTakeaway,
+      this.tryItSuggestion,
+      this.beginnerNote,
+      required this.analysisSource,
+      this.primaryMetricLabel,
+      this.primaryMetricValue,
+      this.secondaryMetricLabel,
+      this.secondaryMetricValue,
+      this.metricDeltaLabel,
+      this.metricDeltaValue,
+      required this.sourcesJson,
+      required this.rankScore,
+      required this.isExploratory,
+      required this.isBookmarked,
+      this.bookmarkCollection,
+      this.bookmarkNote,
+      required this.isRead,
+      required this.isExplored,
+      required this.isHidden});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['canonical_url'] = Variable<String>(canonicalUrl);
+    map['title'] = Variable<String>(title);
+    map['discovery_type'] = Variable<String>(discoveryType);
+    map['primary_category'] = Variable<String>(primaryCategory);
+    map['categories_json'] = Variable<String>(categoriesJson);
+    map['tags_json'] = Variable<String>(tagsJson);
+    map['priority_tier'] = Variable<String>(priorityTier);
+    map['source_name'] = Variable<String>(sourceName);
+    map['source_domain'] = Variable<String>(sourceDomain);
+    if (!nullToAbsent || authorOrOrg != null) {
+      map['author_or_org'] = Variable<String>(authorOrOrg);
+    }
+    if (!nullToAbsent || publishedAtIso != null) {
+      map['published_at_iso'] = Variable<String>(publishedAtIso);
+    }
+    map['discovered_at'] = Variable<DateTime>(discoveredAt);
+    map['raw_summary'] = Variable<String>(rawSummary);
+    if (!nullToAbsent || plainEnglishSummary != null) {
+      map['plain_english_summary'] = Variable<String>(plainEnglishSummary);
+    }
+    if (!nullToAbsent || whyItMatters != null) {
+      map['why_it_matters'] = Variable<String>(whyItMatters);
+    }
+    if (!nullToAbsent || whoItIsFor != null) {
+      map['who_it_is_for'] = Variable<String>(whoItIsFor);
+    }
+    if (!nullToAbsent || howItCompares != null) {
+      map['how_it_compares'] = Variable<String>(howItCompares);
+    }
+    if (!nullToAbsent || practicalTakeaway != null) {
+      map['practical_takeaway'] = Variable<String>(practicalTakeaway);
+    }
+    if (!nullToAbsent || tryItSuggestion != null) {
+      map['try_it_suggestion'] = Variable<String>(tryItSuggestion);
+    }
+    if (!nullToAbsent || beginnerNote != null) {
+      map['beginner_note'] = Variable<String>(beginnerNote);
+    }
+    map['analysis_source'] = Variable<String>(analysisSource);
+    if (!nullToAbsent || primaryMetricLabel != null) {
+      map['primary_metric_label'] = Variable<String>(primaryMetricLabel);
+    }
+    if (!nullToAbsent || primaryMetricValue != null) {
+      map['primary_metric_value'] = Variable<double>(primaryMetricValue);
+    }
+    if (!nullToAbsent || secondaryMetricLabel != null) {
+      map['secondary_metric_label'] = Variable<String>(secondaryMetricLabel);
+    }
+    if (!nullToAbsent || secondaryMetricValue != null) {
+      map['secondary_metric_value'] = Variable<double>(secondaryMetricValue);
+    }
+    if (!nullToAbsent || metricDeltaLabel != null) {
+      map['metric_delta_label'] = Variable<String>(metricDeltaLabel);
+    }
+    if (!nullToAbsent || metricDeltaValue != null) {
+      map['metric_delta_value'] = Variable<double>(metricDeltaValue);
+    }
+    map['sources_json'] = Variable<String>(sourcesJson);
+    map['rank_score'] = Variable<double>(rankScore);
+    map['is_exploratory'] = Variable<bool>(isExploratory);
+    map['is_bookmarked'] = Variable<bool>(isBookmarked);
+    if (!nullToAbsent || bookmarkCollection != null) {
+      map['bookmark_collection'] = Variable<String>(bookmarkCollection);
+    }
+    if (!nullToAbsent || bookmarkNote != null) {
+      map['bookmark_note'] = Variable<String>(bookmarkNote);
+    }
+    map['is_read'] = Variable<bool>(isRead);
+    map['is_explored'] = Variable<bool>(isExplored);
+    map['is_hidden'] = Variable<bool>(isHidden);
+    return map;
+  }
+
+  RadarDiscoveriesCompanion toCompanion(bool nullToAbsent) {
+    return RadarDiscoveriesCompanion(
+      id: Value(id),
+      canonicalUrl: Value(canonicalUrl),
+      title: Value(title),
+      discoveryType: Value(discoveryType),
+      primaryCategory: Value(primaryCategory),
+      categoriesJson: Value(categoriesJson),
+      tagsJson: Value(tagsJson),
+      priorityTier: Value(priorityTier),
+      sourceName: Value(sourceName),
+      sourceDomain: Value(sourceDomain),
+      authorOrOrg: authorOrOrg == null && nullToAbsent
+          ? const Value.absent()
+          : Value(authorOrOrg),
+      publishedAtIso: publishedAtIso == null && nullToAbsent
+          ? const Value.absent()
+          : Value(publishedAtIso),
+      discoveredAt: Value(discoveredAt),
+      rawSummary: Value(rawSummary),
+      plainEnglishSummary: plainEnglishSummary == null && nullToAbsent
+          ? const Value.absent()
+          : Value(plainEnglishSummary),
+      whyItMatters: whyItMatters == null && nullToAbsent
+          ? const Value.absent()
+          : Value(whyItMatters),
+      whoItIsFor: whoItIsFor == null && nullToAbsent
+          ? const Value.absent()
+          : Value(whoItIsFor),
+      howItCompares: howItCompares == null && nullToAbsent
+          ? const Value.absent()
+          : Value(howItCompares),
+      practicalTakeaway: practicalTakeaway == null && nullToAbsent
+          ? const Value.absent()
+          : Value(practicalTakeaway),
+      tryItSuggestion: tryItSuggestion == null && nullToAbsent
+          ? const Value.absent()
+          : Value(tryItSuggestion),
+      beginnerNote: beginnerNote == null && nullToAbsent
+          ? const Value.absent()
+          : Value(beginnerNote),
+      analysisSource: Value(analysisSource),
+      primaryMetricLabel: primaryMetricLabel == null && nullToAbsent
+          ? const Value.absent()
+          : Value(primaryMetricLabel),
+      primaryMetricValue: primaryMetricValue == null && nullToAbsent
+          ? const Value.absent()
+          : Value(primaryMetricValue),
+      secondaryMetricLabel: secondaryMetricLabel == null && nullToAbsent
+          ? const Value.absent()
+          : Value(secondaryMetricLabel),
+      secondaryMetricValue: secondaryMetricValue == null && nullToAbsent
+          ? const Value.absent()
+          : Value(secondaryMetricValue),
+      metricDeltaLabel: metricDeltaLabel == null && nullToAbsent
+          ? const Value.absent()
+          : Value(metricDeltaLabel),
+      metricDeltaValue: metricDeltaValue == null && nullToAbsent
+          ? const Value.absent()
+          : Value(metricDeltaValue),
+      sourcesJson: Value(sourcesJson),
+      rankScore: Value(rankScore),
+      isExploratory: Value(isExploratory),
+      isBookmarked: Value(isBookmarked),
+      bookmarkCollection: bookmarkCollection == null && nullToAbsent
+          ? const Value.absent()
+          : Value(bookmarkCollection),
+      bookmarkNote: bookmarkNote == null && nullToAbsent
+          ? const Value.absent()
+          : Value(bookmarkNote),
+      isRead: Value(isRead),
+      isExplored: Value(isExplored),
+      isHidden: Value(isHidden),
+    );
+  }
+
+  factory RadarDiscoveryEntry.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return RadarDiscoveryEntry(
+      id: serializer.fromJson<String>(json['id']),
+      canonicalUrl: serializer.fromJson<String>(json['canonicalUrl']),
+      title: serializer.fromJson<String>(json['title']),
+      discoveryType: serializer.fromJson<String>(json['discoveryType']),
+      primaryCategory: serializer.fromJson<String>(json['primaryCategory']),
+      categoriesJson: serializer.fromJson<String>(json['categoriesJson']),
+      tagsJson: serializer.fromJson<String>(json['tagsJson']),
+      priorityTier: serializer.fromJson<String>(json['priorityTier']),
+      sourceName: serializer.fromJson<String>(json['sourceName']),
+      sourceDomain: serializer.fromJson<String>(json['sourceDomain']),
+      authorOrOrg: serializer.fromJson<String?>(json['authorOrOrg']),
+      publishedAtIso: serializer.fromJson<String?>(json['publishedAtIso']),
+      discoveredAt: serializer.fromJson<DateTime>(json['discoveredAt']),
+      rawSummary: serializer.fromJson<String>(json['rawSummary']),
+      plainEnglishSummary:
+          serializer.fromJson<String?>(json['plainEnglishSummary']),
+      whyItMatters: serializer.fromJson<String?>(json['whyItMatters']),
+      whoItIsFor: serializer.fromJson<String?>(json['whoItIsFor']),
+      howItCompares: serializer.fromJson<String?>(json['howItCompares']),
+      practicalTakeaway:
+          serializer.fromJson<String?>(json['practicalTakeaway']),
+      tryItSuggestion: serializer.fromJson<String?>(json['tryItSuggestion']),
+      beginnerNote: serializer.fromJson<String?>(json['beginnerNote']),
+      analysisSource: serializer.fromJson<String>(json['analysisSource']),
+      primaryMetricLabel:
+          serializer.fromJson<String?>(json['primaryMetricLabel']),
+      primaryMetricValue:
+          serializer.fromJson<double?>(json['primaryMetricValue']),
+      secondaryMetricLabel:
+          serializer.fromJson<String?>(json['secondaryMetricLabel']),
+      secondaryMetricValue:
+          serializer.fromJson<double?>(json['secondaryMetricValue']),
+      metricDeltaLabel: serializer.fromJson<String?>(json['metricDeltaLabel']),
+      metricDeltaValue: serializer.fromJson<double?>(json['metricDeltaValue']),
+      sourcesJson: serializer.fromJson<String>(json['sourcesJson']),
+      rankScore: serializer.fromJson<double>(json['rankScore']),
+      isExploratory: serializer.fromJson<bool>(json['isExploratory']),
+      isBookmarked: serializer.fromJson<bool>(json['isBookmarked']),
+      bookmarkCollection:
+          serializer.fromJson<String?>(json['bookmarkCollection']),
+      bookmarkNote: serializer.fromJson<String?>(json['bookmarkNote']),
+      isRead: serializer.fromJson<bool>(json['isRead']),
+      isExplored: serializer.fromJson<bool>(json['isExplored']),
+      isHidden: serializer.fromJson<bool>(json['isHidden']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'canonicalUrl': serializer.toJson<String>(canonicalUrl),
+      'title': serializer.toJson<String>(title),
+      'discoveryType': serializer.toJson<String>(discoveryType),
+      'primaryCategory': serializer.toJson<String>(primaryCategory),
+      'categoriesJson': serializer.toJson<String>(categoriesJson),
+      'tagsJson': serializer.toJson<String>(tagsJson),
+      'priorityTier': serializer.toJson<String>(priorityTier),
+      'sourceName': serializer.toJson<String>(sourceName),
+      'sourceDomain': serializer.toJson<String>(sourceDomain),
+      'authorOrOrg': serializer.toJson<String?>(authorOrOrg),
+      'publishedAtIso': serializer.toJson<String?>(publishedAtIso),
+      'discoveredAt': serializer.toJson<DateTime>(discoveredAt),
+      'rawSummary': serializer.toJson<String>(rawSummary),
+      'plainEnglishSummary': serializer.toJson<String?>(plainEnglishSummary),
+      'whyItMatters': serializer.toJson<String?>(whyItMatters),
+      'whoItIsFor': serializer.toJson<String?>(whoItIsFor),
+      'howItCompares': serializer.toJson<String?>(howItCompares),
+      'practicalTakeaway': serializer.toJson<String?>(practicalTakeaway),
+      'tryItSuggestion': serializer.toJson<String?>(tryItSuggestion),
+      'beginnerNote': serializer.toJson<String?>(beginnerNote),
+      'analysisSource': serializer.toJson<String>(analysisSource),
+      'primaryMetricLabel': serializer.toJson<String?>(primaryMetricLabel),
+      'primaryMetricValue': serializer.toJson<double?>(primaryMetricValue),
+      'secondaryMetricLabel': serializer.toJson<String?>(secondaryMetricLabel),
+      'secondaryMetricValue': serializer.toJson<double?>(secondaryMetricValue),
+      'metricDeltaLabel': serializer.toJson<String?>(metricDeltaLabel),
+      'metricDeltaValue': serializer.toJson<double?>(metricDeltaValue),
+      'sourcesJson': serializer.toJson<String>(sourcesJson),
+      'rankScore': serializer.toJson<double>(rankScore),
+      'isExploratory': serializer.toJson<bool>(isExploratory),
+      'isBookmarked': serializer.toJson<bool>(isBookmarked),
+      'bookmarkCollection': serializer.toJson<String?>(bookmarkCollection),
+      'bookmarkNote': serializer.toJson<String?>(bookmarkNote),
+      'isRead': serializer.toJson<bool>(isRead),
+      'isExplored': serializer.toJson<bool>(isExplored),
+      'isHidden': serializer.toJson<bool>(isHidden),
+    };
+  }
+
+  RadarDiscoveryEntry copyWith(
+          {String? id,
+          String? canonicalUrl,
+          String? title,
+          String? discoveryType,
+          String? primaryCategory,
+          String? categoriesJson,
+          String? tagsJson,
+          String? priorityTier,
+          String? sourceName,
+          String? sourceDomain,
+          Value<String?> authorOrOrg = const Value.absent(),
+          Value<String?> publishedAtIso = const Value.absent(),
+          DateTime? discoveredAt,
+          String? rawSummary,
+          Value<String?> plainEnglishSummary = const Value.absent(),
+          Value<String?> whyItMatters = const Value.absent(),
+          Value<String?> whoItIsFor = const Value.absent(),
+          Value<String?> howItCompares = const Value.absent(),
+          Value<String?> practicalTakeaway = const Value.absent(),
+          Value<String?> tryItSuggestion = const Value.absent(),
+          Value<String?> beginnerNote = const Value.absent(),
+          String? analysisSource,
+          Value<String?> primaryMetricLabel = const Value.absent(),
+          Value<double?> primaryMetricValue = const Value.absent(),
+          Value<String?> secondaryMetricLabel = const Value.absent(),
+          Value<double?> secondaryMetricValue = const Value.absent(),
+          Value<String?> metricDeltaLabel = const Value.absent(),
+          Value<double?> metricDeltaValue = const Value.absent(),
+          String? sourcesJson,
+          double? rankScore,
+          bool? isExploratory,
+          bool? isBookmarked,
+          Value<String?> bookmarkCollection = const Value.absent(),
+          Value<String?> bookmarkNote = const Value.absent(),
+          bool? isRead,
+          bool? isExplored,
+          bool? isHidden}) =>
+      RadarDiscoveryEntry(
+        id: id ?? this.id,
+        canonicalUrl: canonicalUrl ?? this.canonicalUrl,
+        title: title ?? this.title,
+        discoveryType: discoveryType ?? this.discoveryType,
+        primaryCategory: primaryCategory ?? this.primaryCategory,
+        categoriesJson: categoriesJson ?? this.categoriesJson,
+        tagsJson: tagsJson ?? this.tagsJson,
+        priorityTier: priorityTier ?? this.priorityTier,
+        sourceName: sourceName ?? this.sourceName,
+        sourceDomain: sourceDomain ?? this.sourceDomain,
+        authorOrOrg: authorOrOrg.present ? authorOrOrg.value : this.authorOrOrg,
+        publishedAtIso:
+            publishedAtIso.present ? publishedAtIso.value : this.publishedAtIso,
+        discoveredAt: discoveredAt ?? this.discoveredAt,
+        rawSummary: rawSummary ?? this.rawSummary,
+        plainEnglishSummary: plainEnglishSummary.present
+            ? plainEnglishSummary.value
+            : this.plainEnglishSummary,
+        whyItMatters:
+            whyItMatters.present ? whyItMatters.value : this.whyItMatters,
+        whoItIsFor: whoItIsFor.present ? whoItIsFor.value : this.whoItIsFor,
+        howItCompares:
+            howItCompares.present ? howItCompares.value : this.howItCompares,
+        practicalTakeaway: practicalTakeaway.present
+            ? practicalTakeaway.value
+            : this.practicalTakeaway,
+        tryItSuggestion: tryItSuggestion.present
+            ? tryItSuggestion.value
+            : this.tryItSuggestion,
+        beginnerNote:
+            beginnerNote.present ? beginnerNote.value : this.beginnerNote,
+        analysisSource: analysisSource ?? this.analysisSource,
+        primaryMetricLabel: primaryMetricLabel.present
+            ? primaryMetricLabel.value
+            : this.primaryMetricLabel,
+        primaryMetricValue: primaryMetricValue.present
+            ? primaryMetricValue.value
+            : this.primaryMetricValue,
+        secondaryMetricLabel: secondaryMetricLabel.present
+            ? secondaryMetricLabel.value
+            : this.secondaryMetricLabel,
+        secondaryMetricValue: secondaryMetricValue.present
+            ? secondaryMetricValue.value
+            : this.secondaryMetricValue,
+        metricDeltaLabel: metricDeltaLabel.present
+            ? metricDeltaLabel.value
+            : this.metricDeltaLabel,
+        metricDeltaValue: metricDeltaValue.present
+            ? metricDeltaValue.value
+            : this.metricDeltaValue,
+        sourcesJson: sourcesJson ?? this.sourcesJson,
+        rankScore: rankScore ?? this.rankScore,
+        isExploratory: isExploratory ?? this.isExploratory,
+        isBookmarked: isBookmarked ?? this.isBookmarked,
+        bookmarkCollection: bookmarkCollection.present
+            ? bookmarkCollection.value
+            : this.bookmarkCollection,
+        bookmarkNote:
+            bookmarkNote.present ? bookmarkNote.value : this.bookmarkNote,
+        isRead: isRead ?? this.isRead,
+        isExplored: isExplored ?? this.isExplored,
+        isHidden: isHidden ?? this.isHidden,
+      );
+  RadarDiscoveryEntry copyWithCompanion(RadarDiscoveriesCompanion data) {
+    return RadarDiscoveryEntry(
+      id: data.id.present ? data.id.value : this.id,
+      canonicalUrl: data.canonicalUrl.present
+          ? data.canonicalUrl.value
+          : this.canonicalUrl,
+      title: data.title.present ? data.title.value : this.title,
+      discoveryType: data.discoveryType.present
+          ? data.discoveryType.value
+          : this.discoveryType,
+      primaryCategory: data.primaryCategory.present
+          ? data.primaryCategory.value
+          : this.primaryCategory,
+      categoriesJson: data.categoriesJson.present
+          ? data.categoriesJson.value
+          : this.categoriesJson,
+      tagsJson: data.tagsJson.present ? data.tagsJson.value : this.tagsJson,
+      priorityTier: data.priorityTier.present
+          ? data.priorityTier.value
+          : this.priorityTier,
+      sourceName:
+          data.sourceName.present ? data.sourceName.value : this.sourceName,
+      sourceDomain: data.sourceDomain.present
+          ? data.sourceDomain.value
+          : this.sourceDomain,
+      authorOrOrg:
+          data.authorOrOrg.present ? data.authorOrOrg.value : this.authorOrOrg,
+      publishedAtIso: data.publishedAtIso.present
+          ? data.publishedAtIso.value
+          : this.publishedAtIso,
+      discoveredAt: data.discoveredAt.present
+          ? data.discoveredAt.value
+          : this.discoveredAt,
+      rawSummary:
+          data.rawSummary.present ? data.rawSummary.value : this.rawSummary,
+      plainEnglishSummary: data.plainEnglishSummary.present
+          ? data.plainEnglishSummary.value
+          : this.plainEnglishSummary,
+      whyItMatters: data.whyItMatters.present
+          ? data.whyItMatters.value
+          : this.whyItMatters,
+      whoItIsFor:
+          data.whoItIsFor.present ? data.whoItIsFor.value : this.whoItIsFor,
+      howItCompares: data.howItCompares.present
+          ? data.howItCompares.value
+          : this.howItCompares,
+      practicalTakeaway: data.practicalTakeaway.present
+          ? data.practicalTakeaway.value
+          : this.practicalTakeaway,
+      tryItSuggestion: data.tryItSuggestion.present
+          ? data.tryItSuggestion.value
+          : this.tryItSuggestion,
+      beginnerNote: data.beginnerNote.present
+          ? data.beginnerNote.value
+          : this.beginnerNote,
+      analysisSource: data.analysisSource.present
+          ? data.analysisSource.value
+          : this.analysisSource,
+      primaryMetricLabel: data.primaryMetricLabel.present
+          ? data.primaryMetricLabel.value
+          : this.primaryMetricLabel,
+      primaryMetricValue: data.primaryMetricValue.present
+          ? data.primaryMetricValue.value
+          : this.primaryMetricValue,
+      secondaryMetricLabel: data.secondaryMetricLabel.present
+          ? data.secondaryMetricLabel.value
+          : this.secondaryMetricLabel,
+      secondaryMetricValue: data.secondaryMetricValue.present
+          ? data.secondaryMetricValue.value
+          : this.secondaryMetricValue,
+      metricDeltaLabel: data.metricDeltaLabel.present
+          ? data.metricDeltaLabel.value
+          : this.metricDeltaLabel,
+      metricDeltaValue: data.metricDeltaValue.present
+          ? data.metricDeltaValue.value
+          : this.metricDeltaValue,
+      sourcesJson:
+          data.sourcesJson.present ? data.sourcesJson.value : this.sourcesJson,
+      rankScore: data.rankScore.present ? data.rankScore.value : this.rankScore,
+      isExploratory: data.isExploratory.present
+          ? data.isExploratory.value
+          : this.isExploratory,
+      isBookmarked: data.isBookmarked.present
+          ? data.isBookmarked.value
+          : this.isBookmarked,
+      bookmarkCollection: data.bookmarkCollection.present
+          ? data.bookmarkCollection.value
+          : this.bookmarkCollection,
+      bookmarkNote: data.bookmarkNote.present
+          ? data.bookmarkNote.value
+          : this.bookmarkNote,
+      isRead: data.isRead.present ? data.isRead.value : this.isRead,
+      isExplored:
+          data.isExplored.present ? data.isExplored.value : this.isExplored,
+      isHidden: data.isHidden.present ? data.isHidden.value : this.isHidden,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RadarDiscoveryEntry(')
+          ..write('id: $id, ')
+          ..write('canonicalUrl: $canonicalUrl, ')
+          ..write('title: $title, ')
+          ..write('discoveryType: $discoveryType, ')
+          ..write('primaryCategory: $primaryCategory, ')
+          ..write('categoriesJson: $categoriesJson, ')
+          ..write('tagsJson: $tagsJson, ')
+          ..write('priorityTier: $priorityTier, ')
+          ..write('sourceName: $sourceName, ')
+          ..write('sourceDomain: $sourceDomain, ')
+          ..write('authorOrOrg: $authorOrOrg, ')
+          ..write('publishedAtIso: $publishedAtIso, ')
+          ..write('discoveredAt: $discoveredAt, ')
+          ..write('rawSummary: $rawSummary, ')
+          ..write('plainEnglishSummary: $plainEnglishSummary, ')
+          ..write('whyItMatters: $whyItMatters, ')
+          ..write('whoItIsFor: $whoItIsFor, ')
+          ..write('howItCompares: $howItCompares, ')
+          ..write('practicalTakeaway: $practicalTakeaway, ')
+          ..write('tryItSuggestion: $tryItSuggestion, ')
+          ..write('beginnerNote: $beginnerNote, ')
+          ..write('analysisSource: $analysisSource, ')
+          ..write('primaryMetricLabel: $primaryMetricLabel, ')
+          ..write('primaryMetricValue: $primaryMetricValue, ')
+          ..write('secondaryMetricLabel: $secondaryMetricLabel, ')
+          ..write('secondaryMetricValue: $secondaryMetricValue, ')
+          ..write('metricDeltaLabel: $metricDeltaLabel, ')
+          ..write('metricDeltaValue: $metricDeltaValue, ')
+          ..write('sourcesJson: $sourcesJson, ')
+          ..write('rankScore: $rankScore, ')
+          ..write('isExploratory: $isExploratory, ')
+          ..write('isBookmarked: $isBookmarked, ')
+          ..write('bookmarkCollection: $bookmarkCollection, ')
+          ..write('bookmarkNote: $bookmarkNote, ')
+          ..write('isRead: $isRead, ')
+          ..write('isExplored: $isExplored, ')
+          ..write('isHidden: $isHidden')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hashAll([
+        id,
+        canonicalUrl,
+        title,
+        discoveryType,
+        primaryCategory,
+        categoriesJson,
+        tagsJson,
+        priorityTier,
+        sourceName,
+        sourceDomain,
+        authorOrOrg,
+        publishedAtIso,
+        discoveredAt,
+        rawSummary,
+        plainEnglishSummary,
+        whyItMatters,
+        whoItIsFor,
+        howItCompares,
+        practicalTakeaway,
+        tryItSuggestion,
+        beginnerNote,
+        analysisSource,
+        primaryMetricLabel,
+        primaryMetricValue,
+        secondaryMetricLabel,
+        secondaryMetricValue,
+        metricDeltaLabel,
+        metricDeltaValue,
+        sourcesJson,
+        rankScore,
+        isExploratory,
+        isBookmarked,
+        bookmarkCollection,
+        bookmarkNote,
+        isRead,
+        isExplored,
+        isHidden
+      ]);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is RadarDiscoveryEntry &&
+          other.id == this.id &&
+          other.canonicalUrl == this.canonicalUrl &&
+          other.title == this.title &&
+          other.discoveryType == this.discoveryType &&
+          other.primaryCategory == this.primaryCategory &&
+          other.categoriesJson == this.categoriesJson &&
+          other.tagsJson == this.tagsJson &&
+          other.priorityTier == this.priorityTier &&
+          other.sourceName == this.sourceName &&
+          other.sourceDomain == this.sourceDomain &&
+          other.authorOrOrg == this.authorOrOrg &&
+          other.publishedAtIso == this.publishedAtIso &&
+          other.discoveredAt == this.discoveredAt &&
+          other.rawSummary == this.rawSummary &&
+          other.plainEnglishSummary == this.plainEnglishSummary &&
+          other.whyItMatters == this.whyItMatters &&
+          other.whoItIsFor == this.whoItIsFor &&
+          other.howItCompares == this.howItCompares &&
+          other.practicalTakeaway == this.practicalTakeaway &&
+          other.tryItSuggestion == this.tryItSuggestion &&
+          other.beginnerNote == this.beginnerNote &&
+          other.analysisSource == this.analysisSource &&
+          other.primaryMetricLabel == this.primaryMetricLabel &&
+          other.primaryMetricValue == this.primaryMetricValue &&
+          other.secondaryMetricLabel == this.secondaryMetricLabel &&
+          other.secondaryMetricValue == this.secondaryMetricValue &&
+          other.metricDeltaLabel == this.metricDeltaLabel &&
+          other.metricDeltaValue == this.metricDeltaValue &&
+          other.sourcesJson == this.sourcesJson &&
+          other.rankScore == this.rankScore &&
+          other.isExploratory == this.isExploratory &&
+          other.isBookmarked == this.isBookmarked &&
+          other.bookmarkCollection == this.bookmarkCollection &&
+          other.bookmarkNote == this.bookmarkNote &&
+          other.isRead == this.isRead &&
+          other.isExplored == this.isExplored &&
+          other.isHidden == this.isHidden);
+}
+
+class RadarDiscoveriesCompanion extends UpdateCompanion<RadarDiscoveryEntry> {
+  final Value<String> id;
+  final Value<String> canonicalUrl;
+  final Value<String> title;
+  final Value<String> discoveryType;
+  final Value<String> primaryCategory;
+  final Value<String> categoriesJson;
+  final Value<String> tagsJson;
+  final Value<String> priorityTier;
+  final Value<String> sourceName;
+  final Value<String> sourceDomain;
+  final Value<String?> authorOrOrg;
+  final Value<String?> publishedAtIso;
+  final Value<DateTime> discoveredAt;
+  final Value<String> rawSummary;
+  final Value<String?> plainEnglishSummary;
+  final Value<String?> whyItMatters;
+  final Value<String?> whoItIsFor;
+  final Value<String?> howItCompares;
+  final Value<String?> practicalTakeaway;
+  final Value<String?> tryItSuggestion;
+  final Value<String?> beginnerNote;
+  final Value<String> analysisSource;
+  final Value<String?> primaryMetricLabel;
+  final Value<double?> primaryMetricValue;
+  final Value<String?> secondaryMetricLabel;
+  final Value<double?> secondaryMetricValue;
+  final Value<String?> metricDeltaLabel;
+  final Value<double?> metricDeltaValue;
+  final Value<String> sourcesJson;
+  final Value<double> rankScore;
+  final Value<bool> isExploratory;
+  final Value<bool> isBookmarked;
+  final Value<String?> bookmarkCollection;
+  final Value<String?> bookmarkNote;
+  final Value<bool> isRead;
+  final Value<bool> isExplored;
+  final Value<bool> isHidden;
+  final Value<int> rowid;
+  const RadarDiscoveriesCompanion({
+    this.id = const Value.absent(),
+    this.canonicalUrl = const Value.absent(),
+    this.title = const Value.absent(),
+    this.discoveryType = const Value.absent(),
+    this.primaryCategory = const Value.absent(),
+    this.categoriesJson = const Value.absent(),
+    this.tagsJson = const Value.absent(),
+    this.priorityTier = const Value.absent(),
+    this.sourceName = const Value.absent(),
+    this.sourceDomain = const Value.absent(),
+    this.authorOrOrg = const Value.absent(),
+    this.publishedAtIso = const Value.absent(),
+    this.discoveredAt = const Value.absent(),
+    this.rawSummary = const Value.absent(),
+    this.plainEnglishSummary = const Value.absent(),
+    this.whyItMatters = const Value.absent(),
+    this.whoItIsFor = const Value.absent(),
+    this.howItCompares = const Value.absent(),
+    this.practicalTakeaway = const Value.absent(),
+    this.tryItSuggestion = const Value.absent(),
+    this.beginnerNote = const Value.absent(),
+    this.analysisSource = const Value.absent(),
+    this.primaryMetricLabel = const Value.absent(),
+    this.primaryMetricValue = const Value.absent(),
+    this.secondaryMetricLabel = const Value.absent(),
+    this.secondaryMetricValue = const Value.absent(),
+    this.metricDeltaLabel = const Value.absent(),
+    this.metricDeltaValue = const Value.absent(),
+    this.sourcesJson = const Value.absent(),
+    this.rankScore = const Value.absent(),
+    this.isExploratory = const Value.absent(),
+    this.isBookmarked = const Value.absent(),
+    this.bookmarkCollection = const Value.absent(),
+    this.bookmarkNote = const Value.absent(),
+    this.isRead = const Value.absent(),
+    this.isExplored = const Value.absent(),
+    this.isHidden = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  RadarDiscoveriesCompanion.insert({
+    required String id,
+    required String canonicalUrl,
+    required String title,
+    required String discoveryType,
+    required String primaryCategory,
+    this.categoriesJson = const Value.absent(),
+    this.tagsJson = const Value.absent(),
+    this.priorityTier = const Value.absent(),
+    required String sourceName,
+    this.sourceDomain = const Value.absent(),
+    this.authorOrOrg = const Value.absent(),
+    this.publishedAtIso = const Value.absent(),
+    required DateTime discoveredAt,
+    this.rawSummary = const Value.absent(),
+    this.plainEnglishSummary = const Value.absent(),
+    this.whyItMatters = const Value.absent(),
+    this.whoItIsFor = const Value.absent(),
+    this.howItCompares = const Value.absent(),
+    this.practicalTakeaway = const Value.absent(),
+    this.tryItSuggestion = const Value.absent(),
+    this.beginnerNote = const Value.absent(),
+    this.analysisSource = const Value.absent(),
+    this.primaryMetricLabel = const Value.absent(),
+    this.primaryMetricValue = const Value.absent(),
+    this.secondaryMetricLabel = const Value.absent(),
+    this.secondaryMetricValue = const Value.absent(),
+    this.metricDeltaLabel = const Value.absent(),
+    this.metricDeltaValue = const Value.absent(),
+    this.sourcesJson = const Value.absent(),
+    this.rankScore = const Value.absent(),
+    this.isExploratory = const Value.absent(),
+    this.isBookmarked = const Value.absent(),
+    this.bookmarkCollection = const Value.absent(),
+    this.bookmarkNote = const Value.absent(),
+    this.isRead = const Value.absent(),
+    this.isExplored = const Value.absent(),
+    this.isHidden = const Value.absent(),
+    this.rowid = const Value.absent(),
+  })  : id = Value(id),
+        canonicalUrl = Value(canonicalUrl),
+        title = Value(title),
+        discoveryType = Value(discoveryType),
+        primaryCategory = Value(primaryCategory),
+        sourceName = Value(sourceName),
+        discoveredAt = Value(discoveredAt);
+  static Insertable<RadarDiscoveryEntry> custom({
+    Expression<String>? id,
+    Expression<String>? canonicalUrl,
+    Expression<String>? title,
+    Expression<String>? discoveryType,
+    Expression<String>? primaryCategory,
+    Expression<String>? categoriesJson,
+    Expression<String>? tagsJson,
+    Expression<String>? priorityTier,
+    Expression<String>? sourceName,
+    Expression<String>? sourceDomain,
+    Expression<String>? authorOrOrg,
+    Expression<String>? publishedAtIso,
+    Expression<DateTime>? discoveredAt,
+    Expression<String>? rawSummary,
+    Expression<String>? plainEnglishSummary,
+    Expression<String>? whyItMatters,
+    Expression<String>? whoItIsFor,
+    Expression<String>? howItCompares,
+    Expression<String>? practicalTakeaway,
+    Expression<String>? tryItSuggestion,
+    Expression<String>? beginnerNote,
+    Expression<String>? analysisSource,
+    Expression<String>? primaryMetricLabel,
+    Expression<double>? primaryMetricValue,
+    Expression<String>? secondaryMetricLabel,
+    Expression<double>? secondaryMetricValue,
+    Expression<String>? metricDeltaLabel,
+    Expression<double>? metricDeltaValue,
+    Expression<String>? sourcesJson,
+    Expression<double>? rankScore,
+    Expression<bool>? isExploratory,
+    Expression<bool>? isBookmarked,
+    Expression<String>? bookmarkCollection,
+    Expression<String>? bookmarkNote,
+    Expression<bool>? isRead,
+    Expression<bool>? isExplored,
+    Expression<bool>? isHidden,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (canonicalUrl != null) 'canonical_url': canonicalUrl,
+      if (title != null) 'title': title,
+      if (discoveryType != null) 'discovery_type': discoveryType,
+      if (primaryCategory != null) 'primary_category': primaryCategory,
+      if (categoriesJson != null) 'categories_json': categoriesJson,
+      if (tagsJson != null) 'tags_json': tagsJson,
+      if (priorityTier != null) 'priority_tier': priorityTier,
+      if (sourceName != null) 'source_name': sourceName,
+      if (sourceDomain != null) 'source_domain': sourceDomain,
+      if (authorOrOrg != null) 'author_or_org': authorOrOrg,
+      if (publishedAtIso != null) 'published_at_iso': publishedAtIso,
+      if (discoveredAt != null) 'discovered_at': discoveredAt,
+      if (rawSummary != null) 'raw_summary': rawSummary,
+      if (plainEnglishSummary != null)
+        'plain_english_summary': plainEnglishSummary,
+      if (whyItMatters != null) 'why_it_matters': whyItMatters,
+      if (whoItIsFor != null) 'who_it_is_for': whoItIsFor,
+      if (howItCompares != null) 'how_it_compares': howItCompares,
+      if (practicalTakeaway != null) 'practical_takeaway': practicalTakeaway,
+      if (tryItSuggestion != null) 'try_it_suggestion': tryItSuggestion,
+      if (beginnerNote != null) 'beginner_note': beginnerNote,
+      if (analysisSource != null) 'analysis_source': analysisSource,
+      if (primaryMetricLabel != null)
+        'primary_metric_label': primaryMetricLabel,
+      if (primaryMetricValue != null)
+        'primary_metric_value': primaryMetricValue,
+      if (secondaryMetricLabel != null)
+        'secondary_metric_label': secondaryMetricLabel,
+      if (secondaryMetricValue != null)
+        'secondary_metric_value': secondaryMetricValue,
+      if (metricDeltaLabel != null) 'metric_delta_label': metricDeltaLabel,
+      if (metricDeltaValue != null) 'metric_delta_value': metricDeltaValue,
+      if (sourcesJson != null) 'sources_json': sourcesJson,
+      if (rankScore != null) 'rank_score': rankScore,
+      if (isExploratory != null) 'is_exploratory': isExploratory,
+      if (isBookmarked != null) 'is_bookmarked': isBookmarked,
+      if (bookmarkCollection != null) 'bookmark_collection': bookmarkCollection,
+      if (bookmarkNote != null) 'bookmark_note': bookmarkNote,
+      if (isRead != null) 'is_read': isRead,
+      if (isExplored != null) 'is_explored': isExplored,
+      if (isHidden != null) 'is_hidden': isHidden,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  RadarDiscoveriesCompanion copyWith(
+      {Value<String>? id,
+      Value<String>? canonicalUrl,
+      Value<String>? title,
+      Value<String>? discoveryType,
+      Value<String>? primaryCategory,
+      Value<String>? categoriesJson,
+      Value<String>? tagsJson,
+      Value<String>? priorityTier,
+      Value<String>? sourceName,
+      Value<String>? sourceDomain,
+      Value<String?>? authorOrOrg,
+      Value<String?>? publishedAtIso,
+      Value<DateTime>? discoveredAt,
+      Value<String>? rawSummary,
+      Value<String?>? plainEnglishSummary,
+      Value<String?>? whyItMatters,
+      Value<String?>? whoItIsFor,
+      Value<String?>? howItCompares,
+      Value<String?>? practicalTakeaway,
+      Value<String?>? tryItSuggestion,
+      Value<String?>? beginnerNote,
+      Value<String>? analysisSource,
+      Value<String?>? primaryMetricLabel,
+      Value<double?>? primaryMetricValue,
+      Value<String?>? secondaryMetricLabel,
+      Value<double?>? secondaryMetricValue,
+      Value<String?>? metricDeltaLabel,
+      Value<double?>? metricDeltaValue,
+      Value<String>? sourcesJson,
+      Value<double>? rankScore,
+      Value<bool>? isExploratory,
+      Value<bool>? isBookmarked,
+      Value<String?>? bookmarkCollection,
+      Value<String?>? bookmarkNote,
+      Value<bool>? isRead,
+      Value<bool>? isExplored,
+      Value<bool>? isHidden,
+      Value<int>? rowid}) {
+    return RadarDiscoveriesCompanion(
+      id: id ?? this.id,
+      canonicalUrl: canonicalUrl ?? this.canonicalUrl,
+      title: title ?? this.title,
+      discoveryType: discoveryType ?? this.discoveryType,
+      primaryCategory: primaryCategory ?? this.primaryCategory,
+      categoriesJson: categoriesJson ?? this.categoriesJson,
+      tagsJson: tagsJson ?? this.tagsJson,
+      priorityTier: priorityTier ?? this.priorityTier,
+      sourceName: sourceName ?? this.sourceName,
+      sourceDomain: sourceDomain ?? this.sourceDomain,
+      authorOrOrg: authorOrOrg ?? this.authorOrOrg,
+      publishedAtIso: publishedAtIso ?? this.publishedAtIso,
+      discoveredAt: discoveredAt ?? this.discoveredAt,
+      rawSummary: rawSummary ?? this.rawSummary,
+      plainEnglishSummary: plainEnglishSummary ?? this.plainEnglishSummary,
+      whyItMatters: whyItMatters ?? this.whyItMatters,
+      whoItIsFor: whoItIsFor ?? this.whoItIsFor,
+      howItCompares: howItCompares ?? this.howItCompares,
+      practicalTakeaway: practicalTakeaway ?? this.practicalTakeaway,
+      tryItSuggestion: tryItSuggestion ?? this.tryItSuggestion,
+      beginnerNote: beginnerNote ?? this.beginnerNote,
+      analysisSource: analysisSource ?? this.analysisSource,
+      primaryMetricLabel: primaryMetricLabel ?? this.primaryMetricLabel,
+      primaryMetricValue: primaryMetricValue ?? this.primaryMetricValue,
+      secondaryMetricLabel: secondaryMetricLabel ?? this.secondaryMetricLabel,
+      secondaryMetricValue: secondaryMetricValue ?? this.secondaryMetricValue,
+      metricDeltaLabel: metricDeltaLabel ?? this.metricDeltaLabel,
+      metricDeltaValue: metricDeltaValue ?? this.metricDeltaValue,
+      sourcesJson: sourcesJson ?? this.sourcesJson,
+      rankScore: rankScore ?? this.rankScore,
+      isExploratory: isExploratory ?? this.isExploratory,
+      isBookmarked: isBookmarked ?? this.isBookmarked,
+      bookmarkCollection: bookmarkCollection ?? this.bookmarkCollection,
+      bookmarkNote: bookmarkNote ?? this.bookmarkNote,
+      isRead: isRead ?? this.isRead,
+      isExplored: isExplored ?? this.isExplored,
+      isHidden: isHidden ?? this.isHidden,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (canonicalUrl.present) {
+      map['canonical_url'] = Variable<String>(canonicalUrl.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (discoveryType.present) {
+      map['discovery_type'] = Variable<String>(discoveryType.value);
+    }
+    if (primaryCategory.present) {
+      map['primary_category'] = Variable<String>(primaryCategory.value);
+    }
+    if (categoriesJson.present) {
+      map['categories_json'] = Variable<String>(categoriesJson.value);
+    }
+    if (tagsJson.present) {
+      map['tags_json'] = Variable<String>(tagsJson.value);
+    }
+    if (priorityTier.present) {
+      map['priority_tier'] = Variable<String>(priorityTier.value);
+    }
+    if (sourceName.present) {
+      map['source_name'] = Variable<String>(sourceName.value);
+    }
+    if (sourceDomain.present) {
+      map['source_domain'] = Variable<String>(sourceDomain.value);
+    }
+    if (authorOrOrg.present) {
+      map['author_or_org'] = Variable<String>(authorOrOrg.value);
+    }
+    if (publishedAtIso.present) {
+      map['published_at_iso'] = Variable<String>(publishedAtIso.value);
+    }
+    if (discoveredAt.present) {
+      map['discovered_at'] = Variable<DateTime>(discoveredAt.value);
+    }
+    if (rawSummary.present) {
+      map['raw_summary'] = Variable<String>(rawSummary.value);
+    }
+    if (plainEnglishSummary.present) {
+      map['plain_english_summary'] =
+          Variable<String>(plainEnglishSummary.value);
+    }
+    if (whyItMatters.present) {
+      map['why_it_matters'] = Variable<String>(whyItMatters.value);
+    }
+    if (whoItIsFor.present) {
+      map['who_it_is_for'] = Variable<String>(whoItIsFor.value);
+    }
+    if (howItCompares.present) {
+      map['how_it_compares'] = Variable<String>(howItCompares.value);
+    }
+    if (practicalTakeaway.present) {
+      map['practical_takeaway'] = Variable<String>(practicalTakeaway.value);
+    }
+    if (tryItSuggestion.present) {
+      map['try_it_suggestion'] = Variable<String>(tryItSuggestion.value);
+    }
+    if (beginnerNote.present) {
+      map['beginner_note'] = Variable<String>(beginnerNote.value);
+    }
+    if (analysisSource.present) {
+      map['analysis_source'] = Variable<String>(analysisSource.value);
+    }
+    if (primaryMetricLabel.present) {
+      map['primary_metric_label'] = Variable<String>(primaryMetricLabel.value);
+    }
+    if (primaryMetricValue.present) {
+      map['primary_metric_value'] = Variable<double>(primaryMetricValue.value);
+    }
+    if (secondaryMetricLabel.present) {
+      map['secondary_metric_label'] =
+          Variable<String>(secondaryMetricLabel.value);
+    }
+    if (secondaryMetricValue.present) {
+      map['secondary_metric_value'] =
+          Variable<double>(secondaryMetricValue.value);
+    }
+    if (metricDeltaLabel.present) {
+      map['metric_delta_label'] = Variable<String>(metricDeltaLabel.value);
+    }
+    if (metricDeltaValue.present) {
+      map['metric_delta_value'] = Variable<double>(metricDeltaValue.value);
+    }
+    if (sourcesJson.present) {
+      map['sources_json'] = Variable<String>(sourcesJson.value);
+    }
+    if (rankScore.present) {
+      map['rank_score'] = Variable<double>(rankScore.value);
+    }
+    if (isExploratory.present) {
+      map['is_exploratory'] = Variable<bool>(isExploratory.value);
+    }
+    if (isBookmarked.present) {
+      map['is_bookmarked'] = Variable<bool>(isBookmarked.value);
+    }
+    if (bookmarkCollection.present) {
+      map['bookmark_collection'] = Variable<String>(bookmarkCollection.value);
+    }
+    if (bookmarkNote.present) {
+      map['bookmark_note'] = Variable<String>(bookmarkNote.value);
+    }
+    if (isRead.present) {
+      map['is_read'] = Variable<bool>(isRead.value);
+    }
+    if (isExplored.present) {
+      map['is_explored'] = Variable<bool>(isExplored.value);
+    }
+    if (isHidden.present) {
+      map['is_hidden'] = Variable<bool>(isHidden.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RadarDiscoveriesCompanion(')
+          ..write('id: $id, ')
+          ..write('canonicalUrl: $canonicalUrl, ')
+          ..write('title: $title, ')
+          ..write('discoveryType: $discoveryType, ')
+          ..write('primaryCategory: $primaryCategory, ')
+          ..write('categoriesJson: $categoriesJson, ')
+          ..write('tagsJson: $tagsJson, ')
+          ..write('priorityTier: $priorityTier, ')
+          ..write('sourceName: $sourceName, ')
+          ..write('sourceDomain: $sourceDomain, ')
+          ..write('authorOrOrg: $authorOrOrg, ')
+          ..write('publishedAtIso: $publishedAtIso, ')
+          ..write('discoveredAt: $discoveredAt, ')
+          ..write('rawSummary: $rawSummary, ')
+          ..write('plainEnglishSummary: $plainEnglishSummary, ')
+          ..write('whyItMatters: $whyItMatters, ')
+          ..write('whoItIsFor: $whoItIsFor, ')
+          ..write('howItCompares: $howItCompares, ')
+          ..write('practicalTakeaway: $practicalTakeaway, ')
+          ..write('tryItSuggestion: $tryItSuggestion, ')
+          ..write('beginnerNote: $beginnerNote, ')
+          ..write('analysisSource: $analysisSource, ')
+          ..write('primaryMetricLabel: $primaryMetricLabel, ')
+          ..write('primaryMetricValue: $primaryMetricValue, ')
+          ..write('secondaryMetricLabel: $secondaryMetricLabel, ')
+          ..write('secondaryMetricValue: $secondaryMetricValue, ')
+          ..write('metricDeltaLabel: $metricDeltaLabel, ')
+          ..write('metricDeltaValue: $metricDeltaValue, ')
+          ..write('sourcesJson: $sourcesJson, ')
+          ..write('rankScore: $rankScore, ')
+          ..write('isExploratory: $isExploratory, ')
+          ..write('isBookmarked: $isBookmarked, ')
+          ..write('bookmarkCollection: $bookmarkCollection, ')
+          ..write('bookmarkNote: $bookmarkNote, ')
+          ..write('isRead: $isRead, ')
+          ..write('isExplored: $isExplored, ')
+          ..write('isHidden: $isHidden, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $RadarTopicPrefsTable extends RadarTopicPrefs
+    with TableInfo<$RadarTopicPrefsTable, RadarTopicPrefEntry> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $RadarTopicPrefsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _categoryCodeMeta =
+      const VerificationMeta('categoryCode');
+  @override
+  late final GeneratedColumn<String> categoryCode = GeneratedColumn<String>(
+      'category_code', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _categoryNameMeta =
+      const VerificationMeta('categoryName');
+  @override
+  late final GeneratedColumn<String> categoryName = GeneratedColumn<String>(
+      'category_name', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _priorityLevelMeta =
+      const VerificationMeta('priorityLevel');
+  @override
+  late final GeneratedColumn<String> priorityLevel = GeneratedColumn<String>(
+      'priority_level', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant('P1'));
+  static const VerificationMeta _isMutedMeta =
+      const VerificationMeta('isMuted');
+  @override
+  late final GeneratedColumn<bool> isMuted = GeneratedColumn<bool>(
+      'is_muted', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("is_muted" IN (0, 1))'),
+      defaultValue: const Constant(false));
+  static const VerificationMeta _boostKeywordsJsonMeta =
+      const VerificationMeta('boostKeywordsJson');
+  @override
+  late final GeneratedColumn<String> boostKeywordsJson =
+      GeneratedColumn<String>('boost_keywords_json', aliasedName, false,
+          type: DriftSqlType.string,
+          requiredDuringInsert: false,
+          defaultValue: const Constant('[]'));
+  static const VerificationMeta _mutedKeywordsJsonMeta =
+      const VerificationMeta('mutedKeywordsJson');
+  @override
+  late final GeneratedColumn<String> mutedKeywordsJson =
+      GeneratedColumn<String>('muted_keywords_json', aliasedName, false,
+          type: DriftSqlType.string,
+          requiredDuringInsert: false,
+          defaultValue: const Constant('[]'));
+  static const VerificationMeta _affinityAdjustmentMeta =
+      const VerificationMeta('affinityAdjustment');
+  @override
+  late final GeneratedColumn<double> affinityAdjustment =
+      GeneratedColumn<double>('affinity_adjustment', aliasedName, false,
+          type: DriftSqlType.double,
+          requiredDuringInsert: false,
+          defaultValue: const Constant(0.0));
+  static const VerificationMeta _updatedAtMeta =
+      const VerificationMeta('updatedAt');
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+      'updated_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [
+        categoryCode,
+        categoryName,
+        priorityLevel,
+        isMuted,
+        boostKeywordsJson,
+        mutedKeywordsJson,
+        affinityAdjustment,
+        updatedAt
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'radar_topic_prefs';
+  @override
+  VerificationContext validateIntegrity(
+      Insertable<RadarTopicPrefEntry> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('category_code')) {
+      context.handle(
+          _categoryCodeMeta,
+          categoryCode.isAcceptableOrUnknown(
+              data['category_code']!, _categoryCodeMeta));
+    } else if (isInserting) {
+      context.missing(_categoryCodeMeta);
+    }
+    if (data.containsKey('category_name')) {
+      context.handle(
+          _categoryNameMeta,
+          categoryName.isAcceptableOrUnknown(
+              data['category_name']!, _categoryNameMeta));
+    } else if (isInserting) {
+      context.missing(_categoryNameMeta);
+    }
+    if (data.containsKey('priority_level')) {
+      context.handle(
+          _priorityLevelMeta,
+          priorityLevel.isAcceptableOrUnknown(
+              data['priority_level']!, _priorityLevelMeta));
+    }
+    if (data.containsKey('is_muted')) {
+      context.handle(_isMutedMeta,
+          isMuted.isAcceptableOrUnknown(data['is_muted']!, _isMutedMeta));
+    }
+    if (data.containsKey('boost_keywords_json')) {
+      context.handle(
+          _boostKeywordsJsonMeta,
+          boostKeywordsJson.isAcceptableOrUnknown(
+              data['boost_keywords_json']!, _boostKeywordsJsonMeta));
+    }
+    if (data.containsKey('muted_keywords_json')) {
+      context.handle(
+          _mutedKeywordsJsonMeta,
+          mutedKeywordsJson.isAcceptableOrUnknown(
+              data['muted_keywords_json']!, _mutedKeywordsJsonMeta));
+    }
+    if (data.containsKey('affinity_adjustment')) {
+      context.handle(
+          _affinityAdjustmentMeta,
+          affinityAdjustment.isAcceptableOrUnknown(
+              data['affinity_adjustment']!, _affinityAdjustmentMeta));
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(_updatedAtMeta,
+          updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {categoryCode};
+  @override
+  RadarTopicPrefEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return RadarTopicPrefEntry(
+      categoryCode: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}category_code'])!,
+      categoryName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}category_name'])!,
+      priorityLevel: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}priority_level'])!,
+      isMuted: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_muted'])!,
+      boostKeywordsJson: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}boost_keywords_json'])!,
+      mutedKeywordsJson: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}muted_keywords_json'])!,
+      affinityAdjustment: attachedDatabase.typeMapping.read(
+          DriftSqlType.double, data['${effectivePrefix}affinity_adjustment'])!,
+      updatedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
+    );
+  }
+
+  @override
+  $RadarTopicPrefsTable createAlias(String alias) {
+    return $RadarTopicPrefsTable(attachedDatabase, alias);
+  }
+}
+
+class RadarTopicPrefEntry extends DataClass
+    implements Insertable<RadarTopicPrefEntry> {
+  final String categoryCode;
+  final String categoryName;
+  final String priorityLevel;
+  final bool isMuted;
+  final String boostKeywordsJson;
+  final String mutedKeywordsJson;
+  final double affinityAdjustment;
+  final DateTime updatedAt;
+  const RadarTopicPrefEntry(
+      {required this.categoryCode,
+      required this.categoryName,
+      required this.priorityLevel,
+      required this.isMuted,
+      required this.boostKeywordsJson,
+      required this.mutedKeywordsJson,
+      required this.affinityAdjustment,
+      required this.updatedAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['category_code'] = Variable<String>(categoryCode);
+    map['category_name'] = Variable<String>(categoryName);
+    map['priority_level'] = Variable<String>(priorityLevel);
+    map['is_muted'] = Variable<bool>(isMuted);
+    map['boost_keywords_json'] = Variable<String>(boostKeywordsJson);
+    map['muted_keywords_json'] = Variable<String>(mutedKeywordsJson);
+    map['affinity_adjustment'] = Variable<double>(affinityAdjustment);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  RadarTopicPrefsCompanion toCompanion(bool nullToAbsent) {
+    return RadarTopicPrefsCompanion(
+      categoryCode: Value(categoryCode),
+      categoryName: Value(categoryName),
+      priorityLevel: Value(priorityLevel),
+      isMuted: Value(isMuted),
+      boostKeywordsJson: Value(boostKeywordsJson),
+      mutedKeywordsJson: Value(mutedKeywordsJson),
+      affinityAdjustment: Value(affinityAdjustment),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory RadarTopicPrefEntry.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return RadarTopicPrefEntry(
+      categoryCode: serializer.fromJson<String>(json['categoryCode']),
+      categoryName: serializer.fromJson<String>(json['categoryName']),
+      priorityLevel: serializer.fromJson<String>(json['priorityLevel']),
+      isMuted: serializer.fromJson<bool>(json['isMuted']),
+      boostKeywordsJson: serializer.fromJson<String>(json['boostKeywordsJson']),
+      mutedKeywordsJson: serializer.fromJson<String>(json['mutedKeywordsJson']),
+      affinityAdjustment:
+          serializer.fromJson<double>(json['affinityAdjustment']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'categoryCode': serializer.toJson<String>(categoryCode),
+      'categoryName': serializer.toJson<String>(categoryName),
+      'priorityLevel': serializer.toJson<String>(priorityLevel),
+      'isMuted': serializer.toJson<bool>(isMuted),
+      'boostKeywordsJson': serializer.toJson<String>(boostKeywordsJson),
+      'mutedKeywordsJson': serializer.toJson<String>(mutedKeywordsJson),
+      'affinityAdjustment': serializer.toJson<double>(affinityAdjustment),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  RadarTopicPrefEntry copyWith(
+          {String? categoryCode,
+          String? categoryName,
+          String? priorityLevel,
+          bool? isMuted,
+          String? boostKeywordsJson,
+          String? mutedKeywordsJson,
+          double? affinityAdjustment,
+          DateTime? updatedAt}) =>
+      RadarTopicPrefEntry(
+        categoryCode: categoryCode ?? this.categoryCode,
+        categoryName: categoryName ?? this.categoryName,
+        priorityLevel: priorityLevel ?? this.priorityLevel,
+        isMuted: isMuted ?? this.isMuted,
+        boostKeywordsJson: boostKeywordsJson ?? this.boostKeywordsJson,
+        mutedKeywordsJson: mutedKeywordsJson ?? this.mutedKeywordsJson,
+        affinityAdjustment: affinityAdjustment ?? this.affinityAdjustment,
+        updatedAt: updatedAt ?? this.updatedAt,
+      );
+  RadarTopicPrefEntry copyWithCompanion(RadarTopicPrefsCompanion data) {
+    return RadarTopicPrefEntry(
+      categoryCode: data.categoryCode.present
+          ? data.categoryCode.value
+          : this.categoryCode,
+      categoryName: data.categoryName.present
+          ? data.categoryName.value
+          : this.categoryName,
+      priorityLevel: data.priorityLevel.present
+          ? data.priorityLevel.value
+          : this.priorityLevel,
+      isMuted: data.isMuted.present ? data.isMuted.value : this.isMuted,
+      boostKeywordsJson: data.boostKeywordsJson.present
+          ? data.boostKeywordsJson.value
+          : this.boostKeywordsJson,
+      mutedKeywordsJson: data.mutedKeywordsJson.present
+          ? data.mutedKeywordsJson.value
+          : this.mutedKeywordsJson,
+      affinityAdjustment: data.affinityAdjustment.present
+          ? data.affinityAdjustment.value
+          : this.affinityAdjustment,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RadarTopicPrefEntry(')
+          ..write('categoryCode: $categoryCode, ')
+          ..write('categoryName: $categoryName, ')
+          ..write('priorityLevel: $priorityLevel, ')
+          ..write('isMuted: $isMuted, ')
+          ..write('boostKeywordsJson: $boostKeywordsJson, ')
+          ..write('mutedKeywordsJson: $mutedKeywordsJson, ')
+          ..write('affinityAdjustment: $affinityAdjustment, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      categoryCode,
+      categoryName,
+      priorityLevel,
+      isMuted,
+      boostKeywordsJson,
+      mutedKeywordsJson,
+      affinityAdjustment,
+      updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is RadarTopicPrefEntry &&
+          other.categoryCode == this.categoryCode &&
+          other.categoryName == this.categoryName &&
+          other.priorityLevel == this.priorityLevel &&
+          other.isMuted == this.isMuted &&
+          other.boostKeywordsJson == this.boostKeywordsJson &&
+          other.mutedKeywordsJson == this.mutedKeywordsJson &&
+          other.affinityAdjustment == this.affinityAdjustment &&
+          other.updatedAt == this.updatedAt);
+}
+
+class RadarTopicPrefsCompanion extends UpdateCompanion<RadarTopicPrefEntry> {
+  final Value<String> categoryCode;
+  final Value<String> categoryName;
+  final Value<String> priorityLevel;
+  final Value<bool> isMuted;
+  final Value<String> boostKeywordsJson;
+  final Value<String> mutedKeywordsJson;
+  final Value<double> affinityAdjustment;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const RadarTopicPrefsCompanion({
+    this.categoryCode = const Value.absent(),
+    this.categoryName = const Value.absent(),
+    this.priorityLevel = const Value.absent(),
+    this.isMuted = const Value.absent(),
+    this.boostKeywordsJson = const Value.absent(),
+    this.mutedKeywordsJson = const Value.absent(),
+    this.affinityAdjustment = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  RadarTopicPrefsCompanion.insert({
+    required String categoryCode,
+    required String categoryName,
+    this.priorityLevel = const Value.absent(),
+    this.isMuted = const Value.absent(),
+    this.boostKeywordsJson = const Value.absent(),
+    this.mutedKeywordsJson = const Value.absent(),
+    this.affinityAdjustment = const Value.absent(),
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  })  : categoryCode = Value(categoryCode),
+        categoryName = Value(categoryName),
+        updatedAt = Value(updatedAt);
+  static Insertable<RadarTopicPrefEntry> custom({
+    Expression<String>? categoryCode,
+    Expression<String>? categoryName,
+    Expression<String>? priorityLevel,
+    Expression<bool>? isMuted,
+    Expression<String>? boostKeywordsJson,
+    Expression<String>? mutedKeywordsJson,
+    Expression<double>? affinityAdjustment,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (categoryCode != null) 'category_code': categoryCode,
+      if (categoryName != null) 'category_name': categoryName,
+      if (priorityLevel != null) 'priority_level': priorityLevel,
+      if (isMuted != null) 'is_muted': isMuted,
+      if (boostKeywordsJson != null) 'boost_keywords_json': boostKeywordsJson,
+      if (mutedKeywordsJson != null) 'muted_keywords_json': mutedKeywordsJson,
+      if (affinityAdjustment != null) 'affinity_adjustment': affinityAdjustment,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  RadarTopicPrefsCompanion copyWith(
+      {Value<String>? categoryCode,
+      Value<String>? categoryName,
+      Value<String>? priorityLevel,
+      Value<bool>? isMuted,
+      Value<String>? boostKeywordsJson,
+      Value<String>? mutedKeywordsJson,
+      Value<double>? affinityAdjustment,
+      Value<DateTime>? updatedAt,
+      Value<int>? rowid}) {
+    return RadarTopicPrefsCompanion(
+      categoryCode: categoryCode ?? this.categoryCode,
+      categoryName: categoryName ?? this.categoryName,
+      priorityLevel: priorityLevel ?? this.priorityLevel,
+      isMuted: isMuted ?? this.isMuted,
+      boostKeywordsJson: boostKeywordsJson ?? this.boostKeywordsJson,
+      mutedKeywordsJson: mutedKeywordsJson ?? this.mutedKeywordsJson,
+      affinityAdjustment: affinityAdjustment ?? this.affinityAdjustment,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (categoryCode.present) {
+      map['category_code'] = Variable<String>(categoryCode.value);
+    }
+    if (categoryName.present) {
+      map['category_name'] = Variable<String>(categoryName.value);
+    }
+    if (priorityLevel.present) {
+      map['priority_level'] = Variable<String>(priorityLevel.value);
+    }
+    if (isMuted.present) {
+      map['is_muted'] = Variable<bool>(isMuted.value);
+    }
+    if (boostKeywordsJson.present) {
+      map['boost_keywords_json'] = Variable<String>(boostKeywordsJson.value);
+    }
+    if (mutedKeywordsJson.present) {
+      map['muted_keywords_json'] = Variable<String>(mutedKeywordsJson.value);
+    }
+    if (affinityAdjustment.present) {
+      map['affinity_adjustment'] = Variable<double>(affinityAdjustment.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RadarTopicPrefsCompanion(')
+          ..write('categoryCode: $categoryCode, ')
+          ..write('categoryName: $categoryName, ')
+          ..write('priorityLevel: $priorityLevel, ')
+          ..write('isMuted: $isMuted, ')
+          ..write('boostKeywordsJson: $boostKeywordsJson, ')
+          ..write('mutedKeywordsJson: $mutedKeywordsJson, ')
+          ..write('affinityAdjustment: $affinityAdjustment, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $RadarFollowsTable extends RadarFollows
+    with TableInfo<$RadarFollowsTable, RadarFollowEntry> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $RadarFollowsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _followTypeMeta =
+      const VerificationMeta('followType');
+  @override
+  late final GeneratedColumn<String> followType = GeneratedColumn<String>(
+      'follow_type', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _targetKeyMeta =
+      const VerificationMeta('targetKey');
+  @override
+  late final GeneratedColumn<String> targetKey = GeneratedColumn<String>(
+      'target_key', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _displayNameMeta =
+      const VerificationMeta('displayName');
+  @override
+  late final GeneratedColumn<String> displayName = GeneratedColumn<String>(
+      'display_name', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, followType, targetKey, displayName, createdAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'radar_follows';
+  @override
+  VerificationContext validateIntegrity(Insertable<RadarFollowEntry> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('follow_type')) {
+      context.handle(
+          _followTypeMeta,
+          followType.isAcceptableOrUnknown(
+              data['follow_type']!, _followTypeMeta));
+    } else if (isInserting) {
+      context.missing(_followTypeMeta);
+    }
+    if (data.containsKey('target_key')) {
+      context.handle(_targetKeyMeta,
+          targetKey.isAcceptableOrUnknown(data['target_key']!, _targetKeyMeta));
+    } else if (isInserting) {
+      context.missing(_targetKeyMeta);
+    }
+    if (data.containsKey('display_name')) {
+      context.handle(
+          _displayNameMeta,
+          displayName.isAcceptableOrUnknown(
+              data['display_name']!, _displayNameMeta));
+    } else if (isInserting) {
+      context.missing(_displayNameMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  RadarFollowEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return RadarFollowEntry(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      followType: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}follow_type'])!,
+      targetKey: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}target_key'])!,
+      displayName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}display_name'])!,
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+    );
+  }
+
+  @override
+  $RadarFollowsTable createAlias(String alias) {
+    return $RadarFollowsTable(attachedDatabase, alias);
+  }
+}
+
+class RadarFollowEntry extends DataClass
+    implements Insertable<RadarFollowEntry> {
+  final String id;
+  final String followType;
+  final String targetKey;
+  final String displayName;
+  final DateTime createdAt;
+  const RadarFollowEntry(
+      {required this.id,
+      required this.followType,
+      required this.targetKey,
+      required this.displayName,
+      required this.createdAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['follow_type'] = Variable<String>(followType);
+    map['target_key'] = Variable<String>(targetKey);
+    map['display_name'] = Variable<String>(displayName);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  RadarFollowsCompanion toCompanion(bool nullToAbsent) {
+    return RadarFollowsCompanion(
+      id: Value(id),
+      followType: Value(followType),
+      targetKey: Value(targetKey),
+      displayName: Value(displayName),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory RadarFollowEntry.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return RadarFollowEntry(
+      id: serializer.fromJson<String>(json['id']),
+      followType: serializer.fromJson<String>(json['followType']),
+      targetKey: serializer.fromJson<String>(json['targetKey']),
+      displayName: serializer.fromJson<String>(json['displayName']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'followType': serializer.toJson<String>(followType),
+      'targetKey': serializer.toJson<String>(targetKey),
+      'displayName': serializer.toJson<String>(displayName),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  RadarFollowEntry copyWith(
+          {String? id,
+          String? followType,
+          String? targetKey,
+          String? displayName,
+          DateTime? createdAt}) =>
+      RadarFollowEntry(
+        id: id ?? this.id,
+        followType: followType ?? this.followType,
+        targetKey: targetKey ?? this.targetKey,
+        displayName: displayName ?? this.displayName,
+        createdAt: createdAt ?? this.createdAt,
+      );
+  RadarFollowEntry copyWithCompanion(RadarFollowsCompanion data) {
+    return RadarFollowEntry(
+      id: data.id.present ? data.id.value : this.id,
+      followType:
+          data.followType.present ? data.followType.value : this.followType,
+      targetKey: data.targetKey.present ? data.targetKey.value : this.targetKey,
+      displayName:
+          data.displayName.present ? data.displayName.value : this.displayName,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RadarFollowEntry(')
+          ..write('id: $id, ')
+          ..write('followType: $followType, ')
+          ..write('targetKey: $targetKey, ')
+          ..write('displayName: $displayName, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, followType, targetKey, displayName, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is RadarFollowEntry &&
+          other.id == this.id &&
+          other.followType == this.followType &&
+          other.targetKey == this.targetKey &&
+          other.displayName == this.displayName &&
+          other.createdAt == this.createdAt);
+}
+
+class RadarFollowsCompanion extends UpdateCompanion<RadarFollowEntry> {
+  final Value<String> id;
+  final Value<String> followType;
+  final Value<String> targetKey;
+  final Value<String> displayName;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const RadarFollowsCompanion({
+    this.id = const Value.absent(),
+    this.followType = const Value.absent(),
+    this.targetKey = const Value.absent(),
+    this.displayName = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  RadarFollowsCompanion.insert({
+    required String id,
+    required String followType,
+    required String targetKey,
+    required String displayName,
+    required DateTime createdAt,
+    this.rowid = const Value.absent(),
+  })  : id = Value(id),
+        followType = Value(followType),
+        targetKey = Value(targetKey),
+        displayName = Value(displayName),
+        createdAt = Value(createdAt);
+  static Insertable<RadarFollowEntry> custom({
+    Expression<String>? id,
+    Expression<String>? followType,
+    Expression<String>? targetKey,
+    Expression<String>? displayName,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (followType != null) 'follow_type': followType,
+      if (targetKey != null) 'target_key': targetKey,
+      if (displayName != null) 'display_name': displayName,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  RadarFollowsCompanion copyWith(
+      {Value<String>? id,
+      Value<String>? followType,
+      Value<String>? targetKey,
+      Value<String>? displayName,
+      Value<DateTime>? createdAt,
+      Value<int>? rowid}) {
+    return RadarFollowsCompanion(
+      id: id ?? this.id,
+      followType: followType ?? this.followType,
+      targetKey: targetKey ?? this.targetKey,
+      displayName: displayName ?? this.displayName,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (followType.present) {
+      map['follow_type'] = Variable<String>(followType.value);
+    }
+    if (targetKey.present) {
+      map['target_key'] = Variable<String>(targetKey.value);
+    }
+    if (displayName.present) {
+      map['display_name'] = Variable<String>(displayName.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RadarFollowsCompanion(')
+          ..write('id: $id, ')
+          ..write('followType: $followType, ')
+          ..write('targetKey: $targetKey, ')
+          ..write('displayName: $displayName, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $RadarFeedbackLogsTable extends RadarFeedbackLogs
+    with TableInfo<$RadarFeedbackLogsTable, RadarFeedbackLogEntry> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $RadarFeedbackLogsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _discoveryIdMeta =
+      const VerificationMeta('discoveryId');
+  @override
+  late final GeneratedColumn<String> discoveryId = GeneratedColumn<String>(
+      'discovery_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _actionMeta = const VerificationMeta('action');
+  @override
+  late final GeneratedColumn<String> action = GeneratedColumn<String>(
+      'action', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _categoryCodeMeta =
+      const VerificationMeta('categoryCode');
+  @override
+  late final GeneratedColumn<String> categoryCode = GeneratedColumn<String>(
+      'category_code', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, discoveryId, action, categoryCode, createdAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'radar_feedback_logs';
+  @override
+  VerificationContext validateIntegrity(
+      Insertable<RadarFeedbackLogEntry> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('discovery_id')) {
+      context.handle(
+          _discoveryIdMeta,
+          discoveryId.isAcceptableOrUnknown(
+              data['discovery_id']!, _discoveryIdMeta));
+    } else if (isInserting) {
+      context.missing(_discoveryIdMeta);
+    }
+    if (data.containsKey('action')) {
+      context.handle(_actionMeta,
+          action.isAcceptableOrUnknown(data['action']!, _actionMeta));
+    } else if (isInserting) {
+      context.missing(_actionMeta);
+    }
+    if (data.containsKey('category_code')) {
+      context.handle(
+          _categoryCodeMeta,
+          categoryCode.isAcceptableOrUnknown(
+              data['category_code']!, _categoryCodeMeta));
+    } else if (isInserting) {
+      context.missing(_categoryCodeMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  RadarFeedbackLogEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return RadarFeedbackLogEntry(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      discoveryId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}discovery_id'])!,
+      action: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}action'])!,
+      categoryCode: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}category_code'])!,
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+    );
+  }
+
+  @override
+  $RadarFeedbackLogsTable createAlias(String alias) {
+    return $RadarFeedbackLogsTable(attachedDatabase, alias);
+  }
+}
+
+class RadarFeedbackLogEntry extends DataClass
+    implements Insertable<RadarFeedbackLogEntry> {
+  final String id;
+  final String discoveryId;
+  final String action;
+  final String categoryCode;
+  final DateTime createdAt;
+  const RadarFeedbackLogEntry(
+      {required this.id,
+      required this.discoveryId,
+      required this.action,
+      required this.categoryCode,
+      required this.createdAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['discovery_id'] = Variable<String>(discoveryId);
+    map['action'] = Variable<String>(action);
+    map['category_code'] = Variable<String>(categoryCode);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  RadarFeedbackLogsCompanion toCompanion(bool nullToAbsent) {
+    return RadarFeedbackLogsCompanion(
+      id: Value(id),
+      discoveryId: Value(discoveryId),
+      action: Value(action),
+      categoryCode: Value(categoryCode),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory RadarFeedbackLogEntry.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return RadarFeedbackLogEntry(
+      id: serializer.fromJson<String>(json['id']),
+      discoveryId: serializer.fromJson<String>(json['discoveryId']),
+      action: serializer.fromJson<String>(json['action']),
+      categoryCode: serializer.fromJson<String>(json['categoryCode']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'discoveryId': serializer.toJson<String>(discoveryId),
+      'action': serializer.toJson<String>(action),
+      'categoryCode': serializer.toJson<String>(categoryCode),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  RadarFeedbackLogEntry copyWith(
+          {String? id,
+          String? discoveryId,
+          String? action,
+          String? categoryCode,
+          DateTime? createdAt}) =>
+      RadarFeedbackLogEntry(
+        id: id ?? this.id,
+        discoveryId: discoveryId ?? this.discoveryId,
+        action: action ?? this.action,
+        categoryCode: categoryCode ?? this.categoryCode,
+        createdAt: createdAt ?? this.createdAt,
+      );
+  RadarFeedbackLogEntry copyWithCompanion(RadarFeedbackLogsCompanion data) {
+    return RadarFeedbackLogEntry(
+      id: data.id.present ? data.id.value : this.id,
+      discoveryId:
+          data.discoveryId.present ? data.discoveryId.value : this.discoveryId,
+      action: data.action.present ? data.action.value : this.action,
+      categoryCode: data.categoryCode.present
+          ? data.categoryCode.value
+          : this.categoryCode,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RadarFeedbackLogEntry(')
+          ..write('id: $id, ')
+          ..write('discoveryId: $discoveryId, ')
+          ..write('action: $action, ')
+          ..write('categoryCode: $categoryCode, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, discoveryId, action, categoryCode, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is RadarFeedbackLogEntry &&
+          other.id == this.id &&
+          other.discoveryId == this.discoveryId &&
+          other.action == this.action &&
+          other.categoryCode == this.categoryCode &&
+          other.createdAt == this.createdAt);
+}
+
+class RadarFeedbackLogsCompanion
+    extends UpdateCompanion<RadarFeedbackLogEntry> {
+  final Value<String> id;
+  final Value<String> discoveryId;
+  final Value<String> action;
+  final Value<String> categoryCode;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const RadarFeedbackLogsCompanion({
+    this.id = const Value.absent(),
+    this.discoveryId = const Value.absent(),
+    this.action = const Value.absent(),
+    this.categoryCode = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  RadarFeedbackLogsCompanion.insert({
+    required String id,
+    required String discoveryId,
+    required String action,
+    required String categoryCode,
+    required DateTime createdAt,
+    this.rowid = const Value.absent(),
+  })  : id = Value(id),
+        discoveryId = Value(discoveryId),
+        action = Value(action),
+        categoryCode = Value(categoryCode),
+        createdAt = Value(createdAt);
+  static Insertable<RadarFeedbackLogEntry> custom({
+    Expression<String>? id,
+    Expression<String>? discoveryId,
+    Expression<String>? action,
+    Expression<String>? categoryCode,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (discoveryId != null) 'discovery_id': discoveryId,
+      if (action != null) 'action': action,
+      if (categoryCode != null) 'category_code': categoryCode,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  RadarFeedbackLogsCompanion copyWith(
+      {Value<String>? id,
+      Value<String>? discoveryId,
+      Value<String>? action,
+      Value<String>? categoryCode,
+      Value<DateTime>? createdAt,
+      Value<int>? rowid}) {
+    return RadarFeedbackLogsCompanion(
+      id: id ?? this.id,
+      discoveryId: discoveryId ?? this.discoveryId,
+      action: action ?? this.action,
+      categoryCode: categoryCode ?? this.categoryCode,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (discoveryId.present) {
+      map['discovery_id'] = Variable<String>(discoveryId.value);
+    }
+    if (action.present) {
+      map['action'] = Variable<String>(action.value);
+    }
+    if (categoryCode.present) {
+      map['category_code'] = Variable<String>(categoryCode.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RadarFeedbackLogsCompanion(')
+          ..write('id: $id, ')
+          ..write('discoveryId: $discoveryId, ')
+          ..write('action: $action, ')
+          ..write('categoryCode: $categoryCode, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $RadarBriefingsTable extends RadarBriefings
+    with TableInfo<$RadarBriefingsTable, RadarBriefingEntry> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $RadarBriefingsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _briefingTypeMeta =
+      const VerificationMeta('briefingType');
+  @override
+  late final GeneratedColumn<String> briefingType = GeneratedColumn<String>(
+      'briefing_type', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _briefingDateMeta =
+      const VerificationMeta('briefingDate');
+  @override
+  late final GeneratedColumn<String> briefingDate = GeneratedColumn<String>(
+      'briefing_date', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _headlineMeta =
+      const VerificationMeta('headline');
+  @override
+  late final GeneratedColumn<String> headline = GeneratedColumn<String>(
+      'headline', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _sectionsJsonMeta =
+      const VerificationMeta('sectionsJson');
+  @override
+  late final GeneratedColumn<String> sectionsJson = GeneratedColumn<String>(
+      'sections_json', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _generatedByMeta =
+      const VerificationMeta('generatedBy');
+  @override
+  late final GeneratedColumn<String> generatedBy = GeneratedColumn<String>(
+      'generated_by', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant('radar_curator'));
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        briefingType,
+        briefingDate,
+        headline,
+        sectionsJson,
+        generatedBy,
+        createdAt
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'radar_briefings';
+  @override
+  VerificationContext validateIntegrity(Insertable<RadarBriefingEntry> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('briefing_type')) {
+      context.handle(
+          _briefingTypeMeta,
+          briefingType.isAcceptableOrUnknown(
+              data['briefing_type']!, _briefingTypeMeta));
+    } else if (isInserting) {
+      context.missing(_briefingTypeMeta);
+    }
+    if (data.containsKey('briefing_date')) {
+      context.handle(
+          _briefingDateMeta,
+          briefingDate.isAcceptableOrUnknown(
+              data['briefing_date']!, _briefingDateMeta));
+    } else if (isInserting) {
+      context.missing(_briefingDateMeta);
+    }
+    if (data.containsKey('headline')) {
+      context.handle(_headlineMeta,
+          headline.isAcceptableOrUnknown(data['headline']!, _headlineMeta));
+    } else if (isInserting) {
+      context.missing(_headlineMeta);
+    }
+    if (data.containsKey('sections_json')) {
+      context.handle(
+          _sectionsJsonMeta,
+          sectionsJson.isAcceptableOrUnknown(
+              data['sections_json']!, _sectionsJsonMeta));
+    } else if (isInserting) {
+      context.missing(_sectionsJsonMeta);
+    }
+    if (data.containsKey('generated_by')) {
+      context.handle(
+          _generatedByMeta,
+          generatedBy.isAcceptableOrUnknown(
+              data['generated_by']!, _generatedByMeta));
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  RadarBriefingEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return RadarBriefingEntry(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      briefingType: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}briefing_type'])!,
+      briefingDate: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}briefing_date'])!,
+      headline: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}headline'])!,
+      sectionsJson: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}sections_json'])!,
+      generatedBy: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}generated_by'])!,
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+    );
+  }
+
+  @override
+  $RadarBriefingsTable createAlias(String alias) {
+    return $RadarBriefingsTable(attachedDatabase, alias);
+  }
+}
+
+class RadarBriefingEntry extends DataClass
+    implements Insertable<RadarBriefingEntry> {
+  final String id;
+  final String briefingType;
+  final String briefingDate;
+  final String headline;
+  final String sectionsJson;
+  final String generatedBy;
+  final DateTime createdAt;
+  const RadarBriefingEntry(
+      {required this.id,
+      required this.briefingType,
+      required this.briefingDate,
+      required this.headline,
+      required this.sectionsJson,
+      required this.generatedBy,
+      required this.createdAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['briefing_type'] = Variable<String>(briefingType);
+    map['briefing_date'] = Variable<String>(briefingDate);
+    map['headline'] = Variable<String>(headline);
+    map['sections_json'] = Variable<String>(sectionsJson);
+    map['generated_by'] = Variable<String>(generatedBy);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  RadarBriefingsCompanion toCompanion(bool nullToAbsent) {
+    return RadarBriefingsCompanion(
+      id: Value(id),
+      briefingType: Value(briefingType),
+      briefingDate: Value(briefingDate),
+      headline: Value(headline),
+      sectionsJson: Value(sectionsJson),
+      generatedBy: Value(generatedBy),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory RadarBriefingEntry.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return RadarBriefingEntry(
+      id: serializer.fromJson<String>(json['id']),
+      briefingType: serializer.fromJson<String>(json['briefingType']),
+      briefingDate: serializer.fromJson<String>(json['briefingDate']),
+      headline: serializer.fromJson<String>(json['headline']),
+      sectionsJson: serializer.fromJson<String>(json['sectionsJson']),
+      generatedBy: serializer.fromJson<String>(json['generatedBy']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'briefingType': serializer.toJson<String>(briefingType),
+      'briefingDate': serializer.toJson<String>(briefingDate),
+      'headline': serializer.toJson<String>(headline),
+      'sectionsJson': serializer.toJson<String>(sectionsJson),
+      'generatedBy': serializer.toJson<String>(generatedBy),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  RadarBriefingEntry copyWith(
+          {String? id,
+          String? briefingType,
+          String? briefingDate,
+          String? headline,
+          String? sectionsJson,
+          String? generatedBy,
+          DateTime? createdAt}) =>
+      RadarBriefingEntry(
+        id: id ?? this.id,
+        briefingType: briefingType ?? this.briefingType,
+        briefingDate: briefingDate ?? this.briefingDate,
+        headline: headline ?? this.headline,
+        sectionsJson: sectionsJson ?? this.sectionsJson,
+        generatedBy: generatedBy ?? this.generatedBy,
+        createdAt: createdAt ?? this.createdAt,
+      );
+  RadarBriefingEntry copyWithCompanion(RadarBriefingsCompanion data) {
+    return RadarBriefingEntry(
+      id: data.id.present ? data.id.value : this.id,
+      briefingType: data.briefingType.present
+          ? data.briefingType.value
+          : this.briefingType,
+      briefingDate: data.briefingDate.present
+          ? data.briefingDate.value
+          : this.briefingDate,
+      headline: data.headline.present ? data.headline.value : this.headline,
+      sectionsJson: data.sectionsJson.present
+          ? data.sectionsJson.value
+          : this.sectionsJson,
+      generatedBy:
+          data.generatedBy.present ? data.generatedBy.value : this.generatedBy,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RadarBriefingEntry(')
+          ..write('id: $id, ')
+          ..write('briefingType: $briefingType, ')
+          ..write('briefingDate: $briefingDate, ')
+          ..write('headline: $headline, ')
+          ..write('sectionsJson: $sectionsJson, ')
+          ..write('generatedBy: $generatedBy, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, briefingType, briefingDate, headline,
+      sectionsJson, generatedBy, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is RadarBriefingEntry &&
+          other.id == this.id &&
+          other.briefingType == this.briefingType &&
+          other.briefingDate == this.briefingDate &&
+          other.headline == this.headline &&
+          other.sectionsJson == this.sectionsJson &&
+          other.generatedBy == this.generatedBy &&
+          other.createdAt == this.createdAt);
+}
+
+class RadarBriefingsCompanion extends UpdateCompanion<RadarBriefingEntry> {
+  final Value<String> id;
+  final Value<String> briefingType;
+  final Value<String> briefingDate;
+  final Value<String> headline;
+  final Value<String> sectionsJson;
+  final Value<String> generatedBy;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const RadarBriefingsCompanion({
+    this.id = const Value.absent(),
+    this.briefingType = const Value.absent(),
+    this.briefingDate = const Value.absent(),
+    this.headline = const Value.absent(),
+    this.sectionsJson = const Value.absent(),
+    this.generatedBy = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  RadarBriefingsCompanion.insert({
+    required String id,
+    required String briefingType,
+    required String briefingDate,
+    required String headline,
+    required String sectionsJson,
+    this.generatedBy = const Value.absent(),
+    required DateTime createdAt,
+    this.rowid = const Value.absent(),
+  })  : id = Value(id),
+        briefingType = Value(briefingType),
+        briefingDate = Value(briefingDate),
+        headline = Value(headline),
+        sectionsJson = Value(sectionsJson),
+        createdAt = Value(createdAt);
+  static Insertable<RadarBriefingEntry> custom({
+    Expression<String>? id,
+    Expression<String>? briefingType,
+    Expression<String>? briefingDate,
+    Expression<String>? headline,
+    Expression<String>? sectionsJson,
+    Expression<String>? generatedBy,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (briefingType != null) 'briefing_type': briefingType,
+      if (briefingDate != null) 'briefing_date': briefingDate,
+      if (headline != null) 'headline': headline,
+      if (sectionsJson != null) 'sections_json': sectionsJson,
+      if (generatedBy != null) 'generated_by': generatedBy,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  RadarBriefingsCompanion copyWith(
+      {Value<String>? id,
+      Value<String>? briefingType,
+      Value<String>? briefingDate,
+      Value<String>? headline,
+      Value<String>? sectionsJson,
+      Value<String>? generatedBy,
+      Value<DateTime>? createdAt,
+      Value<int>? rowid}) {
+    return RadarBriefingsCompanion(
+      id: id ?? this.id,
+      briefingType: briefingType ?? this.briefingType,
+      briefingDate: briefingDate ?? this.briefingDate,
+      headline: headline ?? this.headline,
+      sectionsJson: sectionsJson ?? this.sectionsJson,
+      generatedBy: generatedBy ?? this.generatedBy,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (briefingType.present) {
+      map['briefing_type'] = Variable<String>(briefingType.value);
+    }
+    if (briefingDate.present) {
+      map['briefing_date'] = Variable<String>(briefingDate.value);
+    }
+    if (headline.present) {
+      map['headline'] = Variable<String>(headline.value);
+    }
+    if (sectionsJson.present) {
+      map['sections_json'] = Variable<String>(sectionsJson.value);
+    }
+    if (generatedBy.present) {
+      map['generated_by'] = Variable<String>(generatedBy.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RadarBriefingsCompanion(')
+          ..write('id: $id, ')
+          ..write('briefingType: $briefingType, ')
+          ..write('briefingDate: $briefingDate, ')
+          ..write('headline: $headline, ')
+          ..write('sectionsJson: $sectionsJson, ')
+          ..write('generatedBy: $generatedBy, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -6795,6 +10722,17 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       $ScheduledNotificationsTable(this);
   late final $ActivityHistoryTable activityHistory =
       $ActivityHistoryTable(this);
+  late final $XpEventsTable xpEvents = $XpEventsTable(this);
+  late final $UnlockedAchievementsTable unlockedAchievements =
+      $UnlockedAchievementsTable(this);
+  late final $RadarDiscoveriesTable radarDiscoveries =
+      $RadarDiscoveriesTable(this);
+  late final $RadarTopicPrefsTable radarTopicPrefs =
+      $RadarTopicPrefsTable(this);
+  late final $RadarFollowsTable radarFollows = $RadarFollowsTable(this);
+  late final $RadarFeedbackLogsTable radarFeedbackLogs =
+      $RadarFeedbackLogsTable(this);
+  late final $RadarBriefingsTable radarBriefings = $RadarBriefingsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -6814,7 +10752,14 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         focusSessions,
         notes,
         scheduledNotifications,
-        activityHistory
+        activityHistory,
+        xpEvents,
+        unlockedAchievements,
+        radarDiscoveries,
+        radarTopicPrefs,
+        radarFollows,
+        radarFeedbackLogs,
+        radarBriefings
       ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules(
@@ -11265,6 +15210,1844 @@ typedef $$ActivityHistoryTableProcessedTableManager = ProcessedTableManager<
     ),
     ActivityHistoryEntry,
     PrefetchHooks Function()>;
+typedef $$XpEventsTableCreateCompanionBuilder = XpEventsCompanion Function({
+  required String id,
+  required String sourceKey,
+  required String sourceType,
+  required int amount,
+  required String summary,
+  required DateTime createdAt,
+  Value<int> rowid,
+});
+typedef $$XpEventsTableUpdateCompanionBuilder = XpEventsCompanion Function({
+  Value<String> id,
+  Value<String> sourceKey,
+  Value<String> sourceType,
+  Value<int> amount,
+  Value<String> summary,
+  Value<DateTime> createdAt,
+  Value<int> rowid,
+});
+
+class $$XpEventsTableFilterComposer
+    extends Composer<_$AppDatabase, $XpEventsTable> {
+  $$XpEventsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get sourceKey => $composableBuilder(
+      column: $table.sourceKey, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get sourceType => $composableBuilder(
+      column: $table.sourceType, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get amount => $composableBuilder(
+      column: $table.amount, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get summary => $composableBuilder(
+      column: $table.summary, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+}
+
+class $$XpEventsTableOrderingComposer
+    extends Composer<_$AppDatabase, $XpEventsTable> {
+  $$XpEventsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get sourceKey => $composableBuilder(
+      column: $table.sourceKey, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get sourceType => $composableBuilder(
+      column: $table.sourceType, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get amount => $composableBuilder(
+      column: $table.amount, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get summary => $composableBuilder(
+      column: $table.summary, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+}
+
+class $$XpEventsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $XpEventsTable> {
+  $$XpEventsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get sourceKey =>
+      $composableBuilder(column: $table.sourceKey, builder: (column) => column);
+
+  GeneratedColumn<String> get sourceType => $composableBuilder(
+      column: $table.sourceType, builder: (column) => column);
+
+  GeneratedColumn<int> get amount =>
+      $composableBuilder(column: $table.amount, builder: (column) => column);
+
+  GeneratedColumn<String> get summary =>
+      $composableBuilder(column: $table.summary, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$XpEventsTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $XpEventsTable,
+    XpEventEntry,
+    $$XpEventsTableFilterComposer,
+    $$XpEventsTableOrderingComposer,
+    $$XpEventsTableAnnotationComposer,
+    $$XpEventsTableCreateCompanionBuilder,
+    $$XpEventsTableUpdateCompanionBuilder,
+    (XpEventEntry, BaseReferences<_$AppDatabase, $XpEventsTable, XpEventEntry>),
+    XpEventEntry,
+    PrefetchHooks Function()> {
+  $$XpEventsTableTableManager(_$AppDatabase db, $XpEventsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$XpEventsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$XpEventsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$XpEventsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> id = const Value.absent(),
+            Value<String> sourceKey = const Value.absent(),
+            Value<String> sourceType = const Value.absent(),
+            Value<int> amount = const Value.absent(),
+            Value<String> summary = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              XpEventsCompanion(
+            id: id,
+            sourceKey: sourceKey,
+            sourceType: sourceType,
+            amount: amount,
+            summary: summary,
+            createdAt: createdAt,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String id,
+            required String sourceKey,
+            required String sourceType,
+            required int amount,
+            required String summary,
+            required DateTime createdAt,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              XpEventsCompanion.insert(
+            id: id,
+            sourceKey: sourceKey,
+            sourceType: sourceType,
+            amount: amount,
+            summary: summary,
+            createdAt: createdAt,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$XpEventsTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $XpEventsTable,
+    XpEventEntry,
+    $$XpEventsTableFilterComposer,
+    $$XpEventsTableOrderingComposer,
+    $$XpEventsTableAnnotationComposer,
+    $$XpEventsTableCreateCompanionBuilder,
+    $$XpEventsTableUpdateCompanionBuilder,
+    (XpEventEntry, BaseReferences<_$AppDatabase, $XpEventsTable, XpEventEntry>),
+    XpEventEntry,
+    PrefetchHooks Function()>;
+typedef $$UnlockedAchievementsTableCreateCompanionBuilder
+    = UnlockedAchievementsCompanion Function({
+  required String id,
+  required String category,
+  required String title,
+  required String description,
+  required DateTime unlockedAt,
+  Value<int> rowid,
+});
+typedef $$UnlockedAchievementsTableUpdateCompanionBuilder
+    = UnlockedAchievementsCompanion Function({
+  Value<String> id,
+  Value<String> category,
+  Value<String> title,
+  Value<String> description,
+  Value<DateTime> unlockedAt,
+  Value<int> rowid,
+});
+
+class $$UnlockedAchievementsTableFilterComposer
+    extends Composer<_$AppDatabase, $UnlockedAchievementsTable> {
+  $$UnlockedAchievementsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get category => $composableBuilder(
+      column: $table.category, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get title => $composableBuilder(
+      column: $table.title, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get description => $composableBuilder(
+      column: $table.description, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get unlockedAt => $composableBuilder(
+      column: $table.unlockedAt, builder: (column) => ColumnFilters(column));
+}
+
+class $$UnlockedAchievementsTableOrderingComposer
+    extends Composer<_$AppDatabase, $UnlockedAchievementsTable> {
+  $$UnlockedAchievementsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get category => $composableBuilder(
+      column: $table.category, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get title => $composableBuilder(
+      column: $table.title, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get description => $composableBuilder(
+      column: $table.description, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get unlockedAt => $composableBuilder(
+      column: $table.unlockedAt, builder: (column) => ColumnOrderings(column));
+}
+
+class $$UnlockedAchievementsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $UnlockedAchievementsTable> {
+  $$UnlockedAchievementsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get category =>
+      $composableBuilder(column: $table.category, builder: (column) => column);
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<String> get description => $composableBuilder(
+      column: $table.description, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get unlockedAt => $composableBuilder(
+      column: $table.unlockedAt, builder: (column) => column);
+}
+
+class $$UnlockedAchievementsTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $UnlockedAchievementsTable,
+    UnlockedAchievementEntry,
+    $$UnlockedAchievementsTableFilterComposer,
+    $$UnlockedAchievementsTableOrderingComposer,
+    $$UnlockedAchievementsTableAnnotationComposer,
+    $$UnlockedAchievementsTableCreateCompanionBuilder,
+    $$UnlockedAchievementsTableUpdateCompanionBuilder,
+    (
+      UnlockedAchievementEntry,
+      BaseReferences<_$AppDatabase, $UnlockedAchievementsTable,
+          UnlockedAchievementEntry>
+    ),
+    UnlockedAchievementEntry,
+    PrefetchHooks Function()> {
+  $$UnlockedAchievementsTableTableManager(
+      _$AppDatabase db, $UnlockedAchievementsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$UnlockedAchievementsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$UnlockedAchievementsTableOrderingComposer(
+                  $db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$UnlockedAchievementsTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> id = const Value.absent(),
+            Value<String> category = const Value.absent(),
+            Value<String> title = const Value.absent(),
+            Value<String> description = const Value.absent(),
+            Value<DateTime> unlockedAt = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              UnlockedAchievementsCompanion(
+            id: id,
+            category: category,
+            title: title,
+            description: description,
+            unlockedAt: unlockedAt,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String id,
+            required String category,
+            required String title,
+            required String description,
+            required DateTime unlockedAt,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              UnlockedAchievementsCompanion.insert(
+            id: id,
+            category: category,
+            title: title,
+            description: description,
+            unlockedAt: unlockedAt,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$UnlockedAchievementsTableProcessedTableManager
+    = ProcessedTableManager<
+        _$AppDatabase,
+        $UnlockedAchievementsTable,
+        UnlockedAchievementEntry,
+        $$UnlockedAchievementsTableFilterComposer,
+        $$UnlockedAchievementsTableOrderingComposer,
+        $$UnlockedAchievementsTableAnnotationComposer,
+        $$UnlockedAchievementsTableCreateCompanionBuilder,
+        $$UnlockedAchievementsTableUpdateCompanionBuilder,
+        (
+          UnlockedAchievementEntry,
+          BaseReferences<_$AppDatabase, $UnlockedAchievementsTable,
+              UnlockedAchievementEntry>
+        ),
+        UnlockedAchievementEntry,
+        PrefetchHooks Function()>;
+typedef $$RadarDiscoveriesTableCreateCompanionBuilder
+    = RadarDiscoveriesCompanion Function({
+  required String id,
+  required String canonicalUrl,
+  required String title,
+  required String discoveryType,
+  required String primaryCategory,
+  Value<String> categoriesJson,
+  Value<String> tagsJson,
+  Value<String> priorityTier,
+  required String sourceName,
+  Value<String> sourceDomain,
+  Value<String?> authorOrOrg,
+  Value<String?> publishedAtIso,
+  required DateTime discoveredAt,
+  Value<String> rawSummary,
+  Value<String?> plainEnglishSummary,
+  Value<String?> whyItMatters,
+  Value<String?> whoItIsFor,
+  Value<String?> howItCompares,
+  Value<String?> practicalTakeaway,
+  Value<String?> tryItSuggestion,
+  Value<String?> beginnerNote,
+  Value<String> analysisSource,
+  Value<String?> primaryMetricLabel,
+  Value<double?> primaryMetricValue,
+  Value<String?> secondaryMetricLabel,
+  Value<double?> secondaryMetricValue,
+  Value<String?> metricDeltaLabel,
+  Value<double?> metricDeltaValue,
+  Value<String> sourcesJson,
+  Value<double> rankScore,
+  Value<bool> isExploratory,
+  Value<bool> isBookmarked,
+  Value<String?> bookmarkCollection,
+  Value<String?> bookmarkNote,
+  Value<bool> isRead,
+  Value<bool> isExplored,
+  Value<bool> isHidden,
+  Value<int> rowid,
+});
+typedef $$RadarDiscoveriesTableUpdateCompanionBuilder
+    = RadarDiscoveriesCompanion Function({
+  Value<String> id,
+  Value<String> canonicalUrl,
+  Value<String> title,
+  Value<String> discoveryType,
+  Value<String> primaryCategory,
+  Value<String> categoriesJson,
+  Value<String> tagsJson,
+  Value<String> priorityTier,
+  Value<String> sourceName,
+  Value<String> sourceDomain,
+  Value<String?> authorOrOrg,
+  Value<String?> publishedAtIso,
+  Value<DateTime> discoveredAt,
+  Value<String> rawSummary,
+  Value<String?> plainEnglishSummary,
+  Value<String?> whyItMatters,
+  Value<String?> whoItIsFor,
+  Value<String?> howItCompares,
+  Value<String?> practicalTakeaway,
+  Value<String?> tryItSuggestion,
+  Value<String?> beginnerNote,
+  Value<String> analysisSource,
+  Value<String?> primaryMetricLabel,
+  Value<double?> primaryMetricValue,
+  Value<String?> secondaryMetricLabel,
+  Value<double?> secondaryMetricValue,
+  Value<String?> metricDeltaLabel,
+  Value<double?> metricDeltaValue,
+  Value<String> sourcesJson,
+  Value<double> rankScore,
+  Value<bool> isExploratory,
+  Value<bool> isBookmarked,
+  Value<String?> bookmarkCollection,
+  Value<String?> bookmarkNote,
+  Value<bool> isRead,
+  Value<bool> isExplored,
+  Value<bool> isHidden,
+  Value<int> rowid,
+});
+
+class $$RadarDiscoveriesTableFilterComposer
+    extends Composer<_$AppDatabase, $RadarDiscoveriesTable> {
+  $$RadarDiscoveriesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get canonicalUrl => $composableBuilder(
+      column: $table.canonicalUrl, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get title => $composableBuilder(
+      column: $table.title, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get discoveryType => $composableBuilder(
+      column: $table.discoveryType, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get primaryCategory => $composableBuilder(
+      column: $table.primaryCategory,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get categoriesJson => $composableBuilder(
+      column: $table.categoriesJson,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get tagsJson => $composableBuilder(
+      column: $table.tagsJson, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get priorityTier => $composableBuilder(
+      column: $table.priorityTier, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get sourceName => $composableBuilder(
+      column: $table.sourceName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get sourceDomain => $composableBuilder(
+      column: $table.sourceDomain, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get authorOrOrg => $composableBuilder(
+      column: $table.authorOrOrg, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get publishedAtIso => $composableBuilder(
+      column: $table.publishedAtIso,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get discoveredAt => $composableBuilder(
+      column: $table.discoveredAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get rawSummary => $composableBuilder(
+      column: $table.rawSummary, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get plainEnglishSummary => $composableBuilder(
+      column: $table.plainEnglishSummary,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get whyItMatters => $composableBuilder(
+      column: $table.whyItMatters, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get whoItIsFor => $composableBuilder(
+      column: $table.whoItIsFor, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get howItCompares => $composableBuilder(
+      column: $table.howItCompares, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get practicalTakeaway => $composableBuilder(
+      column: $table.practicalTakeaway,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get tryItSuggestion => $composableBuilder(
+      column: $table.tryItSuggestion,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get beginnerNote => $composableBuilder(
+      column: $table.beginnerNote, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get analysisSource => $composableBuilder(
+      column: $table.analysisSource,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get primaryMetricLabel => $composableBuilder(
+      column: $table.primaryMetricLabel,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get primaryMetricValue => $composableBuilder(
+      column: $table.primaryMetricValue,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get secondaryMetricLabel => $composableBuilder(
+      column: $table.secondaryMetricLabel,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get secondaryMetricValue => $composableBuilder(
+      column: $table.secondaryMetricValue,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get metricDeltaLabel => $composableBuilder(
+      column: $table.metricDeltaLabel,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get metricDeltaValue => $composableBuilder(
+      column: $table.metricDeltaValue,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get sourcesJson => $composableBuilder(
+      column: $table.sourcesJson, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get rankScore => $composableBuilder(
+      column: $table.rankScore, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isExploratory => $composableBuilder(
+      column: $table.isExploratory, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isBookmarked => $composableBuilder(
+      column: $table.isBookmarked, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get bookmarkCollection => $composableBuilder(
+      column: $table.bookmarkCollection,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get bookmarkNote => $composableBuilder(
+      column: $table.bookmarkNote, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isRead => $composableBuilder(
+      column: $table.isRead, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isExplored => $composableBuilder(
+      column: $table.isExplored, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isHidden => $composableBuilder(
+      column: $table.isHidden, builder: (column) => ColumnFilters(column));
+}
+
+class $$RadarDiscoveriesTableOrderingComposer
+    extends Composer<_$AppDatabase, $RadarDiscoveriesTable> {
+  $$RadarDiscoveriesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get canonicalUrl => $composableBuilder(
+      column: $table.canonicalUrl,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get title => $composableBuilder(
+      column: $table.title, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get discoveryType => $composableBuilder(
+      column: $table.discoveryType,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get primaryCategory => $composableBuilder(
+      column: $table.primaryCategory,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get categoriesJson => $composableBuilder(
+      column: $table.categoriesJson,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get tagsJson => $composableBuilder(
+      column: $table.tagsJson, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get priorityTier => $composableBuilder(
+      column: $table.priorityTier,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get sourceName => $composableBuilder(
+      column: $table.sourceName, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get sourceDomain => $composableBuilder(
+      column: $table.sourceDomain,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get authorOrOrg => $composableBuilder(
+      column: $table.authorOrOrg, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get publishedAtIso => $composableBuilder(
+      column: $table.publishedAtIso,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get discoveredAt => $composableBuilder(
+      column: $table.discoveredAt,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get rawSummary => $composableBuilder(
+      column: $table.rawSummary, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get plainEnglishSummary => $composableBuilder(
+      column: $table.plainEnglishSummary,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get whyItMatters => $composableBuilder(
+      column: $table.whyItMatters,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get whoItIsFor => $composableBuilder(
+      column: $table.whoItIsFor, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get howItCompares => $composableBuilder(
+      column: $table.howItCompares,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get practicalTakeaway => $composableBuilder(
+      column: $table.practicalTakeaway,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get tryItSuggestion => $composableBuilder(
+      column: $table.tryItSuggestion,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get beginnerNote => $composableBuilder(
+      column: $table.beginnerNote,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get analysisSource => $composableBuilder(
+      column: $table.analysisSource,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get primaryMetricLabel => $composableBuilder(
+      column: $table.primaryMetricLabel,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get primaryMetricValue => $composableBuilder(
+      column: $table.primaryMetricValue,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get secondaryMetricLabel => $composableBuilder(
+      column: $table.secondaryMetricLabel,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get secondaryMetricValue => $composableBuilder(
+      column: $table.secondaryMetricValue,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get metricDeltaLabel => $composableBuilder(
+      column: $table.metricDeltaLabel,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get metricDeltaValue => $composableBuilder(
+      column: $table.metricDeltaValue,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get sourcesJson => $composableBuilder(
+      column: $table.sourcesJson, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get rankScore => $composableBuilder(
+      column: $table.rankScore, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get isExploratory => $composableBuilder(
+      column: $table.isExploratory,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get isBookmarked => $composableBuilder(
+      column: $table.isBookmarked,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get bookmarkCollection => $composableBuilder(
+      column: $table.bookmarkCollection,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get bookmarkNote => $composableBuilder(
+      column: $table.bookmarkNote,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get isRead => $composableBuilder(
+      column: $table.isRead, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get isExplored => $composableBuilder(
+      column: $table.isExplored, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get isHidden => $composableBuilder(
+      column: $table.isHidden, builder: (column) => ColumnOrderings(column));
+}
+
+class $$RadarDiscoveriesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $RadarDiscoveriesTable> {
+  $$RadarDiscoveriesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get canonicalUrl => $composableBuilder(
+      column: $table.canonicalUrl, builder: (column) => column);
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<String> get discoveryType => $composableBuilder(
+      column: $table.discoveryType, builder: (column) => column);
+
+  GeneratedColumn<String> get primaryCategory => $composableBuilder(
+      column: $table.primaryCategory, builder: (column) => column);
+
+  GeneratedColumn<String> get categoriesJson => $composableBuilder(
+      column: $table.categoriesJson, builder: (column) => column);
+
+  GeneratedColumn<String> get tagsJson =>
+      $composableBuilder(column: $table.tagsJson, builder: (column) => column);
+
+  GeneratedColumn<String> get priorityTier => $composableBuilder(
+      column: $table.priorityTier, builder: (column) => column);
+
+  GeneratedColumn<String> get sourceName => $composableBuilder(
+      column: $table.sourceName, builder: (column) => column);
+
+  GeneratedColumn<String> get sourceDomain => $composableBuilder(
+      column: $table.sourceDomain, builder: (column) => column);
+
+  GeneratedColumn<String> get authorOrOrg => $composableBuilder(
+      column: $table.authorOrOrg, builder: (column) => column);
+
+  GeneratedColumn<String> get publishedAtIso => $composableBuilder(
+      column: $table.publishedAtIso, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get discoveredAt => $composableBuilder(
+      column: $table.discoveredAt, builder: (column) => column);
+
+  GeneratedColumn<String> get rawSummary => $composableBuilder(
+      column: $table.rawSummary, builder: (column) => column);
+
+  GeneratedColumn<String> get plainEnglishSummary => $composableBuilder(
+      column: $table.plainEnglishSummary, builder: (column) => column);
+
+  GeneratedColumn<String> get whyItMatters => $composableBuilder(
+      column: $table.whyItMatters, builder: (column) => column);
+
+  GeneratedColumn<String> get whoItIsFor => $composableBuilder(
+      column: $table.whoItIsFor, builder: (column) => column);
+
+  GeneratedColumn<String> get howItCompares => $composableBuilder(
+      column: $table.howItCompares, builder: (column) => column);
+
+  GeneratedColumn<String> get practicalTakeaway => $composableBuilder(
+      column: $table.practicalTakeaway, builder: (column) => column);
+
+  GeneratedColumn<String> get tryItSuggestion => $composableBuilder(
+      column: $table.tryItSuggestion, builder: (column) => column);
+
+  GeneratedColumn<String> get beginnerNote => $composableBuilder(
+      column: $table.beginnerNote, builder: (column) => column);
+
+  GeneratedColumn<String> get analysisSource => $composableBuilder(
+      column: $table.analysisSource, builder: (column) => column);
+
+  GeneratedColumn<String> get primaryMetricLabel => $composableBuilder(
+      column: $table.primaryMetricLabel, builder: (column) => column);
+
+  GeneratedColumn<double> get primaryMetricValue => $composableBuilder(
+      column: $table.primaryMetricValue, builder: (column) => column);
+
+  GeneratedColumn<String> get secondaryMetricLabel => $composableBuilder(
+      column: $table.secondaryMetricLabel, builder: (column) => column);
+
+  GeneratedColumn<double> get secondaryMetricValue => $composableBuilder(
+      column: $table.secondaryMetricValue, builder: (column) => column);
+
+  GeneratedColumn<String> get metricDeltaLabel => $composableBuilder(
+      column: $table.metricDeltaLabel, builder: (column) => column);
+
+  GeneratedColumn<double> get metricDeltaValue => $composableBuilder(
+      column: $table.metricDeltaValue, builder: (column) => column);
+
+  GeneratedColumn<String> get sourcesJson => $composableBuilder(
+      column: $table.sourcesJson, builder: (column) => column);
+
+  GeneratedColumn<double> get rankScore =>
+      $composableBuilder(column: $table.rankScore, builder: (column) => column);
+
+  GeneratedColumn<bool> get isExploratory => $composableBuilder(
+      column: $table.isExploratory, builder: (column) => column);
+
+  GeneratedColumn<bool> get isBookmarked => $composableBuilder(
+      column: $table.isBookmarked, builder: (column) => column);
+
+  GeneratedColumn<String> get bookmarkCollection => $composableBuilder(
+      column: $table.bookmarkCollection, builder: (column) => column);
+
+  GeneratedColumn<String> get bookmarkNote => $composableBuilder(
+      column: $table.bookmarkNote, builder: (column) => column);
+
+  GeneratedColumn<bool> get isRead =>
+      $composableBuilder(column: $table.isRead, builder: (column) => column);
+
+  GeneratedColumn<bool> get isExplored => $composableBuilder(
+      column: $table.isExplored, builder: (column) => column);
+
+  GeneratedColumn<bool> get isHidden =>
+      $composableBuilder(column: $table.isHidden, builder: (column) => column);
+}
+
+class $$RadarDiscoveriesTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $RadarDiscoveriesTable,
+    RadarDiscoveryEntry,
+    $$RadarDiscoveriesTableFilterComposer,
+    $$RadarDiscoveriesTableOrderingComposer,
+    $$RadarDiscoveriesTableAnnotationComposer,
+    $$RadarDiscoveriesTableCreateCompanionBuilder,
+    $$RadarDiscoveriesTableUpdateCompanionBuilder,
+    (
+      RadarDiscoveryEntry,
+      BaseReferences<_$AppDatabase, $RadarDiscoveriesTable, RadarDiscoveryEntry>
+    ),
+    RadarDiscoveryEntry,
+    PrefetchHooks Function()> {
+  $$RadarDiscoveriesTableTableManager(
+      _$AppDatabase db, $RadarDiscoveriesTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$RadarDiscoveriesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$RadarDiscoveriesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$RadarDiscoveriesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> id = const Value.absent(),
+            Value<String> canonicalUrl = const Value.absent(),
+            Value<String> title = const Value.absent(),
+            Value<String> discoveryType = const Value.absent(),
+            Value<String> primaryCategory = const Value.absent(),
+            Value<String> categoriesJson = const Value.absent(),
+            Value<String> tagsJson = const Value.absent(),
+            Value<String> priorityTier = const Value.absent(),
+            Value<String> sourceName = const Value.absent(),
+            Value<String> sourceDomain = const Value.absent(),
+            Value<String?> authorOrOrg = const Value.absent(),
+            Value<String?> publishedAtIso = const Value.absent(),
+            Value<DateTime> discoveredAt = const Value.absent(),
+            Value<String> rawSummary = const Value.absent(),
+            Value<String?> plainEnglishSummary = const Value.absent(),
+            Value<String?> whyItMatters = const Value.absent(),
+            Value<String?> whoItIsFor = const Value.absent(),
+            Value<String?> howItCompares = const Value.absent(),
+            Value<String?> practicalTakeaway = const Value.absent(),
+            Value<String?> tryItSuggestion = const Value.absent(),
+            Value<String?> beginnerNote = const Value.absent(),
+            Value<String> analysisSource = const Value.absent(),
+            Value<String?> primaryMetricLabel = const Value.absent(),
+            Value<double?> primaryMetricValue = const Value.absent(),
+            Value<String?> secondaryMetricLabel = const Value.absent(),
+            Value<double?> secondaryMetricValue = const Value.absent(),
+            Value<String?> metricDeltaLabel = const Value.absent(),
+            Value<double?> metricDeltaValue = const Value.absent(),
+            Value<String> sourcesJson = const Value.absent(),
+            Value<double> rankScore = const Value.absent(),
+            Value<bool> isExploratory = const Value.absent(),
+            Value<bool> isBookmarked = const Value.absent(),
+            Value<String?> bookmarkCollection = const Value.absent(),
+            Value<String?> bookmarkNote = const Value.absent(),
+            Value<bool> isRead = const Value.absent(),
+            Value<bool> isExplored = const Value.absent(),
+            Value<bool> isHidden = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              RadarDiscoveriesCompanion(
+            id: id,
+            canonicalUrl: canonicalUrl,
+            title: title,
+            discoveryType: discoveryType,
+            primaryCategory: primaryCategory,
+            categoriesJson: categoriesJson,
+            tagsJson: tagsJson,
+            priorityTier: priorityTier,
+            sourceName: sourceName,
+            sourceDomain: sourceDomain,
+            authorOrOrg: authorOrOrg,
+            publishedAtIso: publishedAtIso,
+            discoveredAt: discoveredAt,
+            rawSummary: rawSummary,
+            plainEnglishSummary: plainEnglishSummary,
+            whyItMatters: whyItMatters,
+            whoItIsFor: whoItIsFor,
+            howItCompares: howItCompares,
+            practicalTakeaway: practicalTakeaway,
+            tryItSuggestion: tryItSuggestion,
+            beginnerNote: beginnerNote,
+            analysisSource: analysisSource,
+            primaryMetricLabel: primaryMetricLabel,
+            primaryMetricValue: primaryMetricValue,
+            secondaryMetricLabel: secondaryMetricLabel,
+            secondaryMetricValue: secondaryMetricValue,
+            metricDeltaLabel: metricDeltaLabel,
+            metricDeltaValue: metricDeltaValue,
+            sourcesJson: sourcesJson,
+            rankScore: rankScore,
+            isExploratory: isExploratory,
+            isBookmarked: isBookmarked,
+            bookmarkCollection: bookmarkCollection,
+            bookmarkNote: bookmarkNote,
+            isRead: isRead,
+            isExplored: isExplored,
+            isHidden: isHidden,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String id,
+            required String canonicalUrl,
+            required String title,
+            required String discoveryType,
+            required String primaryCategory,
+            Value<String> categoriesJson = const Value.absent(),
+            Value<String> tagsJson = const Value.absent(),
+            Value<String> priorityTier = const Value.absent(),
+            required String sourceName,
+            Value<String> sourceDomain = const Value.absent(),
+            Value<String?> authorOrOrg = const Value.absent(),
+            Value<String?> publishedAtIso = const Value.absent(),
+            required DateTime discoveredAt,
+            Value<String> rawSummary = const Value.absent(),
+            Value<String?> plainEnglishSummary = const Value.absent(),
+            Value<String?> whyItMatters = const Value.absent(),
+            Value<String?> whoItIsFor = const Value.absent(),
+            Value<String?> howItCompares = const Value.absent(),
+            Value<String?> practicalTakeaway = const Value.absent(),
+            Value<String?> tryItSuggestion = const Value.absent(),
+            Value<String?> beginnerNote = const Value.absent(),
+            Value<String> analysisSource = const Value.absent(),
+            Value<String?> primaryMetricLabel = const Value.absent(),
+            Value<double?> primaryMetricValue = const Value.absent(),
+            Value<String?> secondaryMetricLabel = const Value.absent(),
+            Value<double?> secondaryMetricValue = const Value.absent(),
+            Value<String?> metricDeltaLabel = const Value.absent(),
+            Value<double?> metricDeltaValue = const Value.absent(),
+            Value<String> sourcesJson = const Value.absent(),
+            Value<double> rankScore = const Value.absent(),
+            Value<bool> isExploratory = const Value.absent(),
+            Value<bool> isBookmarked = const Value.absent(),
+            Value<String?> bookmarkCollection = const Value.absent(),
+            Value<String?> bookmarkNote = const Value.absent(),
+            Value<bool> isRead = const Value.absent(),
+            Value<bool> isExplored = const Value.absent(),
+            Value<bool> isHidden = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              RadarDiscoveriesCompanion.insert(
+            id: id,
+            canonicalUrl: canonicalUrl,
+            title: title,
+            discoveryType: discoveryType,
+            primaryCategory: primaryCategory,
+            categoriesJson: categoriesJson,
+            tagsJson: tagsJson,
+            priorityTier: priorityTier,
+            sourceName: sourceName,
+            sourceDomain: sourceDomain,
+            authorOrOrg: authorOrOrg,
+            publishedAtIso: publishedAtIso,
+            discoveredAt: discoveredAt,
+            rawSummary: rawSummary,
+            plainEnglishSummary: plainEnglishSummary,
+            whyItMatters: whyItMatters,
+            whoItIsFor: whoItIsFor,
+            howItCompares: howItCompares,
+            practicalTakeaway: practicalTakeaway,
+            tryItSuggestion: tryItSuggestion,
+            beginnerNote: beginnerNote,
+            analysisSource: analysisSource,
+            primaryMetricLabel: primaryMetricLabel,
+            primaryMetricValue: primaryMetricValue,
+            secondaryMetricLabel: secondaryMetricLabel,
+            secondaryMetricValue: secondaryMetricValue,
+            metricDeltaLabel: metricDeltaLabel,
+            metricDeltaValue: metricDeltaValue,
+            sourcesJson: sourcesJson,
+            rankScore: rankScore,
+            isExploratory: isExploratory,
+            isBookmarked: isBookmarked,
+            bookmarkCollection: bookmarkCollection,
+            bookmarkNote: bookmarkNote,
+            isRead: isRead,
+            isExplored: isExplored,
+            isHidden: isHidden,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$RadarDiscoveriesTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $RadarDiscoveriesTable,
+    RadarDiscoveryEntry,
+    $$RadarDiscoveriesTableFilterComposer,
+    $$RadarDiscoveriesTableOrderingComposer,
+    $$RadarDiscoveriesTableAnnotationComposer,
+    $$RadarDiscoveriesTableCreateCompanionBuilder,
+    $$RadarDiscoveriesTableUpdateCompanionBuilder,
+    (
+      RadarDiscoveryEntry,
+      BaseReferences<_$AppDatabase, $RadarDiscoveriesTable, RadarDiscoveryEntry>
+    ),
+    RadarDiscoveryEntry,
+    PrefetchHooks Function()>;
+typedef $$RadarTopicPrefsTableCreateCompanionBuilder = RadarTopicPrefsCompanion
+    Function({
+  required String categoryCode,
+  required String categoryName,
+  Value<String> priorityLevel,
+  Value<bool> isMuted,
+  Value<String> boostKeywordsJson,
+  Value<String> mutedKeywordsJson,
+  Value<double> affinityAdjustment,
+  required DateTime updatedAt,
+  Value<int> rowid,
+});
+typedef $$RadarTopicPrefsTableUpdateCompanionBuilder = RadarTopicPrefsCompanion
+    Function({
+  Value<String> categoryCode,
+  Value<String> categoryName,
+  Value<String> priorityLevel,
+  Value<bool> isMuted,
+  Value<String> boostKeywordsJson,
+  Value<String> mutedKeywordsJson,
+  Value<double> affinityAdjustment,
+  Value<DateTime> updatedAt,
+  Value<int> rowid,
+});
+
+class $$RadarTopicPrefsTableFilterComposer
+    extends Composer<_$AppDatabase, $RadarTopicPrefsTable> {
+  $$RadarTopicPrefsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get categoryCode => $composableBuilder(
+      column: $table.categoryCode, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get categoryName => $composableBuilder(
+      column: $table.categoryName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get priorityLevel => $composableBuilder(
+      column: $table.priorityLevel, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isMuted => $composableBuilder(
+      column: $table.isMuted, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get boostKeywordsJson => $composableBuilder(
+      column: $table.boostKeywordsJson,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get mutedKeywordsJson => $composableBuilder(
+      column: $table.mutedKeywordsJson,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get affinityAdjustment => $composableBuilder(
+      column: $table.affinityAdjustment,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnFilters(column));
+}
+
+class $$RadarTopicPrefsTableOrderingComposer
+    extends Composer<_$AppDatabase, $RadarTopicPrefsTable> {
+  $$RadarTopicPrefsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get categoryCode => $composableBuilder(
+      column: $table.categoryCode,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get categoryName => $composableBuilder(
+      column: $table.categoryName,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get priorityLevel => $composableBuilder(
+      column: $table.priorityLevel,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get isMuted => $composableBuilder(
+      column: $table.isMuted, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get boostKeywordsJson => $composableBuilder(
+      column: $table.boostKeywordsJson,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get mutedKeywordsJson => $composableBuilder(
+      column: $table.mutedKeywordsJson,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get affinityAdjustment => $composableBuilder(
+      column: $table.affinityAdjustment,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
+}
+
+class $$RadarTopicPrefsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $RadarTopicPrefsTable> {
+  $$RadarTopicPrefsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get categoryCode => $composableBuilder(
+      column: $table.categoryCode, builder: (column) => column);
+
+  GeneratedColumn<String> get categoryName => $composableBuilder(
+      column: $table.categoryName, builder: (column) => column);
+
+  GeneratedColumn<String> get priorityLevel => $composableBuilder(
+      column: $table.priorityLevel, builder: (column) => column);
+
+  GeneratedColumn<bool> get isMuted =>
+      $composableBuilder(column: $table.isMuted, builder: (column) => column);
+
+  GeneratedColumn<String> get boostKeywordsJson => $composableBuilder(
+      column: $table.boostKeywordsJson, builder: (column) => column);
+
+  GeneratedColumn<String> get mutedKeywordsJson => $composableBuilder(
+      column: $table.mutedKeywordsJson, builder: (column) => column);
+
+  GeneratedColumn<double> get affinityAdjustment => $composableBuilder(
+      column: $table.affinityAdjustment, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$RadarTopicPrefsTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $RadarTopicPrefsTable,
+    RadarTopicPrefEntry,
+    $$RadarTopicPrefsTableFilterComposer,
+    $$RadarTopicPrefsTableOrderingComposer,
+    $$RadarTopicPrefsTableAnnotationComposer,
+    $$RadarTopicPrefsTableCreateCompanionBuilder,
+    $$RadarTopicPrefsTableUpdateCompanionBuilder,
+    (
+      RadarTopicPrefEntry,
+      BaseReferences<_$AppDatabase, $RadarTopicPrefsTable, RadarTopicPrefEntry>
+    ),
+    RadarTopicPrefEntry,
+    PrefetchHooks Function()> {
+  $$RadarTopicPrefsTableTableManager(
+      _$AppDatabase db, $RadarTopicPrefsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$RadarTopicPrefsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$RadarTopicPrefsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$RadarTopicPrefsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> categoryCode = const Value.absent(),
+            Value<String> categoryName = const Value.absent(),
+            Value<String> priorityLevel = const Value.absent(),
+            Value<bool> isMuted = const Value.absent(),
+            Value<String> boostKeywordsJson = const Value.absent(),
+            Value<String> mutedKeywordsJson = const Value.absent(),
+            Value<double> affinityAdjustment = const Value.absent(),
+            Value<DateTime> updatedAt = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              RadarTopicPrefsCompanion(
+            categoryCode: categoryCode,
+            categoryName: categoryName,
+            priorityLevel: priorityLevel,
+            isMuted: isMuted,
+            boostKeywordsJson: boostKeywordsJson,
+            mutedKeywordsJson: mutedKeywordsJson,
+            affinityAdjustment: affinityAdjustment,
+            updatedAt: updatedAt,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String categoryCode,
+            required String categoryName,
+            Value<String> priorityLevel = const Value.absent(),
+            Value<bool> isMuted = const Value.absent(),
+            Value<String> boostKeywordsJson = const Value.absent(),
+            Value<String> mutedKeywordsJson = const Value.absent(),
+            Value<double> affinityAdjustment = const Value.absent(),
+            required DateTime updatedAt,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              RadarTopicPrefsCompanion.insert(
+            categoryCode: categoryCode,
+            categoryName: categoryName,
+            priorityLevel: priorityLevel,
+            isMuted: isMuted,
+            boostKeywordsJson: boostKeywordsJson,
+            mutedKeywordsJson: mutedKeywordsJson,
+            affinityAdjustment: affinityAdjustment,
+            updatedAt: updatedAt,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$RadarTopicPrefsTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $RadarTopicPrefsTable,
+    RadarTopicPrefEntry,
+    $$RadarTopicPrefsTableFilterComposer,
+    $$RadarTopicPrefsTableOrderingComposer,
+    $$RadarTopicPrefsTableAnnotationComposer,
+    $$RadarTopicPrefsTableCreateCompanionBuilder,
+    $$RadarTopicPrefsTableUpdateCompanionBuilder,
+    (
+      RadarTopicPrefEntry,
+      BaseReferences<_$AppDatabase, $RadarTopicPrefsTable, RadarTopicPrefEntry>
+    ),
+    RadarTopicPrefEntry,
+    PrefetchHooks Function()>;
+typedef $$RadarFollowsTableCreateCompanionBuilder = RadarFollowsCompanion
+    Function({
+  required String id,
+  required String followType,
+  required String targetKey,
+  required String displayName,
+  required DateTime createdAt,
+  Value<int> rowid,
+});
+typedef $$RadarFollowsTableUpdateCompanionBuilder = RadarFollowsCompanion
+    Function({
+  Value<String> id,
+  Value<String> followType,
+  Value<String> targetKey,
+  Value<String> displayName,
+  Value<DateTime> createdAt,
+  Value<int> rowid,
+});
+
+class $$RadarFollowsTableFilterComposer
+    extends Composer<_$AppDatabase, $RadarFollowsTable> {
+  $$RadarFollowsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get followType => $composableBuilder(
+      column: $table.followType, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get targetKey => $composableBuilder(
+      column: $table.targetKey, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get displayName => $composableBuilder(
+      column: $table.displayName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+}
+
+class $$RadarFollowsTableOrderingComposer
+    extends Composer<_$AppDatabase, $RadarFollowsTable> {
+  $$RadarFollowsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get followType => $composableBuilder(
+      column: $table.followType, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get targetKey => $composableBuilder(
+      column: $table.targetKey, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get displayName => $composableBuilder(
+      column: $table.displayName, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+}
+
+class $$RadarFollowsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $RadarFollowsTable> {
+  $$RadarFollowsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get followType => $composableBuilder(
+      column: $table.followType, builder: (column) => column);
+
+  GeneratedColumn<String> get targetKey =>
+      $composableBuilder(column: $table.targetKey, builder: (column) => column);
+
+  GeneratedColumn<String> get displayName => $composableBuilder(
+      column: $table.displayName, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$RadarFollowsTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $RadarFollowsTable,
+    RadarFollowEntry,
+    $$RadarFollowsTableFilterComposer,
+    $$RadarFollowsTableOrderingComposer,
+    $$RadarFollowsTableAnnotationComposer,
+    $$RadarFollowsTableCreateCompanionBuilder,
+    $$RadarFollowsTableUpdateCompanionBuilder,
+    (
+      RadarFollowEntry,
+      BaseReferences<_$AppDatabase, $RadarFollowsTable, RadarFollowEntry>
+    ),
+    RadarFollowEntry,
+    PrefetchHooks Function()> {
+  $$RadarFollowsTableTableManager(_$AppDatabase db, $RadarFollowsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$RadarFollowsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$RadarFollowsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$RadarFollowsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> id = const Value.absent(),
+            Value<String> followType = const Value.absent(),
+            Value<String> targetKey = const Value.absent(),
+            Value<String> displayName = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              RadarFollowsCompanion(
+            id: id,
+            followType: followType,
+            targetKey: targetKey,
+            displayName: displayName,
+            createdAt: createdAt,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String id,
+            required String followType,
+            required String targetKey,
+            required String displayName,
+            required DateTime createdAt,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              RadarFollowsCompanion.insert(
+            id: id,
+            followType: followType,
+            targetKey: targetKey,
+            displayName: displayName,
+            createdAt: createdAt,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$RadarFollowsTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $RadarFollowsTable,
+    RadarFollowEntry,
+    $$RadarFollowsTableFilterComposer,
+    $$RadarFollowsTableOrderingComposer,
+    $$RadarFollowsTableAnnotationComposer,
+    $$RadarFollowsTableCreateCompanionBuilder,
+    $$RadarFollowsTableUpdateCompanionBuilder,
+    (
+      RadarFollowEntry,
+      BaseReferences<_$AppDatabase, $RadarFollowsTable, RadarFollowEntry>
+    ),
+    RadarFollowEntry,
+    PrefetchHooks Function()>;
+typedef $$RadarFeedbackLogsTableCreateCompanionBuilder
+    = RadarFeedbackLogsCompanion Function({
+  required String id,
+  required String discoveryId,
+  required String action,
+  required String categoryCode,
+  required DateTime createdAt,
+  Value<int> rowid,
+});
+typedef $$RadarFeedbackLogsTableUpdateCompanionBuilder
+    = RadarFeedbackLogsCompanion Function({
+  Value<String> id,
+  Value<String> discoveryId,
+  Value<String> action,
+  Value<String> categoryCode,
+  Value<DateTime> createdAt,
+  Value<int> rowid,
+});
+
+class $$RadarFeedbackLogsTableFilterComposer
+    extends Composer<_$AppDatabase, $RadarFeedbackLogsTable> {
+  $$RadarFeedbackLogsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get discoveryId => $composableBuilder(
+      column: $table.discoveryId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get action => $composableBuilder(
+      column: $table.action, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get categoryCode => $composableBuilder(
+      column: $table.categoryCode, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+}
+
+class $$RadarFeedbackLogsTableOrderingComposer
+    extends Composer<_$AppDatabase, $RadarFeedbackLogsTable> {
+  $$RadarFeedbackLogsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get discoveryId => $composableBuilder(
+      column: $table.discoveryId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get action => $composableBuilder(
+      column: $table.action, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get categoryCode => $composableBuilder(
+      column: $table.categoryCode,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+}
+
+class $$RadarFeedbackLogsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $RadarFeedbackLogsTable> {
+  $$RadarFeedbackLogsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get discoveryId => $composableBuilder(
+      column: $table.discoveryId, builder: (column) => column);
+
+  GeneratedColumn<String> get action =>
+      $composableBuilder(column: $table.action, builder: (column) => column);
+
+  GeneratedColumn<String> get categoryCode => $composableBuilder(
+      column: $table.categoryCode, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$RadarFeedbackLogsTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $RadarFeedbackLogsTable,
+    RadarFeedbackLogEntry,
+    $$RadarFeedbackLogsTableFilterComposer,
+    $$RadarFeedbackLogsTableOrderingComposer,
+    $$RadarFeedbackLogsTableAnnotationComposer,
+    $$RadarFeedbackLogsTableCreateCompanionBuilder,
+    $$RadarFeedbackLogsTableUpdateCompanionBuilder,
+    (
+      RadarFeedbackLogEntry,
+      BaseReferences<_$AppDatabase, $RadarFeedbackLogsTable,
+          RadarFeedbackLogEntry>
+    ),
+    RadarFeedbackLogEntry,
+    PrefetchHooks Function()> {
+  $$RadarFeedbackLogsTableTableManager(
+      _$AppDatabase db, $RadarFeedbackLogsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$RadarFeedbackLogsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$RadarFeedbackLogsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$RadarFeedbackLogsTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> id = const Value.absent(),
+            Value<String> discoveryId = const Value.absent(),
+            Value<String> action = const Value.absent(),
+            Value<String> categoryCode = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              RadarFeedbackLogsCompanion(
+            id: id,
+            discoveryId: discoveryId,
+            action: action,
+            categoryCode: categoryCode,
+            createdAt: createdAt,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String id,
+            required String discoveryId,
+            required String action,
+            required String categoryCode,
+            required DateTime createdAt,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              RadarFeedbackLogsCompanion.insert(
+            id: id,
+            discoveryId: discoveryId,
+            action: action,
+            categoryCode: categoryCode,
+            createdAt: createdAt,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$RadarFeedbackLogsTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $RadarFeedbackLogsTable,
+    RadarFeedbackLogEntry,
+    $$RadarFeedbackLogsTableFilterComposer,
+    $$RadarFeedbackLogsTableOrderingComposer,
+    $$RadarFeedbackLogsTableAnnotationComposer,
+    $$RadarFeedbackLogsTableCreateCompanionBuilder,
+    $$RadarFeedbackLogsTableUpdateCompanionBuilder,
+    (
+      RadarFeedbackLogEntry,
+      BaseReferences<_$AppDatabase, $RadarFeedbackLogsTable,
+          RadarFeedbackLogEntry>
+    ),
+    RadarFeedbackLogEntry,
+    PrefetchHooks Function()>;
+typedef $$RadarBriefingsTableCreateCompanionBuilder = RadarBriefingsCompanion
+    Function({
+  required String id,
+  required String briefingType,
+  required String briefingDate,
+  required String headline,
+  required String sectionsJson,
+  Value<String> generatedBy,
+  required DateTime createdAt,
+  Value<int> rowid,
+});
+typedef $$RadarBriefingsTableUpdateCompanionBuilder = RadarBriefingsCompanion
+    Function({
+  Value<String> id,
+  Value<String> briefingType,
+  Value<String> briefingDate,
+  Value<String> headline,
+  Value<String> sectionsJson,
+  Value<String> generatedBy,
+  Value<DateTime> createdAt,
+  Value<int> rowid,
+});
+
+class $$RadarBriefingsTableFilterComposer
+    extends Composer<_$AppDatabase, $RadarBriefingsTable> {
+  $$RadarBriefingsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get briefingType => $composableBuilder(
+      column: $table.briefingType, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get briefingDate => $composableBuilder(
+      column: $table.briefingDate, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get headline => $composableBuilder(
+      column: $table.headline, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get sectionsJson => $composableBuilder(
+      column: $table.sectionsJson, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get generatedBy => $composableBuilder(
+      column: $table.generatedBy, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+}
+
+class $$RadarBriefingsTableOrderingComposer
+    extends Composer<_$AppDatabase, $RadarBriefingsTable> {
+  $$RadarBriefingsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get briefingType => $composableBuilder(
+      column: $table.briefingType,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get briefingDate => $composableBuilder(
+      column: $table.briefingDate,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get headline => $composableBuilder(
+      column: $table.headline, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get sectionsJson => $composableBuilder(
+      column: $table.sectionsJson,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get generatedBy => $composableBuilder(
+      column: $table.generatedBy, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+}
+
+class $$RadarBriefingsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $RadarBriefingsTable> {
+  $$RadarBriefingsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get briefingType => $composableBuilder(
+      column: $table.briefingType, builder: (column) => column);
+
+  GeneratedColumn<String> get briefingDate => $composableBuilder(
+      column: $table.briefingDate, builder: (column) => column);
+
+  GeneratedColumn<String> get headline =>
+      $composableBuilder(column: $table.headline, builder: (column) => column);
+
+  GeneratedColumn<String> get sectionsJson => $composableBuilder(
+      column: $table.sectionsJson, builder: (column) => column);
+
+  GeneratedColumn<String> get generatedBy => $composableBuilder(
+      column: $table.generatedBy, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$RadarBriefingsTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $RadarBriefingsTable,
+    RadarBriefingEntry,
+    $$RadarBriefingsTableFilterComposer,
+    $$RadarBriefingsTableOrderingComposer,
+    $$RadarBriefingsTableAnnotationComposer,
+    $$RadarBriefingsTableCreateCompanionBuilder,
+    $$RadarBriefingsTableUpdateCompanionBuilder,
+    (
+      RadarBriefingEntry,
+      BaseReferences<_$AppDatabase, $RadarBriefingsTable, RadarBriefingEntry>
+    ),
+    RadarBriefingEntry,
+    PrefetchHooks Function()> {
+  $$RadarBriefingsTableTableManager(
+      _$AppDatabase db, $RadarBriefingsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$RadarBriefingsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$RadarBriefingsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$RadarBriefingsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> id = const Value.absent(),
+            Value<String> briefingType = const Value.absent(),
+            Value<String> briefingDate = const Value.absent(),
+            Value<String> headline = const Value.absent(),
+            Value<String> sectionsJson = const Value.absent(),
+            Value<String> generatedBy = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              RadarBriefingsCompanion(
+            id: id,
+            briefingType: briefingType,
+            briefingDate: briefingDate,
+            headline: headline,
+            sectionsJson: sectionsJson,
+            generatedBy: generatedBy,
+            createdAt: createdAt,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String id,
+            required String briefingType,
+            required String briefingDate,
+            required String headline,
+            required String sectionsJson,
+            Value<String> generatedBy = const Value.absent(),
+            required DateTime createdAt,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              RadarBriefingsCompanion.insert(
+            id: id,
+            briefingType: briefingType,
+            briefingDate: briefingDate,
+            headline: headline,
+            sectionsJson: sectionsJson,
+            generatedBy: generatedBy,
+            createdAt: createdAt,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$RadarBriefingsTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $RadarBriefingsTable,
+    RadarBriefingEntry,
+    $$RadarBriefingsTableFilterComposer,
+    $$RadarBriefingsTableOrderingComposer,
+    $$RadarBriefingsTableAnnotationComposer,
+    $$RadarBriefingsTableCreateCompanionBuilder,
+    $$RadarBriefingsTableUpdateCompanionBuilder,
+    (
+      RadarBriefingEntry,
+      BaseReferences<_$AppDatabase, $RadarBriefingsTable, RadarBriefingEntry>
+    ),
+    RadarBriefingEntry,
+    PrefetchHooks Function()>;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -11300,4 +17083,18 @@ class $AppDatabaseManager {
           _db, _db.scheduledNotifications);
   $$ActivityHistoryTableTableManager get activityHistory =>
       $$ActivityHistoryTableTableManager(_db, _db.activityHistory);
+  $$XpEventsTableTableManager get xpEvents =>
+      $$XpEventsTableTableManager(_db, _db.xpEvents);
+  $$UnlockedAchievementsTableTableManager get unlockedAchievements =>
+      $$UnlockedAchievementsTableTableManager(_db, _db.unlockedAchievements);
+  $$RadarDiscoveriesTableTableManager get radarDiscoveries =>
+      $$RadarDiscoveriesTableTableManager(_db, _db.radarDiscoveries);
+  $$RadarTopicPrefsTableTableManager get radarTopicPrefs =>
+      $$RadarTopicPrefsTableTableManager(_db, _db.radarTopicPrefs);
+  $$RadarFollowsTableTableManager get radarFollows =>
+      $$RadarFollowsTableTableManager(_db, _db.radarFollows);
+  $$RadarFeedbackLogsTableTableManager get radarFeedbackLogs =>
+      $$RadarFeedbackLogsTableTableManager(_db, _db.radarFeedbackLogs);
+  $$RadarBriefingsTableTableManager get radarBriefings =>
+      $$RadarBriefingsTableTableManager(_db, _db.radarBriefings);
 }

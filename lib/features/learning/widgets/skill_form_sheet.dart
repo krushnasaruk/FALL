@@ -5,6 +5,7 @@ import '../../../core/theme/app_radii.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/widgets/app_button.dart';
+import '../../../core/widgets/app_interaction.dart';
 import '../../../core/widgets/app_text_field.dart';
 import '../../../data/repositories/learning_repository.dart';
 
@@ -35,6 +36,32 @@ class _SkillFormSheetState extends ConsumerState<SkillFormSheet> {
   String _currentLevel = 'beginner';
   String _targetLevel = 'advanced';
   bool _isLoading = false;
+
+  bool _hasUnsavedChanges() {
+    final s = widget.skillToEdit?.skill;
+    if (s == null) {
+      return _nameController.text.trim().isNotEmpty || _notesController.text.trim().isNotEmpty;
+    }
+    return _nameController.text.trim() != s.name ||
+        _notesController.text.trim() != (s.notes ?? '') ||
+        _category != s.category ||
+        _currentLevel != s.currentLevel ||
+        _targetLevel != s.targetLevel;
+  }
+
+  Future<void> _handleAttemptClose() async {
+    if (_isLoading || !_hasUnsavedChanges()) {
+      Navigator.of(context).pop();
+      return;
+    }
+    final choice = await confirmDiscardChanges(context, allowSaveOption: true);
+    if (!mounted) return;
+    if (choice == UnsavedChoice.discard) {
+      Navigator.of(context).pop();
+    } else if (choice == UnsavedChoice.save) {
+      await _saveSkill();
+    }
+  }
 
   final _categories = ['Language', 'Framework', 'AI & ML', 'Systems & IoT', 'Database', 'Cloud & DevOps', 'General'];
   final _levels = ['beginner', 'elementary', 'intermediate', 'advanced', 'expert'];
@@ -95,44 +122,50 @@ class _SkillFormSheetState extends ConsumerState<SkillFormSheet> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(AppRadii.xl)),
-        border: Border.all(
-          color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-          width: 1.0,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop) return;
+        await _handleAttemptClose();
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(AppRadii.xl)),
+          border: Border.all(
+            color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+            width: 1.0,
+          ),
         ),
-      ),
-      padding: EdgeInsets.only(
-        top: 20.0,
-        left: 20.0,
-        right: 20.0,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 24.0,
-      ),
-      child: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    widget.skillToEdit == null ? 'Track New Skill' : 'Edit Skill',
-                    style: AppTypography.titleLarge.copyWith(
-                      color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+        padding: EdgeInsets.only(
+          top: 20.0,
+          left: 20.0,
+          right: 20.0,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 24.0,
+        ),
+        child: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      widget.skillToEdit == null ? 'Track New Skill' : 'Edit Skill',
+                      style: AppTypography.titleLarge.copyWith(
+                        color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+                      ),
                     ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close_rounded, size: 20),
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
-                ],
-              ),
+                    IconButton(
+                      icon: const Icon(Icons.close_rounded, size: 20),
+                      onPressed: _handleAttemptClose,
+                    ),
+                  ],
+                ),
               const SizedBox(height: AppSpacing.md),
 
               // Skill Name
@@ -208,6 +241,7 @@ class _SkillFormSheetState extends ConsumerState<SkillFormSheet> {
           ),
         ),
       ),
+    ),
     );
   }
 }

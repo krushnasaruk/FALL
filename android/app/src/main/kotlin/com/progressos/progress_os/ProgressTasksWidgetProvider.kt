@@ -52,8 +52,13 @@ class ProgressTasksWidgetProvider : AppWidgetProvider() {
                 views.setViewVisibility(R.id.ll_task_item_3, View.GONE)
             }
 
+            // Empty indicator when no tasks are due today
+            val hasAny = !t1Title.isNullOrEmpty() || !t2Title.isNullOrEmpty() || !t3Title.isNullOrEmpty()
+            views.setViewVisibility(R.id.tv_tasks_empty, if (hasAny) View.GONE else View.VISIBLE)
+
             val intent = Intent(context, MainActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                putExtra("action", "open_tasks")
             }
             val pendingIntent = PendingIntent.getActivity(
                 context,
@@ -62,6 +67,18 @@ class ProgressTasksWidgetProvider : AppWidgetProvider() {
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
             views.setOnClickPendingIntent(R.id.widget_tasks_container, pendingIntent)
+
+            val addIntent = Intent(context, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                putExtra("action", "new_task")
+            }
+            val addPendingIntent = PendingIntent.getActivity(
+                context,
+                11,
+                addIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            views.setOnClickPendingIntent(R.id.tv_tasks_header_count, addPendingIntent)
 
             appWidgetManager.updateAppWidget(widgetId, views)
         }

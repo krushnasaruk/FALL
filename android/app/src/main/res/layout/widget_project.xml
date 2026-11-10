@@ -3,51 +3,66 @@
     android:id="@+id/widget_project_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:padding="14dp"
     android:background="@drawable/widget_background">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="ACTIVE ENGINEERING"
-        android:textColor="#6366F1"
-        android:textSize="10sp"
-        android:textStyle="bold"
-        android:letterSpacing="0.08" />
+    <ImageView
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:layout_marginEnd="10dp"
+        android:src="@drawable/widget_companion_project"
+        android:contentDescription="FALL Project Pip"
+        android:scaleType="fitCenter" />
 
-    <TextView
-        android:id="@+id/tv_project_name"
-        android:layout_width="match_parent"
+    <LinearLayout
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:text="Project Name"
-        android:textColor="#F8FAFC"
-        android:textSize="15sp"
-        android:textStyle="bold"
-        android:maxLines="1"
-        android:ellipsize="end" />
+        android:layout_weight="1"
+        android:orientation="vertical">
 
-    <ProgressBar
-        android:id="@+id/pb_project_progress"
-        style="?android:attr/progressBarStyleHorizontal"
-        android:layout_width="match_parent"
-        android:layout_height="6dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
-        android:max="100"
-        android:progress="0"
-        android:progressTint="#6366F1"
-        android:progressBackgroundTint="#1E293B" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ACTIVE PROJECT"
+            android:textColor="@color/widget_accent"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.08" />
 
-    <TextView
-        android:id="@+id/tv_next_milestone"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Next: Milestone name"
-        android:textColor="#94A3B8"
-        android:textSize="11sp"
-        android:maxLines="1"
-        android:ellipsize="end" />
+        <TextView
+            android:id="@+id/tv_project_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="Project Name"
+            android:textColor="@color/widget_text_primary"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:maxLines="1"
+            android:ellipsize="end" />
+
+        <ProgressBar
+            android:id="@+id/pb_project_progress"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="6dp"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="6dp"
+            android:max="100"
+            android:progress="0"
+            android:progressTint="@color/widget_accent"
+            android:progressBackgroundTint="@color/widget_track" />
+
+        <TextView
+            android:id="@+id/tv_next_milestone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Next: Milestone name"
+            android:textColor="@color/widget_text_secondary"
+            android:textSize="11sp"
+            android:maxLines="1"
+            android:ellipsize="end" />
+    </LinearLayout>
 </LinearLayout>
-

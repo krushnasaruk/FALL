@@ -3,52 +3,69 @@
     android:id="@+id/widget_streak_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:padding="14dp"
     android:background="@drawable/widget_background">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="LEARNING STREAK"
-        android:textColor="#F59E0B"
-        android:textSize="10sp"
-        android:textStyle="bold"
-        android:letterSpacing="0.08" />
+    <ImageView
+        android:layout_width="42dp"
+        android:layout_height="42dp"
+        android:layout_marginEnd="10dp"
+        android:src="@drawable/widget_companion_streak"
+        android:contentDescription="FALL Streak Pip"
+        android:scaleType="fitCenter" />
 
     <LinearLayout
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="bottom"
-        android:layout_marginTop="4dp">
-
-        <TextView
-            android:id="@+id/tv_streak_days"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="0"
-            android:textColor="#F8FAFC"
-            android:textSize="26sp"
-            android:textStyle="bold" />
+        android:layout_weight="1"
+        android:orientation="vertical">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text=" days"
-            android:textColor="#94A3B8"
-            android:textSize="14sp"
-            android:layout_marginStart="4dp"
-            android:layout_marginBottom="4dp" />
+            android:text="HABITS &amp; STREAK"
+            android:textColor="@color/widget_streak_accent"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.08" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="bottom"
+            android:layout_marginTop="2dp">
+
+            <TextView
+                android:id="@+id/tv_streak_days"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0"
+                android:textColor="@color/widget_text_primary"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=" days"
+                android:textColor="@color/widget_text_secondary"
+                android:textSize="13sp"
+                android:layout_marginStart="4dp"
+                android:layout_marginBottom="3dp" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tv_learning_hours"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="0.0 hrs total learning"
+            android:textColor="@color/widget_text_tertiary"
+            android:textSize="11sp"
+            android:maxLines="1"
+            android:ellipsize="end" />
     </LinearLayout>
-
-    <TextView
-        android:id="@+id/tv_learning_hours"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
-        android:text="0.0 hrs total learning"
-        android:textColor="#64748B"
-        android:textSize="11sp" />
 </LinearLayout>
-
