@@ -9,7 +9,8 @@ import 'radar_models.dart';
 import 'radar_repository.dart';
 
 class RadarSyncState {
-  static const String cloudDefaultUrl = 'https://krushnasaruk.github.io/FALL';
+  static const String cloudDefaultUrl =
+      'https://raw.githubusercontent.com/krushnasaruk/FALL/radar-data';
   static const String localDefaultUrl = 'http://10.0.2.2:8787';
 
   final String backendUrl;
@@ -118,12 +119,14 @@ class RadarSyncNotifier extends StateNotifier<RadarSyncState> {
 
     try {
       final base = state.backendUrl;
-      bool isStaticCloud = false;
+      bool isStaticCloud = base.contains('raw.githubusercontent.com') ||
+          base.contains('github.io') ||
+          base.contains('netlify.app');
       http.Response healthResp = await http
-          .get(Uri.parse('$base/health'))
-          .timeout(const Duration(seconds: 5));
+          .get(Uri.parse(isStaticCloud ? '$base/health.json' : '$base/health'))
+          .timeout(const Duration(seconds: 6));
 
-      if (healthResp.statusCode != 200) {
+      if (!isStaticCloud && healthResp.statusCode != 200) {
         final staticHealth = await http
             .get(Uri.parse('$base/health.json'))
             .timeout(const Duration(seconds: 5));
