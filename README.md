@@ -35,6 +35,16 @@ FALL bridges daily task execution, technical skill roadmaps, project engineering
 
 ---
 
+## Self-Hosting ProgressOS Radar on Android (Termux)
+
+You can turn any spare or daily Android smartphone into a 24/7 dedicated personal technology intelligence server using Termux. The backend consumes under **35 MB RAM**, produces negligible CPU load, and requires zero manual code editing on the phone.
+
+- Complete step-by-step deployment guide: [docs/ANDROID_TERMUX_SERVER.md](docs/ANDROID_TERMUX_SERVER.md)
+- Automated Termux setup: `bash deploy/termux/install.sh`
+- Server management commands: `radar start`, `radar status`, `radar logs`, `radar update`, `radar backup`
+
+---
+
 ## Project Structure
 
 Refer to [ARCHITECTURE.md](ARCHITECTURE.md) and [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md) for full architectural specifications.

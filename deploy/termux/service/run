@@ -1,0 +1,32 @@
+#!/data/data/com.termux/files/usr/bin/sh
+# ==============================================================================
+# ProgressOS Radar — termux-services (runit) Daemon Definition
+# ==============================================================================
+# To use with termux-services:
+#   pkg install termux-services
+#   mkdir -p $PREFIX/var/service/radar
+#   cp deploy/termux/service/run $PREFIX/var/service/radar/run
+#   chmod +x $PREFIX/var/service/radar/run
+#   sv-enable radar
+#   sv up radar
+# ==============================================================================
+
+exec 2>&1
+
+RADAR_HOME="${RADAR_HOME:-$HOME/.radar}"
+RADAR_ENV_FILE="$RADAR_HOME/radar.env"
+
+if [ -f "$RADAR_ENV_FILE" ]; then
+    set -a
+    # shellcheck disable=SC1090
+    . "$RADAR_ENV_FILE"
+    set +a
+fi
+
+REPO_DIR="$HOME/FALL"
+if [ -f "$RADAR_HOME/repo_path" ]; then
+    REPO_DIR="$(cat "$RADAR_HOME/repo_path" | tr -d '\r\n')"
+fi
+
+cd "$REPO_DIR" || exit 1
+exec python -m backend.radar_server.server

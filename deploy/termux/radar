@@ -1,0 +1,835 @@
+#!/bin/bash
+# ==============================================================================
+# ProgressOS Radar — Termux CLI Management & Operations Tool
+# ==============================================================================
+# This script manages the ProgressOS Radar intelligence backend on Android Termux.
+# It supports starting, stopping, restarting, monitoring, updating, and backing up
+# the server without manual file edits or complex command sequences.
+# ==============================================================================
+
+set -e
+
+# Detect environment and setup paths
+if [ -n "$PREFIX" ] && [ -d "$PREFIX" ]; then
+    IS_TERMUX=true
+else
+    IS_TERMUX=false
+fi
+
+RADAR_HOME="${RADAR_HOME:-$HOME/.radar}"
+RADAR_DATA_DIR="$RADAR_HOME/data"
+RADAR_LOG_DIR="$RADAR_HOME/logs"
+RADAR_PID_FILE="$RADAR_HOME/radar.pid"
+RADAR_LOG_FILE="$RADAR_LOG_DIR/radar.log"
+RADAR_ENV_FILE="$RADAR_HOME/radar.env"
+REPO_PATH_FILE="$RADAR_HOME/repo_path"
+
+mkdir -p "$RADAR_HOME" "$RADAR_DATA_DIR" "$RADAR_LOG_DIR"
+
+# Color helpers (disabled if not terminal)
+if [ -t 1 ]; then
+    C_RESET="\033[0m"
+    C_BOLD="\033[1m"
+    C_GREEN="\033[32m"
+    C_BLUE="\033[34m"
+    C_YELLOW="\033[33m"
+    C_RED="\033[31m"
+    C_CYAN="\033[36m"
+else
+    C_RESET=""
+    C_BOLD=""
+    C_GREEN=""
+    C_BLUE=""
+    C_YELLOW=""
+    C_RED=""
+    C_CYAN=""
+fi
+
+log_info()    { echo -e "${C_BLUE}${C_BOLD}[INFO]${C_RESET} $*"; }
+log_success() { echo -e "${C_GREEN}${C_BOLD}[SUCCESS]${C_RESET} $*"; }
+log_warn()    { echo -e "${C_YELLOW}${C_BOLD}[WARN]${C_RESET} $*"; }
+log_error()   { echo -e "${C_RED}${C_BOLD}[ERROR]${C_RESET} $*"; }
+
+# ------------------------------------------------------------------------------
+# Locate Repository Directory
+# ------------------------------------------------------------------------------
+find_repo_dir() {
+    if [ -f "$REPO_PATH_FILE" ]; then
+        SAVED_PATH=$(cat "$REPO_PATH_FILE" | tr -d '\r\n')
+        if [ -d "$SAVED_PATH/backend/radar_server" ]; then
+            echo "$SAVED_PATH"
+            return 0
+        fi
+    fi
+
+    # Try relative to this script
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd)"
+    if [ -d "$SCRIPT_DIR/../../backend/radar_server" ]; then
+        cd "$SCRIPT_DIR/../.." && pwd
+        return 0
+    fi
+
+    # Try common fallback paths
+    for cand in "$HOME/FALL" "$HOME/tracker" "$HOME/progressos" "$HOME/ProgressOS"; do
+        if [ -d "$cand/backend/radar_server" ]; then
+            echo "$cand"
+            return 0
+        fi
+    done
+
+    return 1
+}
+
+get_python_cmd() {
+    if command -v python3 >/dev/null 2>&1; then
+        echo "python3"
+    elif command -v python >/dev/null 2>&1; then
+        echo "python"
+    else
+        echo ""
+    fi
+}
+
+load_environment() {
+    if [ -f "$RADAR_ENV_FILE" ]; then
+        # Export non-comment lines
+        set -a
+        # shellcheck disable=SC1090
+        source "$RADAR_ENV_FILE"
+        set +a
+    fi
+
+    # Set safe runtime defaults if unset
+    export RADAR_HOST="${RADAR_HOST:-0.0.0.0}"
+    export RADAR_PORT="${RADAR_PORT:-8787}"
+    export RADAR_AUTO_COLLECT="${RADAR_AUTO_COLLECT:-true}"
+    export RADAR_DB_PATH="${RADAR_DB_PATH:-$RADAR_DATA_DIR/radar.sqlite3}"
+}
+
+is_running() {
+    if [ -f "$RADAR_PID_FILE" ]; then
+        PID=$(cat "$RADAR_PID_FILE" | tr -d '\r\n')
+        if [ -n "$PID" ] && kill -0 "$PID" 2>/dev/null; then
+            return 0
+        fi
+    fi
+    return 1
+}
+
+# ------------------------------------------------------------------------------
+# Command: start
+# ------------------------------------------------------------------------------
+cmd_start() {
+    load_environment
+
+    if is_running; then
+        PID=$(cat "$RADAR_PID_FILE")
+        log_warn "Radar server is already running (PID: $PID) at http://$RADAR_HOST:$RADAR_PORT"
+        return 0
+    fi
+
+    REPO_DIR=$(find_repo_dir) || {
+        log_error "Could not locate ProgressOS repository directory containing backend/radar_server."
+        log_error "Run 'radar set-repo /path/to/repo' to register the directory."
+        return 1
+    }
+
+    PYTHON_CMD=$(get_python_cmd)
+    if [ -z "$PYTHON_CMD" ]; then
+        log_error "Python 3 is not installed. Run: pkg install python"
+        return 1
+    fi
+
+    # Request Android wake lock if Termux API / termux-wake-lock is present
+    if command -v termux-wake-lock >/dev/null 2>&1; then
+        termux-wake-lock
+        log_info "Acquired Android wake lock (CPU will stay active in background)."
+    fi
+
+    log_info "Starting ProgressOS Radar server..."
+    log_info "Repository: $REPO_DIR"
+    log_info "Database:   $RADAR_DB_PATH"
+    log_info "Bind:       http://$RADAR_HOST:$RADAR_PORT"
+    log_info "Auto-Sync:  $RADAR_AUTO_COLLECT (every 2 hours)"
+
+    cd "$REPO_DIR"
+    nohup "$PYTHON_CMD" -m backend.radar_server.server >> "$RADAR_LOG_FILE" 2>&1 &
+    PID=$!
+    echo "$PID" > "$RADAR_PID_FILE"
+
+    # Wait up to 6 seconds for healthy startup
+    READY=false
+    for i in {1..12}; do
+        sleep 0.5
+        if ! kill -0 "$PID" 2>/dev/null; then
+            log_error "Server process exited immediately. Check logs with 'radar logs'."
+            rm -f "$RADAR_PID_FILE"
+            return 1
+        fi
+        if command -v curl >/dev/null 2>&1; then
+            if curl -s -f "http://127.0.0.1:$RADAR_PORT/health" >/dev/null 2>&1; then
+                READY=true
+                break
+            fi
+        else
+            READY=true
+            break
+        fi
+    done
+
+    if [ "$READY" = true ]; then
+        log_success "Radar server started successfully! (PID: $PID)"
+        show_access_urls
+    else
+        log_warn "Server started (PID: $PID), but /health endpoint has not responded yet."
+        log_warn "Run 'radar logs' or 'radar status' to inspect startup."
+    fi
+}
+
+# ------------------------------------------------------------------------------
+# Command: stop
+# ------------------------------------------------------------------------------
+cmd_stop() {
+    if ! is_running; then
+        log_info "Radar server is not running."
+        rm -f "$RADAR_PID_FILE"
+        return 0
+    fi
+
+    PID=$(cat "$RADAR_PID_FILE" | tr -d '\r\n')
+    log_info "Stopping Radar server (PID: $PID)..."
+    kill -15 "$PID" 2>/dev/null || true
+
+    # Wait up to 10 seconds for graceful shutdown
+    KILLED=false
+    for i in {1..20}; do
+        if ! kill -0 "$PID" 2>/dev/null; then
+            KILLED=true
+            break
+        fi
+        sleep 0.5
+    done
+
+    if [ "$KILLED" = false ]; then
+        log_warn "Process did not terminate within 10s. Sending SIGKILL..."
+        kill -9 "$PID" 2>/dev/null || true
+    fi
+
+    rm -f "$RADAR_PID_FILE"
+
+    if command -v termux-wake-unlock >/dev/null 2>&1; then
+        termux-wake-unlock 2>/dev/null || true
+        log_info "Released Android wake lock."
+    fi
+
+    log_success "Radar server stopped."
+}
+
+# ------------------------------------------------------------------------------
+# Command: restart
+# ------------------------------------------------------------------------------
+cmd_restart() {
+    log_info "Restarting Radar server..."
+    cmd_stop
+    sleep 1
+    cmd_start
+}
+
+# ------------------------------------------------------------------------------
+# Command: status
+# ------------------------------------------------------------------------------
+cmd_status() {
+    load_environment
+
+    echo -e "${C_BOLD}=== ProgressOS Radar Server Status ===${C_RESET}"
+    if is_running; then
+        PID=$(cat "$RADAR_PID_FILE" | tr -d '\r\n')
+        echo -e "Status:     ${C_GREEN}${C_BOLD}RUNNING${C_RESET} (PID: $PID)"
+        
+        # Memory and process stats
+        if [ -d "/proc/$PID" ]; then
+            RSS_KB=$(grep VmRSS /proc/$PID/status 2>/dev/null | awk '{print $2}')
+            if [ -n "$RSS_KB" ]; then
+                RSS_MB=$(awk "BEGIN {printf \"%.1f\", $RSS_KB/1024}")
+                echo -e "Memory:     ${RSS_MB} MB RSS"
+            fi
+        fi
+
+        echo -e "Bind URL:   http://$RADAR_HOST:$RADAR_PORT"
+        echo -e "Database:   $RADAR_DB_PATH"
+        if [ -f "$RADAR_DB_PATH" ]; then
+            DB_SIZE=$(du -h "$RADAR_DB_PATH" 2>/dev/null | awk '{print $1}')
+            echo -e "DB Size:    $DB_SIZE"
+        fi
+
+        # Query health if curl exists
+        if command -v curl >/dev/null 2>&1; then
+            echo -e "\n${C_BOLD}API Health Check:${C_RESET}"
+            HEALTH=$(curl -s --connect-timeout 2 "http://127.0.0.1:$RADAR_PORT/health" || echo "")
+            if [ -n "$HEALTH" ]; then
+                echo "$HEALTH" | python -m json.tool 2>/dev/null || echo "$HEALTH"
+            else
+                echo -e "${C_YELLOW}Could not query /health endpoint.${C_RESET}"
+            fi
+        fi
+
+        show_access_urls
+    else
+        echo -e "Status:     ${C_RED}${C_BOLD}STOPPED${C_RESET}"
+        echo -e "Database:   $RADAR_DB_PATH"
+        if [ -f "$RADAR_DB_PATH" ]; then
+            DB_SIZE=$(du -h "$RADAR_DB_PATH" 2>/dev/null | awk '{print $1}')
+            echo -e "DB Size:    $DB_SIZE"
+        fi
+        echo -e "\nRun 'radar start' to launch the server."
+    fi
+}
+
+show_access_urls() {
+    echo -e "\n${C_BOLD}Network Access URLs:${C_RESET}"
+    echo -e "  Local on phone:  ${C_CYAN}http://127.0.0.1:$RADAR_PORT${C_RESET}"
+
+    # Extract Wi-Fi IP if available
+    IP_LIST=$(ip -4 addr show 2>/dev/null | grep -oP '(?<=inet\s)\d+(\.\d+){3}' | grep -v '127.0.0.1' || true)
+    if [ -z "$IP_LIST" ] && command -v ifconfig >/dev/null 2>&1; then
+        IP_LIST=$(ifconfig 2>/dev/null | grep -oP '(?<=inet\s)\d+(\.\d+){3}' | grep -v '127.0.0.1' || true)
+    fi
+
+    if [ -n "$IP_LIST" ]; then
+        for ip in $IP_LIST; do
+            echo -e "  Wi-Fi / LAN:     ${C_CYAN}http://$ip:$RADAR_PORT${C_RESET}"
+        done
+        echo -e "  (Use the Wi-Fi URL inside the ProgressOS app settings on your computer or other devices)"
+    fi
+}
+
+# ------------------------------------------------------------------------------
+# Command: logs
+# ------------------------------------------------------------------------------
+cmd_logs() {
+    FOLLOW=false
+    LINES=60
+
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            -f|--follow)
+                FOLLOW=true
+                shift
+                ;;
+            -n)
+                LINES="$2"
+                shift 2
+                ;;
+            *)
+                if [[ "$1" =~ ^[0-9]+$ ]]; then
+                    LINES="$1"
+                fi
+                shift
+                ;;
+        esac
+    done
+
+    if [ ! -f "$RADAR_LOG_FILE" ]; then
+        log_warn "No log file found at $RADAR_LOG_FILE. Start the server first with 'radar start'."
+        return 0
+    fi
+
+    if [ "$FOLLOW" = true ]; then
+        log_info "Streaming logs from $RADAR_LOG_FILE (Press Ctrl+C to exit)..."
+        tail -n "$LINES" -f "$RADAR_LOG_FILE"
+    else
+        tail -n "$LINES" "$RADAR_LOG_FILE"
+    fi
+}
+
+# ------------------------------------------------------------------------------
+# Command: health
+# ------------------------------------------------------------------------------
+cmd_health() {
+    load_environment
+
+    echo -e "${C_BOLD}=== ProgressOS Radar Health Audit ===${C_RESET}"
+    
+    # 1. Process check
+    if is_running; then
+        PID=$(cat "$RADAR_PID_FILE")
+        echo -e "Process:          ${C_GREEN}ACTIVE${C_RESET} (PID: $PID)"
+    else
+        echo -e "Process:          ${C_RED}INACTIVE${C_RESET}"
+        return 1
+    fi
+
+    # 2. HTTP API check
+    if ! command -v curl >/dev/null 2>&1; then
+        log_warn "curl is not installed. Run: pkg install curl"
+        return 0
+    fi
+
+    HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 3 "http://127.0.0.1:$RADAR_PORT/health" || echo "000")
+    if [ "$HTTP_STATUS" = "200" ]; then
+        echo -e "HTTP Endpoint:    ${C_GREEN}200 OK${C_RESET} (http://127.0.0.1:$RADAR_PORT/health)"
+    else
+        echo -e "HTTP Endpoint:    ${C_RED}FAILED${C_RESET} (HTTP status: $HTTP_STATUS)"
+        return 1
+    fi
+
+    # 3. Environment & API tokens check
+    echo -e "\n${C_BOLD}API Integrations Configured:${C_RESET}"
+    [ -n "$GEMINI_API_KEY" ] && echo -e "  Gemini 3 Flash:  ${C_GREEN}Configured${C_RESET}" || echo -e "  Gemini 3 Flash:  ${C_YELLOW}Not configured (deterministic fallback)${C_RESET}"
+    [ -n "$GITHUB_TOKEN" ]   && echo -e "  GitHub PAT:      ${C_GREEN}Configured (5,000 req/hr)${C_RESET}" || echo -e "  GitHub PAT:      ${C_YELLOW}Not configured (60 req/hr public limit)${C_RESET}"
+    [ -n "$YOUTUBE_API_KEY" ] && echo -e "  YouTube Data API: ${C_GREEN}Configured${C_RESET}" || echo -e "  YouTube Data API: ${C_YELLOW}Not configured (using zero-quota Atom RSS feeds)${C_RESET}"
+
+    # 4. Database check
+    echo -e "\n${C_BOLD}Persistent Storage:${C_RESET}"
+    if [ -f "$RADAR_DB_PATH" ]; then
+        SIZE=$(du -h "$RADAR_DB_PATH" | awk '{print $1}')
+        echo -e "  SQLite DB:       ${C_GREEN}OK${C_RESET} ($SIZE at $RADAR_DB_PATH)"
+    else
+        echo -e "  SQLite DB:       ${C_YELLOW}Not initialized yet (created on first run)${C_RESET}"
+    fi
+
+    # 5. Full summary from API
+    echo -e "\n${C_BOLD}Live Telemetry:${C_RESET}"
+    curl -s "http://127.0.0.1:$RADAR_PORT/health" | python -m json.tool 2>/dev/null || true
+}
+
+# ------------------------------------------------------------------------------
+# Command: collect
+# ------------------------------------------------------------------------------
+cmd_collect() {
+    load_environment
+    REPO_DIR=$(find_repo_dir) || {
+        log_error "Could not locate ProgressOS repository directory."
+        return 1
+    }
+    PYTHON_CMD=$(get_python_cmd)
+
+    log_info "Triggering manual Radar collection cycle..."
+    cd "$REPO_DIR"
+    "$PYTHON_CMD" -m backend.radar_server.server --collect-once
+    log_success "Manual collection cycle finished."
+}
+
+# ------------------------------------------------------------------------------
+# Command: config
+# ------------------------------------------------------------------------------
+mask_value() {
+    val="$1"
+    len=${#val}
+    if [ "$len" -le 8 ]; then
+        echo "********"
+    else
+        start="${val:0:6}"
+        end="${val: -4}"
+        echo "${start}****${end}"
+    fi
+}
+
+cmd_config() {
+    ACTION="${1:-show}"
+
+    case "$ACTION" in
+        show|list)
+            echo -e "${C_BOLD}=== ProgressOS Radar Configuration ===${C_RESET}"
+            echo -e "Config File: $RADAR_ENV_FILE"
+            if [ ! -f "$RADAR_ENV_FILE" ]; then
+                log_warn "No configuration file exists yet. Use 'radar config set <KEY> <VALUE>' to configure."
+                return 0
+            fi
+
+            echo ""
+            while IFS='=' read -r key val || [ -n "$key" ]; do
+                # Trim whitespace
+                key=$(echo "$key" | tr -d ' ' | tr -d '\r')
+                [ -z "$key" ] && continue
+                [[ "$key" =~ ^# ]] && continue
+
+                # Trim quotes
+                val=$(echo "$val" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//" | tr -d '\r')
+
+                case "$key" in
+                    *KEY*|*TOKEN*|*SECRET*|*PASSWORD*)
+                        masked=$(mask_value "$val")
+                        printf "  %-22s = %s\n" "$key" "$masked"
+                        ;;
+                    *)
+                        printf "  %-22s = %s\n" "$key" "$val"
+                        ;;
+                esac
+            done < "$RADAR_ENV_FILE"
+            ;;
+
+        get)
+            KEY="$2"
+            if [ -z "$KEY" ]; then
+                log_error "Usage: radar config get <KEY>"
+                return 1
+            fi
+            if [ -f "$RADAR_ENV_FILE" ]; then
+                VAL=$(grep -E "^${KEY}=" "$RADAR_ENV_FILE" 2>/dev/null | cut -d '=' -f2- | tr -d '\r' | sed -e 's/^"//' -e 's/"$//')
+                echo "$VAL"
+            fi
+            ;;
+
+        set)
+            KEY="$2"
+            VAL="$3"
+            if [ -z "$KEY" ] || [ -z "$VAL" ]; then
+                log_error "Usage: radar config set <KEY> <VALUE>"
+                log_error "Example: radar config set GEMINI_API_KEY \"AQ.Ab8RN6...\""
+                return 1
+            fi
+
+            touch "$RADAR_ENV_FILE"
+            chmod 600 "$RADAR_ENV_FILE"
+
+            # Check if key already exists
+            if grep -q -E "^${KEY}=" "$RADAR_ENV_FILE" 2>/dev/null; then
+                # Update existing key using python for robust cross-platform escaping
+                python -c "
+import sys
+path = sys.argv[1]
+key = sys.argv[2]
+val = sys.argv[3]
+lines = []
+found = False
+with open(path, 'r', encoding='utf-8') as f:
+    for line in f:
+        stripped = line.strip()
+        if stripped.startswith(key + '='):
+            lines.append(f'{key}={val}\n')
+            found = True
+        else:
+            lines.append(line)
+if not found:
+    lines.append(f'{key}={val}\n')
+with open(path, 'w', encoding='utf-8') as f:
+    f.writelines(lines)
+" "$RADAR_ENV_FILE" "$KEY" "$VAL"
+            else
+                echo "${KEY}=${VAL}" >> "$RADAR_ENV_FILE"
+            fi
+
+            log_success "Set $KEY successfully in $RADAR_ENV_FILE"
+            if is_running; then
+                log_info "Server is currently running. Run 'radar restart' to apply changes."
+            fi
+            ;;
+
+        unset)
+            KEY="$2"
+            if [ -z "$KEY" ]; then
+                log_error "Usage: radar config unset <KEY>"
+                return 1
+            fi
+            if [ -f "$RADAR_ENV_FILE" ]; then
+                python -c "
+import sys
+path = sys.argv[1]
+key = sys.argv[2]
+with open(path, 'r', encoding='utf-8') as f:
+    lines = [l for l in f if not l.strip().startswith(key + '=')]
+with open(path, 'w', encoding='utf-8') as f:
+    f.writelines(lines)
+" "$RADAR_ENV_FILE" "$KEY"
+                log_success "Removed $KEY from $RADAR_ENV_FILE"
+            fi
+            ;;
+
+        *)
+            log_error "Unknown config action: $ACTION. Valid actions: show, get, set, unset."
+            return 1
+            ;;
+    esac
+}
+
+# ------------------------------------------------------------------------------
+# Command: update
+# ------------------------------------------------------------------------------
+cmd_update() {
+    REPO_DIR=$(find_repo_dir) || {
+        log_error "Could not locate ProgressOS repository directory."
+        return 1
+    }
+
+    log_info "Checking for ProgressOS updates in $REPO_DIR..."
+    cd "$REPO_DIR"
+
+    # Save running state
+    WAS_RUNNING=false
+    if is_running; then
+        WAS_RUNNING=true
+    fi
+
+    # Record current commit for rollback reference
+    OLD_COMMIT=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+
+    # Fetch updates
+    log_info "Fetching latest code from remote git repository..."
+    if ! git fetch origin; then
+        log_error "Failed to fetch from remote git repository. Check your internet connection."
+        return 1
+    fi
+
+    # Pull cleanly
+    BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "main")
+    log_info "Pulling updates on branch '$BRANCH'..."
+
+    if ! git pull --ff-only origin "$BRANCH"; then
+        log_warn "Fast-forward merge failed. Attempting standard git pull..."
+        if ! git pull origin "$BRANCH"; then
+            log_error "Git pull failed due to local conflicts."
+            log_error "To safely rollback and keep your local database and config intact, run:"
+            log_error "  cd $REPO_DIR && git merge --abort && git reset --hard HEAD"
+            return 1
+        fi
+    fi
+
+    NEW_COMMIT=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+
+    if [ "$OLD_COMMIT" = "$NEW_COMMIT" ]; then
+        log_success "ProgressOS Radar is already up to date (commit: $NEW_COMMIT)."
+    else
+        log_success "Successfully updated from $OLD_COMMIT to $NEW_COMMIT."
+    fi
+
+    # Ensure CLI tool is updated in PATH
+    if [ "$IS_TERMUX" = true ] && [ -w "$PREFIX/bin" ]; then
+        cp -f "$REPO_DIR/deploy/termux/radar" "$PREFIX/bin/radar"
+        chmod +x "$PREFIX/bin/radar"
+    fi
+
+    # Restart if it was running
+    if [ "$WAS_RUNNING" = true ]; then
+        log_info "Restarting Radar server to apply updates..."
+        cmd_restart
+    fi
+
+    log_success "Update completed successfully!"
+}
+
+# ------------------------------------------------------------------------------
+# Command: backup
+# ------------------------------------------------------------------------------
+cmd_backup() {
+    load_environment
+    TARGET_DIR="${1:-$HOME}"
+
+    TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+    BACKUP_FILE="$TARGET_DIR/radar_backup_${TIMESTAMP}.tar.gz"
+
+    log_info "Creating ProgressOS Radar backup archive..."
+
+    FILES_TO_PACK=()
+    if [ -f "$RADAR_DB_PATH" ]; then
+        FILES_TO_PACK+=("$RADAR_DB_PATH")
+    fi
+    if [ -f "$RADAR_ENV_FILE" ]; then
+        FILES_TO_PACK+=("$RADAR_ENV_FILE")
+    fi
+
+    if [ ${#FILES_TO_PACK[@]} -eq 0 ]; then
+        log_warn "No database or environment files found to back up."
+        return 0
+    fi
+
+    # Create tar archive
+    tar -czf "$BACKUP_FILE" -C "$RADAR_HOME" "data" "radar.env" 2>/dev/null || {
+        # Fallback if tar from relative paths had missing parts
+        tar -czf "$BACKUP_FILE" "${FILES_TO_PACK[@]}"
+    }
+
+    if [ -f "$BACKUP_FILE" ]; then
+        SIZE=$(du -h "$BACKUP_FILE" | awk '{print $1}')
+        log_success "Backup created: $BACKUP_FILE ($SIZE)"
+        echo -e "Contents:"
+        tar -tzf "$BACKUP_FILE" | sed 's/^/  /'
+        
+        if [ "$IS_TERMUX" = true ] && command -v termux-share >/dev/null 2>&1; then
+            echo -e "\nTip: To share or copy this backup off your phone, run:"
+            echo -e "  termux-share \"$BACKUP_FILE\""
+        fi
+    else
+        log_error "Failed to create backup archive."
+        return 1
+    fi
+}
+
+# ------------------------------------------------------------------------------
+# Command: restore
+# ------------------------------------------------------------------------------
+cmd_restore() {
+    ARCHIVE="$1"
+    if [ -z "$ARCHIVE" ] || [ ! -f "$ARCHIVE" ]; then
+        log_error "Usage: radar restore <backup_file.tar.gz>"
+        return 1
+    fi
+
+    log_warn "Restoring Radar data will overwrite current database and configuration."
+    read -p "Are you sure you want to proceed? (y/N): " -r CONFIRM
+    if [[ ! "$CONFIRM" =~ ^[Yy]$ ]]; then
+        log_info "Restore cancelled."
+        return 0
+    fi
+
+    WAS_RUNNING=false
+    if is_running; then
+        WAS_RUNNING=true
+        cmd_stop
+    fi
+
+    # Safety copy of current data
+    if [ -f "$RADAR_DATA_DIR/radar.sqlite3" ]; then
+        cp -f "$RADAR_DATA_DIR/radar.sqlite3" "$RADAR_DATA_DIR/radar.sqlite3.pre_restore.bak"
+        log_info "Created safety snapshot at $RADAR_DATA_DIR/radar.sqlite3.pre_restore.bak"
+    fi
+
+    log_info "Extracting $ARCHIVE into $RADAR_HOME..."
+    tar -xzf "$ARCHIVE" -C "$RADAR_HOME"
+
+    log_success "Restore completed successfully."
+
+    if [ "$WAS_RUNNING" = true ]; then
+        cmd_start
+    fi
+}
+
+# ------------------------------------------------------------------------------
+# Command: boot
+# ------------------------------------------------------------------------------
+cmd_boot() {
+    ACTION="${1:-status}"
+    BOOT_DIR="$HOME/.termux/boot"
+    BOOT_SCRIPT="$BOOT_DIR/start-radar.sh"
+
+    case "$ACTION" in
+        enable)
+            mkdir -p "$BOOT_DIR"
+            cat << 'EOF' > "$BOOT_SCRIPT"
+#!/data/data/com.termux/files/usr/bin/bash
+# Automatically generated by ProgressOS Radar CLI
+# Starts Radar backend after Android device boots.
+
+sleep 5
+if command -v termux-wake-lock >/dev/null 2>&1; then
+    termux-wake-lock
+fi
+
+if command -v radar >/dev/null 2>&1; then
+    radar start
+elif [ -x "$HOME/FALL/deploy/termux/radar" ]; then
+    "$HOME/FALL/deploy/termux/radar" start
+fi
+EOF
+            chmod +x "$BOOT_SCRIPT"
+            log_success "Termux:Boot startup script created at $BOOT_SCRIPT"
+            log_info "Make sure Termux:Boot app is installed and opened once."
+            ;;
+
+        disable)
+            if [ -f "$BOOT_SCRIPT" ]; then
+                rm -f "$BOOT_SCRIPT"
+                log_success "Disabled Termux:Boot auto-start (removed $BOOT_SCRIPT)."
+            else
+                log_info "Termux:Boot auto-start was not enabled."
+            fi
+            ;;
+
+        status)
+            if [ -f "$BOOT_SCRIPT" ] && [ -x "$BOOT_SCRIPT" ]; then
+                echo -e "Termux:Boot Auto-Start: ${C_GREEN}ENABLED${C_RESET} ($BOOT_SCRIPT)"
+            else
+                echo -e "Termux:Boot Auto-Start: ${C_YELLOW}DISABLED${C_RESET}"
+                echo -e "Run 'radar boot enable' to enable auto-start on Android reboot."
+            fi
+            ;;
+
+        *)
+            log_error "Usage: radar boot [enable|disable|status]"
+            return 1
+            ;;
+    esac
+}
+
+# ------------------------------------------------------------------------------
+# Command: set-repo
+# ------------------------------------------------------------------------------
+cmd_set_repo() {
+    DIR="$1"
+    if [ -z "$DIR" ] || [ ! -d "$DIR/backend/radar_server" ]; then
+        log_error "Usage: radar set-repo /path/to/progressos_repository"
+        log_error "Target directory must contain backend/radar_server/"
+        return 1
+    fi
+    FULL_PATH=$(cd "$DIR" && pwd)
+    echo "$FULL_PATH" > "$REPO_PATH_FILE"
+    log_success "Registered repository path: $FULL_PATH"
+}
+
+# ------------------------------------------------------------------------------
+# Command: help
+# ------------------------------------------------------------------------------
+cmd_help() {
+    cat << EOF
+${C_BOLD}ProgressOS Radar — Termux Server Management CLI${C_RESET}
+
+${C_BOLD}USAGE:${C_RESET}
+  radar <command> [arguments]
+
+${C_BOLD}SERVICE COMMANDS:${C_RESET}
+  ${C_CYAN}radar start${C_RESET}                Start the Radar backend server in background
+  ${C_CYAN}radar stop${C_RESET}                 Gracefully stop the running Radar server
+  ${C_CYAN}radar restart${C_RESET}              Restart the Radar server
+  ${C_CYAN}radar status${C_RESET}               Display process state, memory, and access URLs
+  ${C_CYAN}radar logs [-f] [n]${C_RESET}        View or follow server output logs (default 60 lines)
+  ${C_CYAN}radar health${C_RESET}               Execute comprehensive health check & audit
+  ${C_CYAN}radar collect${C_RESET}              Run a single discovery collection cycle manually
+
+${C_BOLD}CONFIGURATION & UPDATES:${C_RESET}
+  ${C_CYAN}radar config show${C_RESET}          List current settings (with API keys masked)
+  ${C_CYAN}radar config set <K> <V>${C_RESET}   Set an environment variable without editing files
+  ${C_CYAN}radar config unset <K>${C_RESET}     Remove an environment variable
+  ${C_CYAN}radar update${C_RESET}               Pull latest updates from GitHub & restart server
+
+${C_BOLD}DATA MANAGEMENT & BOOT:${C_RESET}
+  ${C_CYAN}radar backup [dir]${C_RESET}         Create timestamped archive of database and config
+  ${C_CYAN}radar restore <file>${C_RESET}       Restore database and configuration from backup
+  ${C_CYAN}radar boot enable${C_RESET}          Configure auto-start on Android boot (Termux:Boot)
+  ${C_CYAN}radar boot disable${C_RESET}         Disable auto-start on boot
+  ${C_CYAN}radar boot status${C_RESET}          Check boot auto-start status
+
+${C_BOLD}FILES & PATHS:${C_RESET}
+  Configuration:  $RADAR_ENV_FILE
+  Database:       $RADAR_DATA_DIR/radar.sqlite3
+  Logs:           $RADAR_LOG_FILE
+  PID:            $RADAR_PID_FILE
+EOF
+}
+
+# ------------------------------------------------------------------------------
+# Entrypoint Dispatcher
+# ------------------------------------------------------------------------------
+COMMAND="${1:-help}"
+shift || true
+
+case "$COMMAND" in
+    start)       cmd_start "$@" ;;
+    stop)        cmd_stop "$@" ;;
+    restart)     cmd_restart "$@" ;;
+    status)      cmd_status "$@" ;;
+    logs)        cmd_logs "$@" ;;
+    health)      cmd_health "$@" ;;
+    collect)     cmd_collect "$@" ;;
+    config)      cmd_config "$@" ;;
+    update)      cmd_update "$@" ;;
+    backup)      cmd_backup "$@" ;;
+    restore)     cmd_restore "$@" ;;
+    boot)        cmd_boot "$@" ;;
+    set-repo)    cmd_set_repo "$@" ;;
+    help|--help|-h) cmd_help ;;
+    *)
+        log_error "Unknown command: '$COMMAND'"
+        echo -e "Run 'radar help' to see available commands."
+        exit 1
+        ;;
+esac
