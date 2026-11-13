@@ -8,8 +8,12 @@ import '../../../core/widgets/app_badges.dart';
 import '../../../core/widgets/app_progress_bar.dart';
 import '../../../data/repositories/learning_repository.dart';
 
-/// Reusable Learning Card (Section 7E): Skill name, current/target level,
-/// completed vs total topics, real progress bar, and recent study summary.
+enum LearningCardVariant {
+  standard,
+}
+
+/// Reusable Learning Card: Skill name, level progression, real progress calculation,
+/// target recognition, and invested time.
 class LearningCard extends StatelessWidget {
   final SkillWithRoadmap skillWithRoadmap;
   final VoidCallback onTap;
@@ -26,18 +30,51 @@ class LearningCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final skill = skillWithRoadmap.skill;
+    final method = skill.progressMethod;
     final progress = skillWithRoadmap.progressPercentage.clamp(0.0, 1.0);
-    final percentInt = (progress * 100).round();
+    final isOverachieved = skillWithRoadmap.isTimeTargetExceeded;
 
     final surfaceColor = isDark ? AppColors.darkSurface : AppColors.surface;
     final borderColor = isDark ? AppColors.darkBorder : AppColors.border;
     final textPrimary = isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
-    final textSecondary =
-        isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
+    final textSecondary = isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
     final accent = isDark ? AppColors.primaryDark : AppColors.learningAccent;
 
     final latestSession =
         skillWithRoadmap.sessions.isNotEmpty ? skillWithRoadmap.sessions.first : null;
+
+    String badgeLabel;
+    String percentText;
+
+    if (method == 'time') {
+      if (skillWithRoadmap.hasTimeTarget) {
+        final pctInt = (skillWithRoadmap.timeProgressPercentage! * 100).round();
+        percentText = '$pctInt%';
+        if (isOverachieved) {
+          badgeLabel = 'Overachieved! 🌟';
+        } else {
+          badgeLabel =
+              '${(skill.learningMinutes / 60).toStringAsFixed(1)}h / ${(skill.targetMinutes / 60).toStringAsFixed(0)}h';
+        }
+      } else {
+        percentText = '—';
+        badgeLabel = 'No target set';
+      }
+    } else if (method == 'manual') {
+      final pctInt = (skill.manualProgressPercentage * 100).round();
+      percentText = '$pctInt%';
+      badgeLabel = 'User-reported';
+    } else {
+      // 'topics'
+      if (skillWithRoadmap.totalTopics > 0) {
+        final pctInt = (progress * 100).round();
+        percentText = '$pctInt%';
+        badgeLabel = '${skillWithRoadmap.completedTopics} of ${skillWithRoadmap.totalTopics} topics';
+      } else {
+        percentText = '—';
+        badgeLabel = 'No topics yet';
+      }
+    }
 
     return Material(
       color: surfaceColor,
@@ -60,9 +97,7 @@ class LearningCard extends StatelessWidget {
                     width: 40.0,
                     height: 40.0,
                     decoration: BoxDecoration(
-                      color: isDark
-                          ? AppColors.darkLearningSurface
-                          : AppColors.learningSurface,
+                      color: isDark ? AppColors.darkLearningSurface : AppColors.learningSurface,
                       borderRadius: BorderRadius.circular(12.0),
                     ),
                     child: Icon(AppIcons.learningActive, color: accent, size: 20.0),
@@ -89,10 +124,10 @@ class LearningCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 8.0),
                   Text(
-                    '$percentInt%',
+                    percentText,
                     style: AppTypography.statMedium.copyWith(
                       fontSize: 18.0,
-                      color: accent,
+                      color: isOverachieved ? AppColors.warning : accent,
                     ),
                   ),
                 ],
@@ -100,7 +135,7 @@ class LearningCard extends StatelessWidget {
               const SizedBox(height: 12.0),
               AppProgressBar(
                 progress: progress,
-                progressColor: accent,
+                progressColor: isOverachieved ? AppColors.warning : accent,
                 backgroundColor: accent.withOpacity(0.14),
                 height: 6.0,
               ),
@@ -110,9 +145,8 @@ class LearningCard extends StatelessWidget {
                 children: [
                   Flexible(
                     child: AppBadge(
-                      label:
-                          '${skillWithRoadmap.completedTopics} of ${skillWithRoadmap.totalTopics} topics',
-                      color: accent,
+                      label: badgeLabel,
+                      color: isOverachieved ? AppColors.warning : accent,
                     ),
                   ),
                   const SizedBox(width: 8.0),

@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_icons.dart';
-import '../../../core/theme/app_radii.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/utils/date_formatters.dart';
@@ -17,12 +16,14 @@ import '../../../core/widgets/app_scaffold.dart';
 import '../../../core/widgets/companion_avatar.dart';
 import '../../../core/widgets/reward_celebration_sheet.dart';
 import '../../../data/repositories/focus_repository.dart';
+import '../../../data/repositories/learning_repository.dart';
 import '../../../data/repositories/project_repository.dart';
 import '../../../data/repositories/rewards_repository.dart';
 import '../../../data/repositories/task_repository.dart';
 import '../../../data/repositories/user_preferences_repository.dart';
 import '../../../services/feedback_service.dart';
 import '../../../services/focus_timer_controller.dart';
+import '../widgets/focus_completion_sheet.dart';
 
 /// Distraction-Free Focus Timer backed by wall-clock persistent `FocusTimerNotifier`.
 /// Resists background suspension and excludes paused durations from focused totals.
@@ -67,92 +68,46 @@ class _FocusScreenState extends ConsumerState<FocusScreen> with WidgetsBindingOb
   Future<void> _finishSessionAndPresentSummary() async {
     final timerState = ref.read(focusTimerProvider);
     final activeSeconds = timerState.effectiveFocusedSeconds();
-    if (activeSeconds < 5 && !timerState.isRunning) {
+    if (activeSeconds < 5 && !timerState.isRunning && !timerState.isOnBreak && !timerState.isPaused) {
       AppToast.show(context, 'Start the timer for a moment before finishing.');
       return;
     }
 
-    final summary = await ref.read(focusTimerProvider.notifier).completeSession();
-    if (!mounted || summary == null) return;
+    final breakSeconds = timerState.effectiveBreakSeconds();
+    final focusedMinutes = (activeSeconds / 60).round().clamp(1, 1440);
+    final breakMinutes = (breakSeconds / 60).floor().clamp(0, 720);
 
-    final rewardsRepo = ref.read(rewardsRepositoryProvider);
-    final xpAmount = summary.recordedMinutes >= 15 ? RewardsRepository.xpFocusCompleted : 10;
-    final reward = await rewardsRepo.recordActivityAndEvaluate(
-      sourceKey: 'focus:${summary.completedAt.millisecondsSinceEpoch}',
-      sourceType: 'focus',
-      amount: xpAmount,
-      summary: 'Focused ${summary.recordedMinutes}m (${summary.modeLabel})',
+    final saved = await FocusCompletionSheet.show(
+      context,
+      focusedMinutes: focusedMinutes,
+      breakMinutes: breakMinutes,
+      initialProjectId: timerState.linkedProjectId,
+      initialSkillId: timerState.linkedSkillId,
+      initialTaskId: timerState.linkedTaskId,
+      initialNotes: timerState.sessionNotes,
     );
 
-    if (!mounted) return;
-    await _showSummaryModal(summary, reward.xpAdded);
+    if (saved == true && mounted) {
+      final rewardsRepo = ref.read(rewardsRepositoryProvider);
+      final xpAmount = focusedMinutes >= 15 ? RewardsRepository.xpFocusCompleted : 10;
+      final reward = await rewardsRepo.recordActivityAndEvaluate(
+        sourceKey: 'focus:${DateTime.now().millisecondsSinceEpoch}',
+        sourceType: 'focus',
+        amount: xpAmount,
+        summary: 'Focused ${focusedMinutes}m (${timerState.mode.label})',
+      );
 
-    if (reward.newlyUnlocked.isNotEmpty && mounted) {
-      await ref.read(feedbackServiceProvider).achievementUnlocked();
-      if (mounted) {
-        await RewardCelebrationDialog.show(
-          context,
-          achievement: reward.newlyUnlocked.first,
-          xpEarned: reward.xpAdded,
-        );
+      if (reward.newlyUnlocked.isNotEmpty && mounted) {
+        await ref.read(feedbackServiceProvider).achievementUnlocked();
+        if (mounted) {
+          await RewardCelebrationDialog.show(
+            context,
+            achievement: reward.newlyUnlocked.first,
+            xpEarned: reward.xpAdded,
+          );
+        }
       }
     }
-  }
-
-  Future<void> _showSummaryModal(FocusCompletionSummary summary, int xpAdded) async {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    await showDialog<void>(
-      context: context,
-      barrierDismissible: true,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: isDark ? AppColors.darkSurface : AppColors.surface,
-        shape: const RoundedRectangleBorder(borderRadius: AppRadii.roundedXl),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const CompanionAvatar(
-              expression: CompanionExpression.celebrating,
-              size: 96.0,
-              animate: true,
-            ),
-            const SizedBox(height: AppSpacing.md),
-            Text(
-              'All done. Nice work.',
-              style: AppTypography.titleLarge.copyWith(
-                color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
-                fontWeight: FontWeight.w700,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              'Recorded ${summary.recordedMinutes} min of ${summary.modeLabel} (paused intervals excluded).',
-              style: AppTypography.bodySmall.copyWith(
-                color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            if (xpAdded > 0) ...[
-              const SizedBox(height: AppSpacing.md),
-              AppBadge(
-                label: '+$xpAdded XP earned',
-                color: AppColors.success,
-                icon: Icons.bolt_rounded,
-              ),
-            ],
-            const SizedBox(height: AppSpacing.xl),
-            PrimaryButton(
-              label: 'Done',
-              isFullWidth: true,
-              onPressed: () {
-                ref.read(focusTimerProvider.notifier).clearLastSummary();
-                Navigator.of(ctx).pop();
-              },
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   @override
@@ -168,8 +123,10 @@ class _FocusScreenState extends ConsumerState<FocusScreen> with WidgetsBindingOb
     final feedback = ref.read(feedbackServiceProvider);
 
     final primaryCol = isDark ? AppColors.primaryDark : AppColors.primary;
+    final skillsAsync = ref.watch(allSkillsStreamProvider);
 
     return AppScaffold(
+      showGlobalTimer: false,
       body: Column(
         children: [
           PageTitle(
@@ -291,7 +248,7 @@ class _FocusScreenState extends ConsumerState<FocusScreen> with WidgetsBindingOb
 
                 const SizedBox(height: AppSpacing.xxl),
 
-                // Comfortable 1-Handed Controls (Reset, Play/Pause, Complete/Stop)
+                // Comfortable 1-Handed Controls (Reset, Play/Pause, Break, Complete/Stop)
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -301,7 +258,7 @@ class _FocusScreenState extends ConsumerState<FocusScreen> with WidgetsBindingOb
                       onPressed: timerNotifier.reset,
                       size: 48.0,
                     ),
-                    const SizedBox(width: AppSpacing.xl),
+                    const SizedBox(width: AppSpacing.md),
                     Semantics(
                       button: true,
                       label: timerState.isRunning ? 'Pause timer' : 'Start timer',
@@ -325,7 +282,23 @@ class _FocusScreenState extends ConsumerState<FocusScreen> with WidgetsBindingOb
                         ),
                       ),
                     ),
-                    const SizedBox(width: AppSpacing.xl),
+                    if (timerState.isActive) ...[
+                      const SizedBox(width: AppSpacing.md),
+                      AppIconButton(
+                        icon: timerState.isOnBreak ? Icons.play_arrow_rounded : Icons.coffee_rounded,
+                        tooltip: timerState.isOnBreak ? 'Resume work' : 'Take break',
+                        iconColor: AppColors.warning,
+                        onPressed: () {
+                          if (timerState.isOnBreak) {
+                            timerNotifier.resumeFromBreak();
+                          } else {
+                            timerNotifier.takeBreak();
+                          }
+                        },
+                        size: 48.0,
+                      ),
+                    ],
+                    const SizedBox(width: AppSpacing.md),
                     AppIconButton(
                       icon: AppIcons.completion,
                       tooltip: 'Finish and log session',
@@ -381,6 +354,7 @@ class _FocusScreenState extends ConsumerState<FocusScreen> with WidgetsBindingOb
                               onChanged: (val) => timerNotifier.setLinkedTargets(
                                 taskId: val,
                                 projectId: timerState.linkedProjectId,
+                                skillId: timerState.linkedSkillId,
                               ),
                             );
                           },
@@ -415,6 +389,42 @@ class _FocusScreenState extends ConsumerState<FocusScreen> with WidgetsBindingOb
                               onChanged: (val) => timerNotifier.setLinkedTargets(
                                 taskId: timerState.linkedTaskId,
                                 projectId: val,
+                                skillId: timerState.linkedSkillId,
+                              ),
+                            );
+                          },
+                          loading: () => const SizedBox.shrink(),
+                          error: (_, __) => const SizedBox.shrink(),
+                        ),
+                        const SizedBox(height: AppSpacing.md),
+                        skillsAsync.when(
+                          data: (skills) {
+                            final currentSkillId = skills.any((s) => s.skill.id == timerState.linkedSkillId)
+                                ? timerState.linkedSkillId
+                                : null;
+                            return DropdownButtonFormField<String?>(
+                              value: currentSkillId,
+                              isExpanded: true,
+                              decoration: const InputDecoration(
+                                labelText: 'Linked learning track',
+                                prefixIcon: Icon(AppIcons.learning, size: 18.0),
+                              ),
+                              items: [
+                                const DropdownMenuItem(
+                                  value: null,
+                                  child: Text('No learning track linked'),
+                                ),
+                                ...skills.map(
+                                  (s) => DropdownMenuItem(
+                                    value: s.skill.id,
+                                    child: Text(s.skill.name, overflow: TextOverflow.ellipsis),
+                                  ),
+                                ),
+                              ],
+                              onChanged: (val) => timerNotifier.setLinkedTargets(
+                                taskId: timerState.linkedTaskId,
+                                projectId: timerState.linkedProjectId,
+                                skillId: val,
                               ),
                             );
                           },

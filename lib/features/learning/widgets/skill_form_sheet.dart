@@ -31,22 +31,28 @@ class _SkillFormSheetState extends ConsumerState<SkillFormSheet> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _nameController;
   late TextEditingController _notesController;
+  late TextEditingController _targetHoursController;
 
   String _category = 'Framework';
   String _currentLevel = 'beginner';
   String _targetLevel = 'advanced';
+  String _progressMethod = 'topics'; // topics, time, manual
+  double _manualProgress = 0.0;
   bool _isLoading = false;
 
   bool _hasUnsavedChanges() {
     final s = widget.skillToEdit?.skill;
     if (s == null) {
-      return _nameController.text.trim().isNotEmpty || _notesController.text.trim().isNotEmpty;
+      return _nameController.text.trim().isNotEmpty ||
+          _notesController.text.trim().isNotEmpty ||
+          _targetHoursController.text.trim().isNotEmpty;
     }
     return _nameController.text.trim() != s.name ||
         _notesController.text.trim() != (s.notes ?? '') ||
         _category != s.category ||
         _currentLevel != s.currentLevel ||
-        _targetLevel != s.targetLevel;
+        _targetLevel != s.targetLevel ||
+        _progressMethod != s.progressMethod;
   }
 
   Future<void> _handleAttemptClose() async {
@@ -72,10 +78,17 @@ class _SkillFormSheetState extends ConsumerState<SkillFormSheet> {
     final s = widget.skillToEdit?.skill;
     _nameController = TextEditingController(text: s?.name ?? '');
     _notesController = TextEditingController(text: s?.notes ?? '');
+    final targetMins = s?.targetMinutes ?? 0;
+    _targetHoursController = TextEditingController(
+      text: targetMins > 0 ? (targetMins / 60).toStringAsFixed(1) : '',
+    );
+
     if (s != null) {
       _category = s.category;
       _currentLevel = s.currentLevel;
       _targetLevel = s.targetLevel;
+      _progressMethod = s.progressMethod;
+      _manualProgress = s.manualProgressPercentage;
     }
   }
 
@@ -83,6 +96,7 @@ class _SkillFormSheetState extends ConsumerState<SkillFormSheet> {
   void dispose() {
     _nameController.dispose();
     _notesController.dispose();
+    _targetHoursController.dispose();
     super.dispose();
   }
 
@@ -93,6 +107,9 @@ class _SkillFormSheetState extends ConsumerState<SkillFormSheet> {
 
     try {
       final repo = ref.read(learningRepositoryProvider);
+      final targetHours = double.tryParse(_targetHoursController.text.trim()) ?? 0.0;
+      final targetMinutes = (targetHours * 60).round();
+
       if (widget.skillToEdit == null) {
         await repo.createSkill(
           name: _nameController.text.trim(),
@@ -100,6 +117,9 @@ class _SkillFormSheetState extends ConsumerState<SkillFormSheet> {
           currentLevel: _currentLevel,
           targetLevel: _targetLevel,
           notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
+          progressMethod: _progressMethod,
+          targetMinutes: targetMinutes,
+          manualProgressPercentage: _manualProgress,
         );
       } else {
         await repo.updateSkill(
@@ -109,6 +129,9 @@ class _SkillFormSheetState extends ConsumerState<SkillFormSheet> {
           currentLevel: _currentLevel,
           targetLevel: _targetLevel,
           notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
+          progressMethod: _progressMethod,
+          targetMinutes: targetMinutes,
+          manualProgressPercentage: _manualProgress,
         );
       }
 
@@ -166,83 +189,140 @@ class _SkillFormSheetState extends ConsumerState<SkillFormSheet> {
                     ),
                   ],
                 ),
-              const SizedBox(height: AppSpacing.md),
+                const SizedBox(height: AppSpacing.md),
 
-              // Skill Name
-              AppTextField(
-                label: 'Skill Name',
-                hintText: 'e.g. Flutter, Rust, PyTorch, Kubernetes',
-                controller: _nameController,
-                autofocus: widget.skillToEdit == null,
-                validator: (val) {
-                  if (val == null || val.trim().isEmpty) return 'Skill name is required';
-                  return null;
-                },
-              ),
-              const SizedBox(height: AppSpacing.md),
+                // Skill Name
+                AppTextField(
+                  label: 'Skill Name',
+                  hintText: 'e.g. Flutter, Rust, PyTorch, Kubernetes',
+                  controller: _nameController,
+                  autofocus: widget.skillToEdit == null,
+                  validator: (val) {
+                    if (val == null || val.trim().isEmpty) return 'Skill name is required';
+                    return null;
+                  },
+                ),
+                const SizedBox(height: AppSpacing.md),
 
-              // Category dropdown
-              DropdownButtonFormField<String>(
-                value: _categories.contains(_category) ? _category : 'General',
-                decoration: const InputDecoration(labelText: 'Category'),
-                items: _categories
-                    .map((c) => DropdownMenuItem(value: c, child: Text(c)))
-                    .toList(),
-                onChanged: (val) => setState(() => _category = val ?? 'General'),
-              ),
-              const SizedBox(height: AppSpacing.md),
-
-              // Level Row
-              Row(
-                children: [
-                  Expanded(
-                    child: DropdownButtonFormField<String>(
-                      value: _currentLevel,
-                      decoration: const InputDecoration(labelText: 'Current Level'),
-                      items: _levels
-                          .map((l) => DropdownMenuItem(value: l, child: Text(l.toUpperCase())))
-                          .toList(),
-                      onChanged: (val) => setState(() => _currentLevel = val ?? 'beginner'),
-                    ),
+                // Primary Progress Method Selector
+                const Text('Primary Progress Method', style: AppTypography.titleSmall),
+                const SizedBox(height: 6),
+                DropdownButtonFormField<String>(
+                  value: _progressMethod,
+                  decoration: const InputDecoration(
+                    prefixIcon: Icon(Icons.show_chart_rounded, size: 20),
                   ),
-                  const SizedBox(width: AppSpacing.sm),
-                  Expanded(
-                    child: DropdownButtonFormField<String>(
-                      value: _targetLevel,
-                      decoration: const InputDecoration(labelText: 'Target Level'),
-                      items: _levels
-                          .map((l) => DropdownMenuItem(value: l, child: Text(l.toUpperCase())))
-                          .toList(),
-                      onChanged: (val) => setState(() => _targetLevel = val ?? 'advanced'),
+                  items: const [
+                    DropdownMenuItem(
+                      value: 'topics',
+                      child: Text('Curriculum Topics (% of lessons completed)'),
                     ),
+                    DropdownMenuItem(
+                      value: 'time',
+                      child: Text('Time Target (Focused study hours goal)'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'manual',
+                      child: Text('Manual Progress (% self-reported)'),
+                    ),
+                  ],
+                  onChanged: (val) => setState(() => _progressMethod = val ?? 'topics'),
+                ),
+                const SizedBox(height: AppSpacing.md),
+
+                // Target Hours (Optional or for time method)
+                AppTextField(
+                  label: _progressMethod == 'time'
+                      ? 'Target Study Hours (e.g., 30 hours)'
+                      : 'Target Study Hours (Optional)',
+                  hintText: 'e.g. 30',
+                  controller: _targetHoursController,
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                ),
+                const SizedBox(height: AppSpacing.md),
+
+                // Manual Progress Slider (if manual)
+                if (_progressMethod == 'manual') ...[
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Current Mastery Progress', style: AppTypography.titleSmall),
+                      Text('${(_manualProgress * 100).toStringAsFixed(0)}%',
+                          style: AppTypography.titleMedium.copyWith(color: AppColors.primary)),
+                    ],
                   ),
+                  Slider(
+                    value: _manualProgress,
+                    min: 0.0,
+                    max: 1.0,
+                    divisions: 20,
+                    label: '${(_manualProgress * 100).toStringAsFixed(0)}%',
+                    onChanged: (val) => setState(() => _manualProgress = val),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
                 ],
-              ),
-              const SizedBox(height: AppSpacing.md),
 
-              // Notes
-              AppTextField(
-                label: 'Notes & Learning Objectives',
-                hintText: 'Why are you learning this? What projects will you build?',
-                controller: _notesController,
-                maxLines: 3,
-              ),
-              const SizedBox(height: AppSpacing.xl),
+                // Category dropdown
+                DropdownButtonFormField<String>(
+                  value: _categories.contains(_category) ? _category : 'General',
+                  decoration: const InputDecoration(labelText: 'Category'),
+                  items: _categories
+                      .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                      .toList(),
+                  onChanged: (val) => setState(() => _category = val ?? 'General'),
+                ),
+                const SizedBox(height: AppSpacing.md),
 
-              // Save button
-              AppButton(
-                label: widget.skillToEdit == null ? 'Add Skill' : 'Save Changes',
-                onPressed: _saveSkill,
-                isLoading: _isLoading,
-                isFullWidth: true,
-                size: AppButtonSize.large,
-              ),
-            ],
+                // Level Row
+                Row(
+                  children: [
+                    Expanded(
+                      child: DropdownButtonFormField<String>(
+                        value: _currentLevel,
+                        decoration: const InputDecoration(labelText: 'Current Level'),
+                        items: _levels
+                            .map((l) => DropdownMenuItem(value: l, child: Text(l.toUpperCase())))
+                            .toList(),
+                        onChanged: (val) => setState(() => _currentLevel = val ?? 'beginner'),
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    Expanded(
+                      child: DropdownButtonFormField<String>(
+                        value: _targetLevel,
+                        decoration: const InputDecoration(labelText: 'Target Level'),
+                        items: _levels
+                            .map((l) => DropdownMenuItem(value: l, child: Text(l.toUpperCase())))
+                            .toList(),
+                        onChanged: (val) => setState(() => _targetLevel = val ?? 'advanced'),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.md),
+
+                // Notes
+                AppTextField(
+                  label: 'Notes & Learning Objectives',
+                  hintText: 'Why are you learning this? What projects will you build?',
+                  controller: _notesController,
+                  maxLines: 3,
+                ),
+                const SizedBox(height: AppSpacing.xl),
+
+                // Save button
+                AppButton(
+                  label: widget.skillToEdit == null ? 'Add Skill' : 'Save Changes',
+                  onPressed: _saveSkill,
+                  isLoading: _isLoading,
+                  isFullWidth: true,
+                  size: AppButtonSize.large,
+                ),
+              ],
+            ),
           ),
         ),
       ),
-    ),
     );
   }
 }
-

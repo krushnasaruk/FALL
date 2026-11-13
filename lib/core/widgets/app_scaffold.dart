@@ -3,6 +3,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_icons.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
+import 'global_timer_banner.dart';
 
 /// Unified screen scaffold handling SafeArea, background color, optional FAB,
 /// and consistent horizontal/vertical content rhythm.
@@ -12,6 +13,7 @@ class AppScaffold extends StatelessWidget {
   final Widget? floatingActionButton;
   final Widget? bottomNavigationBar;
   final bool extendBody;
+  final bool showGlobalTimer;
 
   const AppScaffold({
     super.key,
@@ -20,6 +22,7 @@ class AppScaffold extends StatelessWidget {
     this.floatingActionButton,
     this.bottomNavigationBar,
     this.extendBody = false,
+    this.showGlobalTimer = true,
   });
 
   @override
@@ -31,7 +34,12 @@ class AppScaffold extends StatelessWidget {
       appBar: appBar,
       body: SafeArea(
         bottom: !extendBody,
-        child: body,
+        child: Column(
+          children: [
+            Expanded(child: body),
+            if (showGlobalTimer) const GlobalTimerBanner(),
+          ],
+        ),
       ),
       floatingActionButton: floatingActionButton,
       bottomNavigationBar: bottomNavigationBar,

@@ -61,7 +61,7 @@ class TodayProgressCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 6.0),
                       Text(
-                        '$percentInt%',
+                        totalTasks > 0 ? '$percentInt%' : '—',
                         style: AppTypography.statNumerical.copyWith(
                           fontSize: 34.0,
                           color: titleColor,
@@ -71,7 +71,7 @@ class TodayProgressCard extends StatelessWidget {
                       Text(
                         totalTasks > 0
                             ? '$completedTasks of $totalTasks tasks'
-                            : 'No tasks scheduled today',
+                            : 'No tasks scheduled today • Tap to add',
                         style: AppTypography.secondary.copyWith(
                           color: subColor,
                           fontFeatures: AppTypography.tabularFigures,

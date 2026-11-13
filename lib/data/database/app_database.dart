@@ -12,6 +12,7 @@ part 'app_database.g.dart';
   Subtasks,
   Projects,
   Milestones,
+  ProjectDeliverables,
   Skills,
   LearningModules,
   LearningTopics,
@@ -35,7 +36,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? e]) : super(e ?? _openConnection());
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   static QueryExecutor _openConnection() {
     return LazyDatabase(() async {
@@ -59,6 +60,22 @@ class AppDatabase extends _$AppDatabase {
             await m.createTable(radarFeedbackLogs);
             await m.createTable(radarBriefings);
           }
+          if (from < 4) {
+            await m.createTable(projectDeliverables);
+            await m.addColumn(projects, projects.completionCriteria);
+            await m.addColumn(projects, projects.manualProgressPercentage);
+            await m.addColumn(projects, projects.targetHours);
+            await m.addColumn(projects, projects.completedAt);
+            await m.addColumn(projects, projects.completionNote);
+            await m.addColumn(milestones, milestones.weight);
+            await m.addColumn(skills, skills.progressMethod);
+            await m.addColumn(skills, skills.targetMinutes);
+            await m.addColumn(skills, skills.targetTopicsCount);
+            await m.addColumn(skills, skills.manualProgressPercentage);
+            await m.addColumn(focusSessions, focusSessions.breakMinutes);
+            await m.addColumn(focusSessions, focusSessions.startedAt);
+            await m.addColumn(focusSessions, focusSessions.notes);
+          }
         },
         beforeOpen: (details) async {
           await customStatement('PRAGMA foreign_keys = ON');
@@ -80,6 +97,7 @@ class AppDatabase extends _$AppDatabase {
       await delete(activityHistory).go();
       await delete(subtasks).go();
       await delete(tasks).go();
+      await delete(projectDeliverables).go();
       await delete(milestones).go();
       await delete(learningSessions).go();
       await delete(learningTopics).go();

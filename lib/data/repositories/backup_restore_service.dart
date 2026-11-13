@@ -17,6 +17,7 @@ class BackupRestoreService {
     final subtasks = await _db.select(_db.subtasks).get();
     final projects = await _db.select(_db.projects).get();
     final milestones = await _db.select(_db.milestones).get();
+    final deliverables = await _db.select(_db.projectDeliverables).get();
     final skills = await _db.select(_db.skills).get();
     final modules = await _db.select(_db.learningModules).get();
     final topics = await _db.select(_db.learningTopics).get();
@@ -37,6 +38,7 @@ class BackupRestoreService {
       'subtasks': subtasks.map((s) => s.toJson()).toList(),
       'projects': projects.map((p) => p.toJson()).toList(),
       'milestones': milestones.map((m) => m.toJson()).toList(),
+      'project_deliverables': deliverables.map((d) => d.toJson()).toList(),
       'skills': skills.map((s) => s.toJson()).toList(),
       'learning_modules': modules.map((m) => m.toJson()).toList(),
       'learning_topics': topics.map((t) => t.toJson()).toList(),
@@ -100,6 +102,14 @@ class BackupRestoreService {
           for (final item in (data['milestones'] as List)) {
             final entry = MilestoneEntry.fromJson(item as Map<String, dynamic>);
             await _db.into(_db.milestones).insertOnConflictUpdate(entry);
+          }
+        }
+
+        // Deliverables
+        if (data['project_deliverables'] != null) {
+          for (final item in (data['project_deliverables'] as List)) {
+            final entry = ProjectDeliverableEntry.fromJson(item as Map<String, dynamic>);
+            await _db.into(_db.projectDeliverables).insertOnConflictUpdate(entry);
           }
         }
 

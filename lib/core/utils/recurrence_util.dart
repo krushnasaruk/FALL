@@ -13,14 +13,14 @@ class RecurrenceUtil {
       case 'daily':
         next = next.add(const Duration(days: 1));
         // If it was overdue by more than 1 day, advance to the future
-        while (next.isBefore(now)) {
+        while (!next.isAfter(now)) {
           next = next.add(const Duration(days: 1));
         }
         return next;
 
       case 'weekly':
         next = next.add(const Duration(days: 7));
-        while (next.isBefore(now)) {
+        while (!next.isAfter(now)) {
           next = next.add(const Duration(days: 7));
         }
         return next;

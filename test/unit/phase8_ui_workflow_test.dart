@@ -172,8 +172,8 @@ void main() {
         await tester.runAsync(() async => Future.delayed(const Duration(milliseconds: 80)));
         await tester.pump(const Duration(milliseconds: 120));
 
-        expect(find.text('0%'), findsOneWidget);
-        expect(find.text('No tasks scheduled today'), findsOneWidget);
+        expect(find.text('—'), findsOneWidget);
+        expect(find.textContaining('No tasks scheduled today'), findsOneWidget);
         expect(find.text('78%'), findsNothing);
 
         // 2. Empty Insights -> honest empty state (never fake 68%, 8h, 12h)

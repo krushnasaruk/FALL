@@ -1263,6 +1263,40 @@ class $ProjectsTable extends Projects
       type: DriftSqlType.int,
       requiredDuringInsert: false,
       defaultValue: const Constant(0));
+  static const VerificationMeta _completionCriteriaMeta =
+      const VerificationMeta('completionCriteria');
+  @override
+  late final GeneratedColumn<String> completionCriteria =
+      GeneratedColumn<String>('completion_criteria', aliasedName, false,
+          type: DriftSqlType.string,
+          requiredDuringInsert: false,
+          defaultValue: const Constant('milestone'));
+  static const VerificationMeta _manualProgressPercentageMeta =
+      const VerificationMeta('manualProgressPercentage');
+  @override
+  late final GeneratedColumn<double> manualProgressPercentage =
+      GeneratedColumn<double>('manual_progress_percentage', aliasedName, false,
+          type: DriftSqlType.double,
+          requiredDuringInsert: false,
+          defaultValue: const Constant(0.0));
+  static const VerificationMeta _targetHoursMeta =
+      const VerificationMeta('targetHours');
+  @override
+  late final GeneratedColumn<double> targetHours = GeneratedColumn<double>(
+      'target_hours', aliasedName, true,
+      type: DriftSqlType.double, requiredDuringInsert: false);
+  static const VerificationMeta _completedAtMeta =
+      const VerificationMeta('completedAt');
+  @override
+  late final GeneratedColumn<DateTime> completedAt = GeneratedColumn<DateTime>(
+      'completed_at', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _completionNoteMeta =
+      const VerificationMeta('completionNote');
+  @override
+  late final GeneratedColumn<String> completionNote = GeneratedColumn<String>(
+      'completion_note', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _createdAtMeta =
       const VerificationMeta('createdAt');
   @override
@@ -1289,6 +1323,11 @@ class $ProjectsTable extends Projects
         repositoryUrl,
         notes,
         timeSpentMinutes,
+        completionCriteria,
+        manualProgressPercentage,
+        targetHours,
+        completedAt,
+        completionNote,
         createdAt,
         updatedAt
       ];
@@ -1363,6 +1402,37 @@ class $ProjectsTable extends Projects
           timeSpentMinutes.isAcceptableOrUnknown(
               data['time_spent_minutes']!, _timeSpentMinutesMeta));
     }
+    if (data.containsKey('completion_criteria')) {
+      context.handle(
+          _completionCriteriaMeta,
+          completionCriteria.isAcceptableOrUnknown(
+              data['completion_criteria']!, _completionCriteriaMeta));
+    }
+    if (data.containsKey('manual_progress_percentage')) {
+      context.handle(
+          _manualProgressPercentageMeta,
+          manualProgressPercentage.isAcceptableOrUnknown(
+              data['manual_progress_percentage']!,
+              _manualProgressPercentageMeta));
+    }
+    if (data.containsKey('target_hours')) {
+      context.handle(
+          _targetHoursMeta,
+          targetHours.isAcceptableOrUnknown(
+              data['target_hours']!, _targetHoursMeta));
+    }
+    if (data.containsKey('completed_at')) {
+      context.handle(
+          _completedAtMeta,
+          completedAt.isAcceptableOrUnknown(
+              data['completed_at']!, _completedAtMeta));
+    }
+    if (data.containsKey('completion_note')) {
+      context.handle(
+          _completionNoteMeta,
+          completionNote.isAcceptableOrUnknown(
+              data['completion_note']!, _completionNoteMeta));
+    }
     if (data.containsKey('created_at')) {
       context.handle(_createdAtMeta,
           createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
@@ -1408,6 +1478,17 @@ class $ProjectsTable extends Projects
           .read(DriftSqlType.string, data['${effectivePrefix}notes']),
       timeSpentMinutes: attachedDatabase.typeMapping.read(
           DriftSqlType.int, data['${effectivePrefix}time_spent_minutes'])!,
+      completionCriteria: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}completion_criteria'])!,
+      manualProgressPercentage: attachedDatabase.typeMapping.read(
+          DriftSqlType.double,
+          data['${effectivePrefix}manual_progress_percentage'])!,
+      targetHours: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}target_hours']),
+      completedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}completed_at']),
+      completionNote: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}completion_note']),
       createdAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
       updatedAt: attachedDatabase.typeMapping
@@ -1434,6 +1515,11 @@ class ProjectEntry extends DataClass implements Insertable<ProjectEntry> {
   final String? repositoryUrl;
   final String? notes;
   final int timeSpentMinutes;
+  final String completionCriteria;
+  final double manualProgressPercentage;
+  final double? targetHours;
+  final DateTime? completedAt;
+  final String? completionNote;
   final DateTime createdAt;
   final DateTime updatedAt;
   const ProjectEntry(
@@ -1449,6 +1535,11 @@ class ProjectEntry extends DataClass implements Insertable<ProjectEntry> {
       this.repositoryUrl,
       this.notes,
       required this.timeSpentMinutes,
+      required this.completionCriteria,
+      required this.manualProgressPercentage,
+      this.targetHours,
+      this.completedAt,
+      this.completionNote,
       required this.createdAt,
       required this.updatedAt});
   @override
@@ -1474,6 +1565,18 @@ class ProjectEntry extends DataClass implements Insertable<ProjectEntry> {
       map['notes'] = Variable<String>(notes);
     }
     map['time_spent_minutes'] = Variable<int>(timeSpentMinutes);
+    map['completion_criteria'] = Variable<String>(completionCriteria);
+    map['manual_progress_percentage'] =
+        Variable<double>(manualProgressPercentage);
+    if (!nullToAbsent || targetHours != null) {
+      map['target_hours'] = Variable<double>(targetHours);
+    }
+    if (!nullToAbsent || completedAt != null) {
+      map['completed_at'] = Variable<DateTime>(completedAt);
+    }
+    if (!nullToAbsent || completionNote != null) {
+      map['completion_note'] = Variable<String>(completionNote);
+    }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     return map;
@@ -1500,6 +1603,17 @@ class ProjectEntry extends DataClass implements Insertable<ProjectEntry> {
       notes:
           notes == null && nullToAbsent ? const Value.absent() : Value(notes),
       timeSpentMinutes: Value(timeSpentMinutes),
+      completionCriteria: Value(completionCriteria),
+      manualProgressPercentage: Value(manualProgressPercentage),
+      targetHours: targetHours == null && nullToAbsent
+          ? const Value.absent()
+          : Value(targetHours),
+      completedAt: completedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(completedAt),
+      completionNote: completionNote == null && nullToAbsent
+          ? const Value.absent()
+          : Value(completionNote),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
     );
@@ -1521,6 +1635,13 @@ class ProjectEntry extends DataClass implements Insertable<ProjectEntry> {
       repositoryUrl: serializer.fromJson<String?>(json['repositoryUrl']),
       notes: serializer.fromJson<String?>(json['notes']),
       timeSpentMinutes: serializer.fromJson<int>(json['timeSpentMinutes']),
+      completionCriteria:
+          serializer.fromJson<String>(json['completionCriteria']),
+      manualProgressPercentage:
+          serializer.fromJson<double>(json['manualProgressPercentage']),
+      targetHours: serializer.fromJson<double?>(json['targetHours']),
+      completedAt: serializer.fromJson<DateTime?>(json['completedAt']),
+      completionNote: serializer.fromJson<String?>(json['completionNote']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
@@ -1541,6 +1662,12 @@ class ProjectEntry extends DataClass implements Insertable<ProjectEntry> {
       'repositoryUrl': serializer.toJson<String?>(repositoryUrl),
       'notes': serializer.toJson<String?>(notes),
       'timeSpentMinutes': serializer.toJson<int>(timeSpentMinutes),
+      'completionCriteria': serializer.toJson<String>(completionCriteria),
+      'manualProgressPercentage':
+          serializer.toJson<double>(manualProgressPercentage),
+      'targetHours': serializer.toJson<double?>(targetHours),
+      'completedAt': serializer.toJson<DateTime?>(completedAt),
+      'completionNote': serializer.toJson<String?>(completionNote),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
@@ -1559,6 +1686,11 @@ class ProjectEntry extends DataClass implements Insertable<ProjectEntry> {
           Value<String?> repositoryUrl = const Value.absent(),
           Value<String?> notes = const Value.absent(),
           int? timeSpentMinutes,
+          String? completionCriteria,
+          double? manualProgressPercentage,
+          Value<double?> targetHours = const Value.absent(),
+          Value<DateTime?> completedAt = const Value.absent(),
+          Value<String?> completionNote = const Value.absent(),
           DateTime? createdAt,
           DateTime? updatedAt}) =>
       ProjectEntry(
@@ -1575,6 +1707,13 @@ class ProjectEntry extends DataClass implements Insertable<ProjectEntry> {
             repositoryUrl.present ? repositoryUrl.value : this.repositoryUrl,
         notes: notes.present ? notes.value : this.notes,
         timeSpentMinutes: timeSpentMinutes ?? this.timeSpentMinutes,
+        completionCriteria: completionCriteria ?? this.completionCriteria,
+        manualProgressPercentage:
+            manualProgressPercentage ?? this.manualProgressPercentage,
+        targetHours: targetHours.present ? targetHours.value : this.targetHours,
+        completedAt: completedAt.present ? completedAt.value : this.completedAt,
+        completionNote:
+            completionNote.present ? completionNote.value : this.completionNote,
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt,
       );
@@ -1598,6 +1737,19 @@ class ProjectEntry extends DataClass implements Insertable<ProjectEntry> {
       timeSpentMinutes: data.timeSpentMinutes.present
           ? data.timeSpentMinutes.value
           : this.timeSpentMinutes,
+      completionCriteria: data.completionCriteria.present
+          ? data.completionCriteria.value
+          : this.completionCriteria,
+      manualProgressPercentage: data.manualProgressPercentage.present
+          ? data.manualProgressPercentage.value
+          : this.manualProgressPercentage,
+      targetHours:
+          data.targetHours.present ? data.targetHours.value : this.targetHours,
+      completedAt:
+          data.completedAt.present ? data.completedAt.value : this.completedAt,
+      completionNote: data.completionNote.present
+          ? data.completionNote.value
+          : this.completionNote,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -1618,6 +1770,11 @@ class ProjectEntry extends DataClass implements Insertable<ProjectEntry> {
           ..write('repositoryUrl: $repositoryUrl, ')
           ..write('notes: $notes, ')
           ..write('timeSpentMinutes: $timeSpentMinutes, ')
+          ..write('completionCriteria: $completionCriteria, ')
+          ..write('manualProgressPercentage: $manualProgressPercentage, ')
+          ..write('targetHours: $targetHours, ')
+          ..write('completedAt: $completedAt, ')
+          ..write('completionNote: $completionNote, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -1638,6 +1795,11 @@ class ProjectEntry extends DataClass implements Insertable<ProjectEntry> {
       repositoryUrl,
       notes,
       timeSpentMinutes,
+      completionCriteria,
+      manualProgressPercentage,
+      targetHours,
+      completedAt,
+      completionNote,
       createdAt,
       updatedAt);
   @override
@@ -1656,6 +1818,11 @@ class ProjectEntry extends DataClass implements Insertable<ProjectEntry> {
           other.repositoryUrl == this.repositoryUrl &&
           other.notes == this.notes &&
           other.timeSpentMinutes == this.timeSpentMinutes &&
+          other.completionCriteria == this.completionCriteria &&
+          other.manualProgressPercentage == this.manualProgressPercentage &&
+          other.targetHours == this.targetHours &&
+          other.completedAt == this.completedAt &&
+          other.completionNote == this.completionNote &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
@@ -1673,6 +1840,11 @@ class ProjectsCompanion extends UpdateCompanion<ProjectEntry> {
   final Value<String?> repositoryUrl;
   final Value<String?> notes;
   final Value<int> timeSpentMinutes;
+  final Value<String> completionCriteria;
+  final Value<double> manualProgressPercentage;
+  final Value<double?> targetHours;
+  final Value<DateTime?> completedAt;
+  final Value<String?> completionNote;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<int> rowid;
@@ -1689,6 +1861,11 @@ class ProjectsCompanion extends UpdateCompanion<ProjectEntry> {
     this.repositoryUrl = const Value.absent(),
     this.notes = const Value.absent(),
     this.timeSpentMinutes = const Value.absent(),
+    this.completionCriteria = const Value.absent(),
+    this.manualProgressPercentage = const Value.absent(),
+    this.targetHours = const Value.absent(),
+    this.completedAt = const Value.absent(),
+    this.completionNote = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -1706,6 +1883,11 @@ class ProjectsCompanion extends UpdateCompanion<ProjectEntry> {
     this.repositoryUrl = const Value.absent(),
     this.notes = const Value.absent(),
     this.timeSpentMinutes = const Value.absent(),
+    this.completionCriteria = const Value.absent(),
+    this.manualProgressPercentage = const Value.absent(),
+    this.targetHours = const Value.absent(),
+    this.completedAt = const Value.absent(),
+    this.completionNote = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
     this.rowid = const Value.absent(),
@@ -1727,6 +1909,11 @@ class ProjectsCompanion extends UpdateCompanion<ProjectEntry> {
     Expression<String>? repositoryUrl,
     Expression<String>? notes,
     Expression<int>? timeSpentMinutes,
+    Expression<String>? completionCriteria,
+    Expression<double>? manualProgressPercentage,
+    Expression<double>? targetHours,
+    Expression<DateTime>? completedAt,
+    Expression<String>? completionNote,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<int>? rowid,
@@ -1744,6 +1931,12 @@ class ProjectsCompanion extends UpdateCompanion<ProjectEntry> {
       if (repositoryUrl != null) 'repository_url': repositoryUrl,
       if (notes != null) 'notes': notes,
       if (timeSpentMinutes != null) 'time_spent_minutes': timeSpentMinutes,
+      if (completionCriteria != null) 'completion_criteria': completionCriteria,
+      if (manualProgressPercentage != null)
+        'manual_progress_percentage': manualProgressPercentage,
+      if (targetHours != null) 'target_hours': targetHours,
+      if (completedAt != null) 'completed_at': completedAt,
+      if (completionNote != null) 'completion_note': completionNote,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (rowid != null) 'rowid': rowid,
@@ -1763,6 +1956,11 @@ class ProjectsCompanion extends UpdateCompanion<ProjectEntry> {
       Value<String?>? repositoryUrl,
       Value<String?>? notes,
       Value<int>? timeSpentMinutes,
+      Value<String>? completionCriteria,
+      Value<double>? manualProgressPercentage,
+      Value<double?>? targetHours,
+      Value<DateTime?>? completedAt,
+      Value<String?>? completionNote,
       Value<DateTime>? createdAt,
       Value<DateTime>? updatedAt,
       Value<int>? rowid}) {
@@ -1779,6 +1977,12 @@ class ProjectsCompanion extends UpdateCompanion<ProjectEntry> {
       repositoryUrl: repositoryUrl ?? this.repositoryUrl,
       notes: notes ?? this.notes,
       timeSpentMinutes: timeSpentMinutes ?? this.timeSpentMinutes,
+      completionCriteria: completionCriteria ?? this.completionCriteria,
+      manualProgressPercentage:
+          manualProgressPercentage ?? this.manualProgressPercentage,
+      targetHours: targetHours ?? this.targetHours,
+      completedAt: completedAt ?? this.completedAt,
+      completionNote: completionNote ?? this.completionNote,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       rowid: rowid ?? this.rowid,
@@ -1824,6 +2028,22 @@ class ProjectsCompanion extends UpdateCompanion<ProjectEntry> {
     if (timeSpentMinutes.present) {
       map['time_spent_minutes'] = Variable<int>(timeSpentMinutes.value);
     }
+    if (completionCriteria.present) {
+      map['completion_criteria'] = Variable<String>(completionCriteria.value);
+    }
+    if (manualProgressPercentage.present) {
+      map['manual_progress_percentage'] =
+          Variable<double>(manualProgressPercentage.value);
+    }
+    if (targetHours.present) {
+      map['target_hours'] = Variable<double>(targetHours.value);
+    }
+    if (completedAt.present) {
+      map['completed_at'] = Variable<DateTime>(completedAt.value);
+    }
+    if (completionNote.present) {
+      map['completion_note'] = Variable<String>(completionNote.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -1851,6 +2071,11 @@ class ProjectsCompanion extends UpdateCompanion<ProjectEntry> {
           ..write('repositoryUrl: $repositoryUrl, ')
           ..write('notes: $notes, ')
           ..write('timeSpentMinutes: $timeSpentMinutes, ')
+          ..write('completionCriteria: $completionCriteria, ')
+          ..write('manualProgressPercentage: $manualProgressPercentage, ')
+          ..write('targetHours: $targetHours, ')
+          ..write('completedAt: $completedAt, ')
+          ..write('completionNote: $completionNote, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('rowid: $rowid')
@@ -1923,6 +2148,13 @@ class $MilestonesTable extends Milestones
       type: DriftSqlType.int,
       requiredDuringInsert: false,
       defaultValue: const Constant(0));
+  static const VerificationMeta _weightMeta = const VerificationMeta('weight');
+  @override
+  late final GeneratedColumn<int> weight = GeneratedColumn<int>(
+      'weight', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(1));
   @override
   List<GeneratedColumn> get $columns => [
         id,
@@ -1932,7 +2164,8 @@ class $MilestonesTable extends Milestones
         targetDate,
         isCompleted,
         completedAt,
-        orderIndex
+        orderIndex,
+        weight
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1991,6 +2224,10 @@ class $MilestonesTable extends Milestones
           orderIndex.isAcceptableOrUnknown(
               data['order_index']!, _orderIndexMeta));
     }
+    if (data.containsKey('weight')) {
+      context.handle(_weightMeta,
+          weight.isAcceptableOrUnknown(data['weight']!, _weightMeta));
+    }
     return context;
   }
 
@@ -2016,6 +2253,8 @@ class $MilestonesTable extends Milestones
           .read(DriftSqlType.dateTime, data['${effectivePrefix}completed_at']),
       orderIndex: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}order_index'])!,
+      weight: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}weight'])!,
     );
   }
 
@@ -2034,6 +2273,7 @@ class MilestoneEntry extends DataClass implements Insertable<MilestoneEntry> {
   final bool isCompleted;
   final DateTime? completedAt;
   final int orderIndex;
+  final int weight;
   const MilestoneEntry(
       {required this.id,
       required this.projectId,
@@ -2042,7 +2282,8 @@ class MilestoneEntry extends DataClass implements Insertable<MilestoneEntry> {
       this.targetDate,
       required this.isCompleted,
       this.completedAt,
-      required this.orderIndex});
+      required this.orderIndex,
+      required this.weight});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -2060,6 +2301,7 @@ class MilestoneEntry extends DataClass implements Insertable<MilestoneEntry> {
       map['completed_at'] = Variable<DateTime>(completedAt);
     }
     map['order_index'] = Variable<int>(orderIndex);
+    map['weight'] = Variable<int>(weight);
     return map;
   }
 
@@ -2079,6 +2321,7 @@ class MilestoneEntry extends DataClass implements Insertable<MilestoneEntry> {
           ? const Value.absent()
           : Value(completedAt),
       orderIndex: Value(orderIndex),
+      weight: Value(weight),
     );
   }
 
@@ -2094,6 +2337,7 @@ class MilestoneEntry extends DataClass implements Insertable<MilestoneEntry> {
       isCompleted: serializer.fromJson<bool>(json['isCompleted']),
       completedAt: serializer.fromJson<DateTime?>(json['completedAt']),
       orderIndex: serializer.fromJson<int>(json['orderIndex']),
+      weight: serializer.fromJson<int>(json['weight']),
     );
   }
   @override
@@ -2108,6 +2352,7 @@ class MilestoneEntry extends DataClass implements Insertable<MilestoneEntry> {
       'isCompleted': serializer.toJson<bool>(isCompleted),
       'completedAt': serializer.toJson<DateTime?>(completedAt),
       'orderIndex': serializer.toJson<int>(orderIndex),
+      'weight': serializer.toJson<int>(weight),
     };
   }
 
@@ -2119,7 +2364,8 @@ class MilestoneEntry extends DataClass implements Insertable<MilestoneEntry> {
           Value<DateTime?> targetDate = const Value.absent(),
           bool? isCompleted,
           Value<DateTime?> completedAt = const Value.absent(),
-          int? orderIndex}) =>
+          int? orderIndex,
+          int? weight}) =>
       MilestoneEntry(
         id: id ?? this.id,
         projectId: projectId ?? this.projectId,
@@ -2129,6 +2375,7 @@ class MilestoneEntry extends DataClass implements Insertable<MilestoneEntry> {
         isCompleted: isCompleted ?? this.isCompleted,
         completedAt: completedAt.present ? completedAt.value : this.completedAt,
         orderIndex: orderIndex ?? this.orderIndex,
+        weight: weight ?? this.weight,
       );
   MilestoneEntry copyWithCompanion(MilestonesCompanion data) {
     return MilestoneEntry(
@@ -2145,6 +2392,7 @@ class MilestoneEntry extends DataClass implements Insertable<MilestoneEntry> {
           data.completedAt.present ? data.completedAt.value : this.completedAt,
       orderIndex:
           data.orderIndex.present ? data.orderIndex.value : this.orderIndex,
+      weight: data.weight.present ? data.weight.value : this.weight,
     );
   }
 
@@ -2158,14 +2406,15 @@ class MilestoneEntry extends DataClass implements Insertable<MilestoneEntry> {
           ..write('targetDate: $targetDate, ')
           ..write('isCompleted: $isCompleted, ')
           ..write('completedAt: $completedAt, ')
-          ..write('orderIndex: $orderIndex')
+          ..write('orderIndex: $orderIndex, ')
+          ..write('weight: $weight')
           ..write(')'))
         .toString();
   }
 
   @override
   int get hashCode => Object.hash(id, projectId, title, description, targetDate,
-      isCompleted, completedAt, orderIndex);
+      isCompleted, completedAt, orderIndex, weight);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -2177,7 +2426,8 @@ class MilestoneEntry extends DataClass implements Insertable<MilestoneEntry> {
           other.targetDate == this.targetDate &&
           other.isCompleted == this.isCompleted &&
           other.completedAt == this.completedAt &&
-          other.orderIndex == this.orderIndex);
+          other.orderIndex == this.orderIndex &&
+          other.weight == this.weight);
 }
 
 class MilestonesCompanion extends UpdateCompanion<MilestoneEntry> {
@@ -2189,6 +2439,7 @@ class MilestonesCompanion extends UpdateCompanion<MilestoneEntry> {
   final Value<bool> isCompleted;
   final Value<DateTime?> completedAt;
   final Value<int> orderIndex;
+  final Value<int> weight;
   final Value<int> rowid;
   const MilestonesCompanion({
     this.id = const Value.absent(),
@@ -2199,6 +2450,7 @@ class MilestonesCompanion extends UpdateCompanion<MilestoneEntry> {
     this.isCompleted = const Value.absent(),
     this.completedAt = const Value.absent(),
     this.orderIndex = const Value.absent(),
+    this.weight = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   MilestonesCompanion.insert({
@@ -2210,6 +2462,7 @@ class MilestonesCompanion extends UpdateCompanion<MilestoneEntry> {
     this.isCompleted = const Value.absent(),
     this.completedAt = const Value.absent(),
     this.orderIndex = const Value.absent(),
+    this.weight = const Value.absent(),
     this.rowid = const Value.absent(),
   })  : id = Value(id),
         projectId = Value(projectId),
@@ -2223,6 +2476,7 @@ class MilestonesCompanion extends UpdateCompanion<MilestoneEntry> {
     Expression<bool>? isCompleted,
     Expression<DateTime>? completedAt,
     Expression<int>? orderIndex,
+    Expression<int>? weight,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -2234,6 +2488,7 @@ class MilestonesCompanion extends UpdateCompanion<MilestoneEntry> {
       if (isCompleted != null) 'is_completed': isCompleted,
       if (completedAt != null) 'completed_at': completedAt,
       if (orderIndex != null) 'order_index': orderIndex,
+      if (weight != null) 'weight': weight,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -2247,6 +2502,7 @@ class MilestonesCompanion extends UpdateCompanion<MilestoneEntry> {
       Value<bool>? isCompleted,
       Value<DateTime?>? completedAt,
       Value<int>? orderIndex,
+      Value<int>? weight,
       Value<int>? rowid}) {
     return MilestonesCompanion(
       id: id ?? this.id,
@@ -2257,6 +2513,7 @@ class MilestonesCompanion extends UpdateCompanion<MilestoneEntry> {
       isCompleted: isCompleted ?? this.isCompleted,
       completedAt: completedAt ?? this.completedAt,
       orderIndex: orderIndex ?? this.orderIndex,
+      weight: weight ?? this.weight,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -2288,6 +2545,9 @@ class MilestonesCompanion extends UpdateCompanion<MilestoneEntry> {
     if (orderIndex.present) {
       map['order_index'] = Variable<int>(orderIndex.value);
     }
+    if (weight.present) {
+      map['weight'] = Variable<int>(weight.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -2305,6 +2565,410 @@ class MilestonesCompanion extends UpdateCompanion<MilestoneEntry> {
           ..write('isCompleted: $isCompleted, ')
           ..write('completedAt: $completedAt, ')
           ..write('orderIndex: $orderIndex, ')
+          ..write('weight: $weight, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ProjectDeliverablesTable extends ProjectDeliverables
+    with TableInfo<$ProjectDeliverablesTable, ProjectDeliverableEntry> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ProjectDeliverablesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _projectIdMeta =
+      const VerificationMeta('projectId');
+  @override
+  late final GeneratedColumn<String> projectId = GeneratedColumn<String>(
+      'project_id', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'REFERENCES projects (id) ON DELETE CASCADE'));
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+      'title', aliasedName, false,
+      additionalChecks:
+          GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 250),
+      type: DriftSqlType.string,
+      requiredDuringInsert: true);
+  static const VerificationMeta _isCompletedMeta =
+      const VerificationMeta('isCompleted');
+  @override
+  late final GeneratedColumn<bool> isCompleted = GeneratedColumn<bool>(
+      'is_completed', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("is_completed" IN (0, 1))'),
+      defaultValue: const Constant(false));
+  static const VerificationMeta _orderIndexMeta =
+      const VerificationMeta('orderIndex');
+  @override
+  late final GeneratedColumn<int> orderIndex = GeneratedColumn<int>(
+      'order_index', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _completedAtMeta =
+      const VerificationMeta('completedAt');
+  @override
+  late final GeneratedColumn<DateTime> completedAt = GeneratedColumn<DateTime>(
+      'completed_at', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, projectId, title, isCompleted, orderIndex, completedAt, createdAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'project_deliverables';
+  @override
+  VerificationContext validateIntegrity(
+      Insertable<ProjectDeliverableEntry> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('project_id')) {
+      context.handle(_projectIdMeta,
+          projectId.isAcceptableOrUnknown(data['project_id']!, _projectIdMeta));
+    } else if (isInserting) {
+      context.missing(_projectIdMeta);
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+          _titleMeta, title.isAcceptableOrUnknown(data['title']!, _titleMeta));
+    } else if (isInserting) {
+      context.missing(_titleMeta);
+    }
+    if (data.containsKey('is_completed')) {
+      context.handle(
+          _isCompletedMeta,
+          isCompleted.isAcceptableOrUnknown(
+              data['is_completed']!, _isCompletedMeta));
+    }
+    if (data.containsKey('order_index')) {
+      context.handle(
+          _orderIndexMeta,
+          orderIndex.isAcceptableOrUnknown(
+              data['order_index']!, _orderIndexMeta));
+    }
+    if (data.containsKey('completed_at')) {
+      context.handle(
+          _completedAtMeta,
+          completedAt.isAcceptableOrUnknown(
+              data['completed_at']!, _completedAtMeta));
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ProjectDeliverableEntry map(Map<String, dynamic> data,
+      {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ProjectDeliverableEntry(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      projectId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}project_id'])!,
+      title: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
+      isCompleted: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_completed'])!,
+      orderIndex: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}order_index'])!,
+      completedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}completed_at']),
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+    );
+  }
+
+  @override
+  $ProjectDeliverablesTable createAlias(String alias) {
+    return $ProjectDeliverablesTable(attachedDatabase, alias);
+  }
+}
+
+class ProjectDeliverableEntry extends DataClass
+    implements Insertable<ProjectDeliverableEntry> {
+  final String id;
+  final String projectId;
+  final String title;
+  final bool isCompleted;
+  final int orderIndex;
+  final DateTime? completedAt;
+  final DateTime createdAt;
+  const ProjectDeliverableEntry(
+      {required this.id,
+      required this.projectId,
+      required this.title,
+      required this.isCompleted,
+      required this.orderIndex,
+      this.completedAt,
+      required this.createdAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['project_id'] = Variable<String>(projectId);
+    map['title'] = Variable<String>(title);
+    map['is_completed'] = Variable<bool>(isCompleted);
+    map['order_index'] = Variable<int>(orderIndex);
+    if (!nullToAbsent || completedAt != null) {
+      map['completed_at'] = Variable<DateTime>(completedAt);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  ProjectDeliverablesCompanion toCompanion(bool nullToAbsent) {
+    return ProjectDeliverablesCompanion(
+      id: Value(id),
+      projectId: Value(projectId),
+      title: Value(title),
+      isCompleted: Value(isCompleted),
+      orderIndex: Value(orderIndex),
+      completedAt: completedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(completedAt),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory ProjectDeliverableEntry.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ProjectDeliverableEntry(
+      id: serializer.fromJson<String>(json['id']),
+      projectId: serializer.fromJson<String>(json['projectId']),
+      title: serializer.fromJson<String>(json['title']),
+      isCompleted: serializer.fromJson<bool>(json['isCompleted']),
+      orderIndex: serializer.fromJson<int>(json['orderIndex']),
+      completedAt: serializer.fromJson<DateTime?>(json['completedAt']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'projectId': serializer.toJson<String>(projectId),
+      'title': serializer.toJson<String>(title),
+      'isCompleted': serializer.toJson<bool>(isCompleted),
+      'orderIndex': serializer.toJson<int>(orderIndex),
+      'completedAt': serializer.toJson<DateTime?>(completedAt),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  ProjectDeliverableEntry copyWith(
+          {String? id,
+          String? projectId,
+          String? title,
+          bool? isCompleted,
+          int? orderIndex,
+          Value<DateTime?> completedAt = const Value.absent(),
+          DateTime? createdAt}) =>
+      ProjectDeliverableEntry(
+        id: id ?? this.id,
+        projectId: projectId ?? this.projectId,
+        title: title ?? this.title,
+        isCompleted: isCompleted ?? this.isCompleted,
+        orderIndex: orderIndex ?? this.orderIndex,
+        completedAt: completedAt.present ? completedAt.value : this.completedAt,
+        createdAt: createdAt ?? this.createdAt,
+      );
+  ProjectDeliverableEntry copyWithCompanion(ProjectDeliverablesCompanion data) {
+    return ProjectDeliverableEntry(
+      id: data.id.present ? data.id.value : this.id,
+      projectId: data.projectId.present ? data.projectId.value : this.projectId,
+      title: data.title.present ? data.title.value : this.title,
+      isCompleted:
+          data.isCompleted.present ? data.isCompleted.value : this.isCompleted,
+      orderIndex:
+          data.orderIndex.present ? data.orderIndex.value : this.orderIndex,
+      completedAt:
+          data.completedAt.present ? data.completedAt.value : this.completedAt,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ProjectDeliverableEntry(')
+          ..write('id: $id, ')
+          ..write('projectId: $projectId, ')
+          ..write('title: $title, ')
+          ..write('isCompleted: $isCompleted, ')
+          ..write('orderIndex: $orderIndex, ')
+          ..write('completedAt: $completedAt, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      id, projectId, title, isCompleted, orderIndex, completedAt, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ProjectDeliverableEntry &&
+          other.id == this.id &&
+          other.projectId == this.projectId &&
+          other.title == this.title &&
+          other.isCompleted == this.isCompleted &&
+          other.orderIndex == this.orderIndex &&
+          other.completedAt == this.completedAt &&
+          other.createdAt == this.createdAt);
+}
+
+class ProjectDeliverablesCompanion
+    extends UpdateCompanion<ProjectDeliverableEntry> {
+  final Value<String> id;
+  final Value<String> projectId;
+  final Value<String> title;
+  final Value<bool> isCompleted;
+  final Value<int> orderIndex;
+  final Value<DateTime?> completedAt;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const ProjectDeliverablesCompanion({
+    this.id = const Value.absent(),
+    this.projectId = const Value.absent(),
+    this.title = const Value.absent(),
+    this.isCompleted = const Value.absent(),
+    this.orderIndex = const Value.absent(),
+    this.completedAt = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ProjectDeliverablesCompanion.insert({
+    required String id,
+    required String projectId,
+    required String title,
+    this.isCompleted = const Value.absent(),
+    this.orderIndex = const Value.absent(),
+    this.completedAt = const Value.absent(),
+    required DateTime createdAt,
+    this.rowid = const Value.absent(),
+  })  : id = Value(id),
+        projectId = Value(projectId),
+        title = Value(title),
+        createdAt = Value(createdAt);
+  static Insertable<ProjectDeliverableEntry> custom({
+    Expression<String>? id,
+    Expression<String>? projectId,
+    Expression<String>? title,
+    Expression<bool>? isCompleted,
+    Expression<int>? orderIndex,
+    Expression<DateTime>? completedAt,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (projectId != null) 'project_id': projectId,
+      if (title != null) 'title': title,
+      if (isCompleted != null) 'is_completed': isCompleted,
+      if (orderIndex != null) 'order_index': orderIndex,
+      if (completedAt != null) 'completed_at': completedAt,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ProjectDeliverablesCompanion copyWith(
+      {Value<String>? id,
+      Value<String>? projectId,
+      Value<String>? title,
+      Value<bool>? isCompleted,
+      Value<int>? orderIndex,
+      Value<DateTime?>? completedAt,
+      Value<DateTime>? createdAt,
+      Value<int>? rowid}) {
+    return ProjectDeliverablesCompanion(
+      id: id ?? this.id,
+      projectId: projectId ?? this.projectId,
+      title: title ?? this.title,
+      isCompleted: isCompleted ?? this.isCompleted,
+      orderIndex: orderIndex ?? this.orderIndex,
+      completedAt: completedAt ?? this.completedAt,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (projectId.present) {
+      map['project_id'] = Variable<String>(projectId.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (isCompleted.present) {
+      map['is_completed'] = Variable<bool>(isCompleted.value);
+    }
+    if (orderIndex.present) {
+      map['order_index'] = Variable<int>(orderIndex.value);
+    }
+    if (completedAt.present) {
+      map['completed_at'] = Variable<DateTime>(completedAt.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ProjectDeliverablesCompanion(')
+          ..write('id: $id, ')
+          ..write('projectId: $projectId, ')
+          ..write('title: $title, ')
+          ..write('isCompleted: $isCompleted, ')
+          ..write('orderIndex: $orderIndex, ')
+          ..write('completedAt: $completedAt, ')
+          ..write('createdAt: $createdAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -2366,6 +3030,38 @@ class $SkillsTable extends Skills with TableInfo<$SkillsTable, SkillEntry> {
       type: DriftSqlType.int,
       requiredDuringInsert: false,
       defaultValue: const Constant(0));
+  static const VerificationMeta _progressMethodMeta =
+      const VerificationMeta('progressMethod');
+  @override
+  late final GeneratedColumn<String> progressMethod = GeneratedColumn<String>(
+      'progress_method', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant('topics'));
+  static const VerificationMeta _targetMinutesMeta =
+      const VerificationMeta('targetMinutes');
+  @override
+  late final GeneratedColumn<int> targetMinutes = GeneratedColumn<int>(
+      'target_minutes', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _targetTopicsCountMeta =
+      const VerificationMeta('targetTopicsCount');
+  @override
+  late final GeneratedColumn<int> targetTopicsCount = GeneratedColumn<int>(
+      'target_topics_count', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _manualProgressPercentageMeta =
+      const VerificationMeta('manualProgressPercentage');
+  @override
+  late final GeneratedColumn<double> manualProgressPercentage =
+      GeneratedColumn<double>('manual_progress_percentage', aliasedName, false,
+          type: DriftSqlType.double,
+          requiredDuringInsert: false,
+          defaultValue: const Constant(0.0));
   static const VerificationMeta _createdAtMeta =
       const VerificationMeta('createdAt');
   @override
@@ -2387,6 +3083,10 @@ class $SkillsTable extends Skills with TableInfo<$SkillsTable, SkillEntry> {
         targetLevel,
         notes,
         learningMinutes,
+        progressMethod,
+        targetMinutes,
+        targetTopicsCount,
+        manualProgressPercentage,
         createdAt,
         updatedAt
       ];
@@ -2437,6 +3137,31 @@ class $SkillsTable extends Skills with TableInfo<$SkillsTable, SkillEntry> {
           learningMinutes.isAcceptableOrUnknown(
               data['learning_minutes']!, _learningMinutesMeta));
     }
+    if (data.containsKey('progress_method')) {
+      context.handle(
+          _progressMethodMeta,
+          progressMethod.isAcceptableOrUnknown(
+              data['progress_method']!, _progressMethodMeta));
+    }
+    if (data.containsKey('target_minutes')) {
+      context.handle(
+          _targetMinutesMeta,
+          targetMinutes.isAcceptableOrUnknown(
+              data['target_minutes']!, _targetMinutesMeta));
+    }
+    if (data.containsKey('target_topics_count')) {
+      context.handle(
+          _targetTopicsCountMeta,
+          targetTopicsCount.isAcceptableOrUnknown(
+              data['target_topics_count']!, _targetTopicsCountMeta));
+    }
+    if (data.containsKey('manual_progress_percentage')) {
+      context.handle(
+          _manualProgressPercentageMeta,
+          manualProgressPercentage.isAcceptableOrUnknown(
+              data['manual_progress_percentage']!,
+              _manualProgressPercentageMeta));
+    }
     if (data.containsKey('created_at')) {
       context.handle(_createdAtMeta,
           createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
@@ -2472,6 +3197,15 @@ class $SkillsTable extends Skills with TableInfo<$SkillsTable, SkillEntry> {
           .read(DriftSqlType.string, data['${effectivePrefix}notes']),
       learningMinutes: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}learning_minutes'])!,
+      progressMethod: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}progress_method'])!,
+      targetMinutes: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}target_minutes'])!,
+      targetTopicsCount: attachedDatabase.typeMapping.read(
+          DriftSqlType.int, data['${effectivePrefix}target_topics_count'])!,
+      manualProgressPercentage: attachedDatabase.typeMapping.read(
+          DriftSqlType.double,
+          data['${effectivePrefix}manual_progress_percentage'])!,
       createdAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
       updatedAt: attachedDatabase.typeMapping
@@ -2493,6 +3227,10 @@ class SkillEntry extends DataClass implements Insertable<SkillEntry> {
   final String targetLevel;
   final String? notes;
   final int learningMinutes;
+  final String progressMethod;
+  final int targetMinutes;
+  final int targetTopicsCount;
+  final double manualProgressPercentage;
   final DateTime createdAt;
   final DateTime updatedAt;
   const SkillEntry(
@@ -2503,6 +3241,10 @@ class SkillEntry extends DataClass implements Insertable<SkillEntry> {
       required this.targetLevel,
       this.notes,
       required this.learningMinutes,
+      required this.progressMethod,
+      required this.targetMinutes,
+      required this.targetTopicsCount,
+      required this.manualProgressPercentage,
       required this.createdAt,
       required this.updatedAt});
   @override
@@ -2517,6 +3259,11 @@ class SkillEntry extends DataClass implements Insertable<SkillEntry> {
       map['notes'] = Variable<String>(notes);
     }
     map['learning_minutes'] = Variable<int>(learningMinutes);
+    map['progress_method'] = Variable<String>(progressMethod);
+    map['target_minutes'] = Variable<int>(targetMinutes);
+    map['target_topics_count'] = Variable<int>(targetTopicsCount);
+    map['manual_progress_percentage'] =
+        Variable<double>(manualProgressPercentage);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     return map;
@@ -2532,6 +3279,10 @@ class SkillEntry extends DataClass implements Insertable<SkillEntry> {
       notes:
           notes == null && nullToAbsent ? const Value.absent() : Value(notes),
       learningMinutes: Value(learningMinutes),
+      progressMethod: Value(progressMethod),
+      targetMinutes: Value(targetMinutes),
+      targetTopicsCount: Value(targetTopicsCount),
+      manualProgressPercentage: Value(manualProgressPercentage),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
     );
@@ -2548,6 +3299,11 @@ class SkillEntry extends DataClass implements Insertable<SkillEntry> {
       targetLevel: serializer.fromJson<String>(json['targetLevel']),
       notes: serializer.fromJson<String?>(json['notes']),
       learningMinutes: serializer.fromJson<int>(json['learningMinutes']),
+      progressMethod: serializer.fromJson<String>(json['progressMethod']),
+      targetMinutes: serializer.fromJson<int>(json['targetMinutes']),
+      targetTopicsCount: serializer.fromJson<int>(json['targetTopicsCount']),
+      manualProgressPercentage:
+          serializer.fromJson<double>(json['manualProgressPercentage']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
@@ -2563,6 +3319,11 @@ class SkillEntry extends DataClass implements Insertable<SkillEntry> {
       'targetLevel': serializer.toJson<String>(targetLevel),
       'notes': serializer.toJson<String?>(notes),
       'learningMinutes': serializer.toJson<int>(learningMinutes),
+      'progressMethod': serializer.toJson<String>(progressMethod),
+      'targetMinutes': serializer.toJson<int>(targetMinutes),
+      'targetTopicsCount': serializer.toJson<int>(targetTopicsCount),
+      'manualProgressPercentage':
+          serializer.toJson<double>(manualProgressPercentage),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
@@ -2576,6 +3337,10 @@ class SkillEntry extends DataClass implements Insertable<SkillEntry> {
           String? targetLevel,
           Value<String?> notes = const Value.absent(),
           int? learningMinutes,
+          String? progressMethod,
+          int? targetMinutes,
+          int? targetTopicsCount,
+          double? manualProgressPercentage,
           DateTime? createdAt,
           DateTime? updatedAt}) =>
       SkillEntry(
@@ -2586,6 +3351,11 @@ class SkillEntry extends DataClass implements Insertable<SkillEntry> {
         targetLevel: targetLevel ?? this.targetLevel,
         notes: notes.present ? notes.value : this.notes,
         learningMinutes: learningMinutes ?? this.learningMinutes,
+        progressMethod: progressMethod ?? this.progressMethod,
+        targetMinutes: targetMinutes ?? this.targetMinutes,
+        targetTopicsCount: targetTopicsCount ?? this.targetTopicsCount,
+        manualProgressPercentage:
+            manualProgressPercentage ?? this.manualProgressPercentage,
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt,
       );
@@ -2603,6 +3373,18 @@ class SkillEntry extends DataClass implements Insertable<SkillEntry> {
       learningMinutes: data.learningMinutes.present
           ? data.learningMinutes.value
           : this.learningMinutes,
+      progressMethod: data.progressMethod.present
+          ? data.progressMethod.value
+          : this.progressMethod,
+      targetMinutes: data.targetMinutes.present
+          ? data.targetMinutes.value
+          : this.targetMinutes,
+      targetTopicsCount: data.targetTopicsCount.present
+          ? data.targetTopicsCount.value
+          : this.targetTopicsCount,
+      manualProgressPercentage: data.manualProgressPercentage.present
+          ? data.manualProgressPercentage.value
+          : this.manualProgressPercentage,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -2618,6 +3400,10 @@ class SkillEntry extends DataClass implements Insertable<SkillEntry> {
           ..write('targetLevel: $targetLevel, ')
           ..write('notes: $notes, ')
           ..write('learningMinutes: $learningMinutes, ')
+          ..write('progressMethod: $progressMethod, ')
+          ..write('targetMinutes: $targetMinutes, ')
+          ..write('targetTopicsCount: $targetTopicsCount, ')
+          ..write('manualProgressPercentage: $manualProgressPercentage, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -2625,8 +3411,20 @@ class SkillEntry extends DataClass implements Insertable<SkillEntry> {
   }
 
   @override
-  int get hashCode => Object.hash(id, name, category, currentLevel, targetLevel,
-      notes, learningMinutes, createdAt, updatedAt);
+  int get hashCode => Object.hash(
+      id,
+      name,
+      category,
+      currentLevel,
+      targetLevel,
+      notes,
+      learningMinutes,
+      progressMethod,
+      targetMinutes,
+      targetTopicsCount,
+      manualProgressPercentage,
+      createdAt,
+      updatedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -2638,6 +3436,10 @@ class SkillEntry extends DataClass implements Insertable<SkillEntry> {
           other.targetLevel == this.targetLevel &&
           other.notes == this.notes &&
           other.learningMinutes == this.learningMinutes &&
+          other.progressMethod == this.progressMethod &&
+          other.targetMinutes == this.targetMinutes &&
+          other.targetTopicsCount == this.targetTopicsCount &&
+          other.manualProgressPercentage == this.manualProgressPercentage &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
@@ -2650,6 +3452,10 @@ class SkillsCompanion extends UpdateCompanion<SkillEntry> {
   final Value<String> targetLevel;
   final Value<String?> notes;
   final Value<int> learningMinutes;
+  final Value<String> progressMethod;
+  final Value<int> targetMinutes;
+  final Value<int> targetTopicsCount;
+  final Value<double> manualProgressPercentage;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<int> rowid;
@@ -2661,6 +3467,10 @@ class SkillsCompanion extends UpdateCompanion<SkillEntry> {
     this.targetLevel = const Value.absent(),
     this.notes = const Value.absent(),
     this.learningMinutes = const Value.absent(),
+    this.progressMethod = const Value.absent(),
+    this.targetMinutes = const Value.absent(),
+    this.targetTopicsCount = const Value.absent(),
+    this.manualProgressPercentage = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -2673,6 +3483,10 @@ class SkillsCompanion extends UpdateCompanion<SkillEntry> {
     this.targetLevel = const Value.absent(),
     this.notes = const Value.absent(),
     this.learningMinutes = const Value.absent(),
+    this.progressMethod = const Value.absent(),
+    this.targetMinutes = const Value.absent(),
+    this.targetTopicsCount = const Value.absent(),
+    this.manualProgressPercentage = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
     this.rowid = const Value.absent(),
@@ -2688,6 +3502,10 @@ class SkillsCompanion extends UpdateCompanion<SkillEntry> {
     Expression<String>? targetLevel,
     Expression<String>? notes,
     Expression<int>? learningMinutes,
+    Expression<String>? progressMethod,
+    Expression<int>? targetMinutes,
+    Expression<int>? targetTopicsCount,
+    Expression<double>? manualProgressPercentage,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<int>? rowid,
@@ -2700,6 +3518,11 @@ class SkillsCompanion extends UpdateCompanion<SkillEntry> {
       if (targetLevel != null) 'target_level': targetLevel,
       if (notes != null) 'notes': notes,
       if (learningMinutes != null) 'learning_minutes': learningMinutes,
+      if (progressMethod != null) 'progress_method': progressMethod,
+      if (targetMinutes != null) 'target_minutes': targetMinutes,
+      if (targetTopicsCount != null) 'target_topics_count': targetTopicsCount,
+      if (manualProgressPercentage != null)
+        'manual_progress_percentage': manualProgressPercentage,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (rowid != null) 'rowid': rowid,
@@ -2714,6 +3537,10 @@ class SkillsCompanion extends UpdateCompanion<SkillEntry> {
       Value<String>? targetLevel,
       Value<String?>? notes,
       Value<int>? learningMinutes,
+      Value<String>? progressMethod,
+      Value<int>? targetMinutes,
+      Value<int>? targetTopicsCount,
+      Value<double>? manualProgressPercentage,
       Value<DateTime>? createdAt,
       Value<DateTime>? updatedAt,
       Value<int>? rowid}) {
@@ -2725,6 +3552,11 @@ class SkillsCompanion extends UpdateCompanion<SkillEntry> {
       targetLevel: targetLevel ?? this.targetLevel,
       notes: notes ?? this.notes,
       learningMinutes: learningMinutes ?? this.learningMinutes,
+      progressMethod: progressMethod ?? this.progressMethod,
+      targetMinutes: targetMinutes ?? this.targetMinutes,
+      targetTopicsCount: targetTopicsCount ?? this.targetTopicsCount,
+      manualProgressPercentage:
+          manualProgressPercentage ?? this.manualProgressPercentage,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       rowid: rowid ?? this.rowid,
@@ -2755,6 +3587,19 @@ class SkillsCompanion extends UpdateCompanion<SkillEntry> {
     if (learningMinutes.present) {
       map['learning_minutes'] = Variable<int>(learningMinutes.value);
     }
+    if (progressMethod.present) {
+      map['progress_method'] = Variable<String>(progressMethod.value);
+    }
+    if (targetMinutes.present) {
+      map['target_minutes'] = Variable<int>(targetMinutes.value);
+    }
+    if (targetTopicsCount.present) {
+      map['target_topics_count'] = Variable<int>(targetTopicsCount.value);
+    }
+    if (manualProgressPercentage.present) {
+      map['manual_progress_percentage'] =
+          Variable<double>(manualProgressPercentage.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -2777,6 +3622,10 @@ class SkillsCompanion extends UpdateCompanion<SkillEntry> {
           ..write('targetLevel: $targetLevel, ')
           ..write('notes: $notes, ')
           ..write('learningMinutes: $learningMinutes, ')
+          ..write('progressMethod: $progressMethod, ')
+          ..write('targetMinutes: $targetMinutes, ')
+          ..write('targetTopicsCount: $targetTopicsCount, ')
+          ..write('manualProgressPercentage: $manualProgressPercentage, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('rowid: $rowid')
@@ -5202,6 +6051,14 @@ class $FocusSessionsTable extends FocusSessions
   late final GeneratedColumn<int> durationMinutes = GeneratedColumn<int>(
       'duration_minutes', aliasedName, false,
       type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _breakMinutesMeta =
+      const VerificationMeta('breakMinutes');
+  @override
+  late final GeneratedColumn<int> breakMinutes = GeneratedColumn<int>(
+      'break_minutes', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
   static const VerificationMeta _sessionTypeMeta =
       const VerificationMeta('sessionType');
   @override
@@ -5210,12 +6067,23 @@ class $FocusSessionsTable extends FocusSessions
       type: DriftSqlType.string,
       requiredDuringInsert: false,
       defaultValue: const Constant('pomodoro'));
+  static const VerificationMeta _startedAtMeta =
+      const VerificationMeta('startedAt');
+  @override
+  late final GeneratedColumn<DateTime> startedAt = GeneratedColumn<DateTime>(
+      'started_at', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
   static const VerificationMeta _completedAtMeta =
       const VerificationMeta('completedAt');
   @override
   late final GeneratedColumn<DateTime> completedAt = GeneratedColumn<DateTime>(
       'completed_at', aliasedName, false,
       type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+      'notes', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   @override
   List<GeneratedColumn> get $columns => [
         id,
@@ -5223,8 +6091,11 @@ class $FocusSessionsTable extends FocusSessions
         projectId,
         skillId,
         durationMinutes,
+        breakMinutes,
         sessionType,
-        completedAt
+        startedAt,
+        completedAt,
+        notes
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -5261,11 +6132,21 @@ class $FocusSessionsTable extends FocusSessions
     } else if (isInserting) {
       context.missing(_durationMinutesMeta);
     }
+    if (data.containsKey('break_minutes')) {
+      context.handle(
+          _breakMinutesMeta,
+          breakMinutes.isAcceptableOrUnknown(
+              data['break_minutes']!, _breakMinutesMeta));
+    }
     if (data.containsKey('session_type')) {
       context.handle(
           _sessionTypeMeta,
           sessionType.isAcceptableOrUnknown(
               data['session_type']!, _sessionTypeMeta));
+    }
+    if (data.containsKey('started_at')) {
+      context.handle(_startedAtMeta,
+          startedAt.isAcceptableOrUnknown(data['started_at']!, _startedAtMeta));
     }
     if (data.containsKey('completed_at')) {
       context.handle(
@@ -5274,6 +6155,10 @@ class $FocusSessionsTable extends FocusSessions
               data['completed_at']!, _completedAtMeta));
     } else if (isInserting) {
       context.missing(_completedAtMeta);
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+          _notesMeta, notes.isAcceptableOrUnknown(data['notes']!, _notesMeta));
     }
     return context;
   }
@@ -5294,10 +6179,16 @@ class $FocusSessionsTable extends FocusSessions
           .read(DriftSqlType.string, data['${effectivePrefix}skill_id']),
       durationMinutes: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}duration_minutes'])!,
+      breakMinutes: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}break_minutes'])!,
       sessionType: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}session_type'])!,
+      startedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}started_at']),
       completedAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}completed_at'])!,
+      notes: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}notes']),
     );
   }
 
@@ -5314,16 +6205,22 @@ class FocusSessionEntry extends DataClass
   final String? projectId;
   final String? skillId;
   final int durationMinutes;
+  final int breakMinutes;
   final String sessionType;
+  final DateTime? startedAt;
   final DateTime completedAt;
+  final String? notes;
   const FocusSessionEntry(
       {required this.id,
       this.taskId,
       this.projectId,
       this.skillId,
       required this.durationMinutes,
+      required this.breakMinutes,
       required this.sessionType,
-      required this.completedAt});
+      this.startedAt,
+      required this.completedAt,
+      this.notes});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -5338,8 +6235,15 @@ class FocusSessionEntry extends DataClass
       map['skill_id'] = Variable<String>(skillId);
     }
     map['duration_minutes'] = Variable<int>(durationMinutes);
+    map['break_minutes'] = Variable<int>(breakMinutes);
     map['session_type'] = Variable<String>(sessionType);
+    if (!nullToAbsent || startedAt != null) {
+      map['started_at'] = Variable<DateTime>(startedAt);
+    }
     map['completed_at'] = Variable<DateTime>(completedAt);
+    if (!nullToAbsent || notes != null) {
+      map['notes'] = Variable<String>(notes);
+    }
     return map;
   }
 
@@ -5355,8 +6259,14 @@ class FocusSessionEntry extends DataClass
           ? const Value.absent()
           : Value(skillId),
       durationMinutes: Value(durationMinutes),
+      breakMinutes: Value(breakMinutes),
       sessionType: Value(sessionType),
+      startedAt: startedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(startedAt),
       completedAt: Value(completedAt),
+      notes:
+          notes == null && nullToAbsent ? const Value.absent() : Value(notes),
     );
   }
 
@@ -5369,8 +6279,11 @@ class FocusSessionEntry extends DataClass
       projectId: serializer.fromJson<String?>(json['projectId']),
       skillId: serializer.fromJson<String?>(json['skillId']),
       durationMinutes: serializer.fromJson<int>(json['durationMinutes']),
+      breakMinutes: serializer.fromJson<int>(json['breakMinutes']),
       sessionType: serializer.fromJson<String>(json['sessionType']),
+      startedAt: serializer.fromJson<DateTime?>(json['startedAt']),
       completedAt: serializer.fromJson<DateTime>(json['completedAt']),
+      notes: serializer.fromJson<String?>(json['notes']),
     );
   }
   @override
@@ -5382,8 +6295,11 @@ class FocusSessionEntry extends DataClass
       'projectId': serializer.toJson<String?>(projectId),
       'skillId': serializer.toJson<String?>(skillId),
       'durationMinutes': serializer.toJson<int>(durationMinutes),
+      'breakMinutes': serializer.toJson<int>(breakMinutes),
       'sessionType': serializer.toJson<String>(sessionType),
+      'startedAt': serializer.toJson<DateTime?>(startedAt),
       'completedAt': serializer.toJson<DateTime>(completedAt),
+      'notes': serializer.toJson<String?>(notes),
     };
   }
 
@@ -5393,16 +6309,22 @@ class FocusSessionEntry extends DataClass
           Value<String?> projectId = const Value.absent(),
           Value<String?> skillId = const Value.absent(),
           int? durationMinutes,
+          int? breakMinutes,
           String? sessionType,
-          DateTime? completedAt}) =>
+          Value<DateTime?> startedAt = const Value.absent(),
+          DateTime? completedAt,
+          Value<String?> notes = const Value.absent()}) =>
       FocusSessionEntry(
         id: id ?? this.id,
         taskId: taskId.present ? taskId.value : this.taskId,
         projectId: projectId.present ? projectId.value : this.projectId,
         skillId: skillId.present ? skillId.value : this.skillId,
         durationMinutes: durationMinutes ?? this.durationMinutes,
+        breakMinutes: breakMinutes ?? this.breakMinutes,
         sessionType: sessionType ?? this.sessionType,
+        startedAt: startedAt.present ? startedAt.value : this.startedAt,
         completedAt: completedAt ?? this.completedAt,
+        notes: notes.present ? notes.value : this.notes,
       );
   FocusSessionEntry copyWithCompanion(FocusSessionsCompanion data) {
     return FocusSessionEntry(
@@ -5413,10 +6335,15 @@ class FocusSessionEntry extends DataClass
       durationMinutes: data.durationMinutes.present
           ? data.durationMinutes.value
           : this.durationMinutes,
+      breakMinutes: data.breakMinutes.present
+          ? data.breakMinutes.value
+          : this.breakMinutes,
       sessionType:
           data.sessionType.present ? data.sessionType.value : this.sessionType,
+      startedAt: data.startedAt.present ? data.startedAt.value : this.startedAt,
       completedAt:
           data.completedAt.present ? data.completedAt.value : this.completedAt,
+      notes: data.notes.present ? data.notes.value : this.notes,
     );
   }
 
@@ -5428,15 +6355,27 @@ class FocusSessionEntry extends DataClass
           ..write('projectId: $projectId, ')
           ..write('skillId: $skillId, ')
           ..write('durationMinutes: $durationMinutes, ')
+          ..write('breakMinutes: $breakMinutes, ')
           ..write('sessionType: $sessionType, ')
-          ..write('completedAt: $completedAt')
+          ..write('startedAt: $startedAt, ')
+          ..write('completedAt: $completedAt, ')
+          ..write('notes: $notes')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, taskId, projectId, skillId,
-      durationMinutes, sessionType, completedAt);
+  int get hashCode => Object.hash(
+      id,
+      taskId,
+      projectId,
+      skillId,
+      durationMinutes,
+      breakMinutes,
+      sessionType,
+      startedAt,
+      completedAt,
+      notes);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -5446,8 +6385,11 @@ class FocusSessionEntry extends DataClass
           other.projectId == this.projectId &&
           other.skillId == this.skillId &&
           other.durationMinutes == this.durationMinutes &&
+          other.breakMinutes == this.breakMinutes &&
           other.sessionType == this.sessionType &&
-          other.completedAt == this.completedAt);
+          other.startedAt == this.startedAt &&
+          other.completedAt == this.completedAt &&
+          other.notes == this.notes);
 }
 
 class FocusSessionsCompanion extends UpdateCompanion<FocusSessionEntry> {
@@ -5456,8 +6398,11 @@ class FocusSessionsCompanion extends UpdateCompanion<FocusSessionEntry> {
   final Value<String?> projectId;
   final Value<String?> skillId;
   final Value<int> durationMinutes;
+  final Value<int> breakMinutes;
   final Value<String> sessionType;
+  final Value<DateTime?> startedAt;
   final Value<DateTime> completedAt;
+  final Value<String?> notes;
   final Value<int> rowid;
   const FocusSessionsCompanion({
     this.id = const Value.absent(),
@@ -5465,8 +6410,11 @@ class FocusSessionsCompanion extends UpdateCompanion<FocusSessionEntry> {
     this.projectId = const Value.absent(),
     this.skillId = const Value.absent(),
     this.durationMinutes = const Value.absent(),
+    this.breakMinutes = const Value.absent(),
     this.sessionType = const Value.absent(),
+    this.startedAt = const Value.absent(),
     this.completedAt = const Value.absent(),
+    this.notes = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   FocusSessionsCompanion.insert({
@@ -5475,8 +6423,11 @@ class FocusSessionsCompanion extends UpdateCompanion<FocusSessionEntry> {
     this.projectId = const Value.absent(),
     this.skillId = const Value.absent(),
     required int durationMinutes,
+    this.breakMinutes = const Value.absent(),
     this.sessionType = const Value.absent(),
+    this.startedAt = const Value.absent(),
     required DateTime completedAt,
+    this.notes = const Value.absent(),
     this.rowid = const Value.absent(),
   })  : id = Value(id),
         durationMinutes = Value(durationMinutes),
@@ -5487,8 +6438,11 @@ class FocusSessionsCompanion extends UpdateCompanion<FocusSessionEntry> {
     Expression<String>? projectId,
     Expression<String>? skillId,
     Expression<int>? durationMinutes,
+    Expression<int>? breakMinutes,
     Expression<String>? sessionType,
+    Expression<DateTime>? startedAt,
     Expression<DateTime>? completedAt,
+    Expression<String>? notes,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -5497,8 +6451,11 @@ class FocusSessionsCompanion extends UpdateCompanion<FocusSessionEntry> {
       if (projectId != null) 'project_id': projectId,
       if (skillId != null) 'skill_id': skillId,
       if (durationMinutes != null) 'duration_minutes': durationMinutes,
+      if (breakMinutes != null) 'break_minutes': breakMinutes,
       if (sessionType != null) 'session_type': sessionType,
+      if (startedAt != null) 'started_at': startedAt,
       if (completedAt != null) 'completed_at': completedAt,
+      if (notes != null) 'notes': notes,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -5509,8 +6466,11 @@ class FocusSessionsCompanion extends UpdateCompanion<FocusSessionEntry> {
       Value<String?>? projectId,
       Value<String?>? skillId,
       Value<int>? durationMinutes,
+      Value<int>? breakMinutes,
       Value<String>? sessionType,
+      Value<DateTime?>? startedAt,
       Value<DateTime>? completedAt,
+      Value<String?>? notes,
       Value<int>? rowid}) {
     return FocusSessionsCompanion(
       id: id ?? this.id,
@@ -5518,8 +6478,11 @@ class FocusSessionsCompanion extends UpdateCompanion<FocusSessionEntry> {
       projectId: projectId ?? this.projectId,
       skillId: skillId ?? this.skillId,
       durationMinutes: durationMinutes ?? this.durationMinutes,
+      breakMinutes: breakMinutes ?? this.breakMinutes,
       sessionType: sessionType ?? this.sessionType,
+      startedAt: startedAt ?? this.startedAt,
       completedAt: completedAt ?? this.completedAt,
+      notes: notes ?? this.notes,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -5542,11 +6505,20 @@ class FocusSessionsCompanion extends UpdateCompanion<FocusSessionEntry> {
     if (durationMinutes.present) {
       map['duration_minutes'] = Variable<int>(durationMinutes.value);
     }
+    if (breakMinutes.present) {
+      map['break_minutes'] = Variable<int>(breakMinutes.value);
+    }
     if (sessionType.present) {
       map['session_type'] = Variable<String>(sessionType.value);
     }
+    if (startedAt.present) {
+      map['started_at'] = Variable<DateTime>(startedAt.value);
+    }
     if (completedAt.present) {
       map['completed_at'] = Variable<DateTime>(completedAt.value);
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
     }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
@@ -5562,8 +6534,11 @@ class FocusSessionsCompanion extends UpdateCompanion<FocusSessionEntry> {
           ..write('projectId: $projectId, ')
           ..write('skillId: $skillId, ')
           ..write('durationMinutes: $durationMinutes, ')
+          ..write('breakMinutes: $breakMinutes, ')
           ..write('sessionType: $sessionType, ')
+          ..write('startedAt: $startedAt, ')
           ..write('completedAt: $completedAt, ')
+          ..write('notes: $notes, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -10707,6 +11682,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $SubtasksTable subtasks = $SubtasksTable(this);
   late final $ProjectsTable projects = $ProjectsTable(this);
   late final $MilestonesTable milestones = $MilestonesTable(this);
+  late final $ProjectDeliverablesTable projectDeliverables =
+      $ProjectDeliverablesTable(this);
   late final $SkillsTable skills = $SkillsTable(this);
   late final $LearningModulesTable learningModules =
       $LearningModulesTable(this);
@@ -10742,6 +11719,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         subtasks,
         projects,
         milestones,
+        projectDeliverables,
         skills,
         learningModules,
         learningTopics,
@@ -10776,6 +11754,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
                 limitUpdateKind: UpdateKind.delete),
             result: [
               TableUpdate('milestones', kind: UpdateKind.delete),
+            ],
+          ),
+          WritePropagation(
+            on: TableUpdateQuery.onTableName('projects',
+                limitUpdateKind: UpdateKind.delete),
+            result: [
+              TableUpdate('project_deliverables', kind: UpdateKind.delete),
             ],
           ),
           WritePropagation(
@@ -11535,6 +12520,11 @@ typedef $$ProjectsTableCreateCompanionBuilder = ProjectsCompanion Function({
   Value<String?> repositoryUrl,
   Value<String?> notes,
   Value<int> timeSpentMinutes,
+  Value<String> completionCriteria,
+  Value<double> manualProgressPercentage,
+  Value<double?> targetHours,
+  Value<DateTime?> completedAt,
+  Value<String?> completionNote,
   required DateTime createdAt,
   required DateTime updatedAt,
   Value<int> rowid,
@@ -11552,6 +12542,11 @@ typedef $$ProjectsTableUpdateCompanionBuilder = ProjectsCompanion Function({
   Value<String?> repositoryUrl,
   Value<String?> notes,
   Value<int> timeSpentMinutes,
+  Value<String> completionCriteria,
+  Value<double> manualProgressPercentage,
+  Value<double?> targetHours,
+  Value<DateTime?> completedAt,
+  Value<String?> completionNote,
   Value<DateTime> createdAt,
   Value<DateTime> updatedAt,
   Value<int> rowid,
@@ -11572,6 +12567,24 @@ final class $$ProjectsTableReferences
         .filter((f) => f.projectId.id($_item.id));
 
     final cache = $_typedResult.readTableOrNull(_milestonesRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+
+  static MultiTypedResultKey<$ProjectDeliverablesTable,
+      List<ProjectDeliverableEntry>> _projectDeliverablesRefsTable(
+          _$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(db.projectDeliverables,
+          aliasName: $_aliasNameGenerator(
+              db.projects.id, db.projectDeliverables.projectId));
+
+  $$ProjectDeliverablesTableProcessedTableManager get projectDeliverablesRefs {
+    final manager =
+        $$ProjectDeliverablesTableTableManager($_db, $_db.projectDeliverables)
+            .filter((f) => f.projectId.id($_item.id));
+
+    final cache =
+        $_typedResult.readTableOrNull(_projectDeliverablesRefsTable($_db));
     return ProcessedTableManager(
         manager.$state.copyWith(prefetchedData: cache));
   }
@@ -11623,6 +12636,24 @@ class $$ProjectsTableFilterComposer
       column: $table.timeSpentMinutes,
       builder: (column) => ColumnFilters(column));
 
+  ColumnFilters<String> get completionCriteria => $composableBuilder(
+      column: $table.completionCriteria,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get manualProgressPercentage => $composableBuilder(
+      column: $table.manualProgressPercentage,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get targetHours => $composableBuilder(
+      column: $table.targetHours, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get completedAt => $composableBuilder(
+      column: $table.completedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get completionNote => $composableBuilder(
+      column: $table.completionNote,
+      builder: (column) => ColumnFilters(column));
+
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnFilters(column));
 
@@ -11642,6 +12673,27 @@ class $$ProjectsTableFilterComposer
             $$MilestonesTableFilterComposer(
               $db: $db,
               $table: $db.milestones,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<bool> projectDeliverablesRefs(
+      Expression<bool> Function($$ProjectDeliverablesTableFilterComposer f) f) {
+    final $$ProjectDeliverablesTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.projectDeliverables,
+        getReferencedColumn: (t) => t.projectId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ProjectDeliverablesTableFilterComposer(
+              $db: $db,
+              $table: $db.projectDeliverables,
               $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
               joinBuilder: joinBuilder,
               $removeJoinBuilderFromRootComposer:
@@ -11698,6 +12750,24 @@ class $$ProjectsTableOrderingComposer
       column: $table.timeSpentMinutes,
       builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get completionCriteria => $composableBuilder(
+      column: $table.completionCriteria,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get manualProgressPercentage => $composableBuilder(
+      column: $table.manualProgressPercentage,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get targetHours => $composableBuilder(
+      column: $table.targetHours, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get completedAt => $composableBuilder(
+      column: $table.completedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get completionNote => $composableBuilder(
+      column: $table.completionNote,
+      builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnOrderings(column));
 
@@ -11750,6 +12820,21 @@ class $$ProjectsTableAnnotationComposer
   GeneratedColumn<int> get timeSpentMinutes => $composableBuilder(
       column: $table.timeSpentMinutes, builder: (column) => column);
 
+  GeneratedColumn<String> get completionCriteria => $composableBuilder(
+      column: $table.completionCriteria, builder: (column) => column);
+
+  GeneratedColumn<double> get manualProgressPercentage => $composableBuilder(
+      column: $table.manualProgressPercentage, builder: (column) => column);
+
+  GeneratedColumn<double> get targetHours => $composableBuilder(
+      column: $table.targetHours, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get completedAt => $composableBuilder(
+      column: $table.completedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get completionNote => $composableBuilder(
+      column: $table.completionNote, builder: (column) => column);
+
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
@@ -11776,6 +12861,29 @@ class $$ProjectsTableAnnotationComposer
             ));
     return f(composer);
   }
+
+  Expression<T> projectDeliverablesRefs<T extends Object>(
+      Expression<T> Function($$ProjectDeliverablesTableAnnotationComposer a)
+          f) {
+    final $$ProjectDeliverablesTableAnnotationComposer composer =
+        $composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.id,
+            referencedTable: $db.projectDeliverables,
+            getReferencedColumn: (t) => t.projectId,
+            builder: (joinBuilder,
+                    {$addJoinBuilderToRootComposer,
+                    $removeJoinBuilderFromRootComposer}) =>
+                $$ProjectDeliverablesTableAnnotationComposer(
+                  $db: $db,
+                  $table: $db.projectDeliverables,
+                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                  joinBuilder: joinBuilder,
+                  $removeJoinBuilderFromRootComposer:
+                      $removeJoinBuilderFromRootComposer,
+                ));
+    return f(composer);
+  }
 }
 
 class $$ProjectsTableTableManager extends RootTableManager<
@@ -11789,7 +12897,8 @@ class $$ProjectsTableTableManager extends RootTableManager<
     $$ProjectsTableUpdateCompanionBuilder,
     (ProjectEntry, $$ProjectsTableReferences),
     ProjectEntry,
-    PrefetchHooks Function({bool milestonesRefs})> {
+    PrefetchHooks Function(
+        {bool milestonesRefs, bool projectDeliverablesRefs})> {
   $$ProjectsTableTableManager(_$AppDatabase db, $ProjectsTable table)
       : super(TableManagerState(
           db: db,
@@ -11813,6 +12922,11 @@ class $$ProjectsTableTableManager extends RootTableManager<
             Value<String?> repositoryUrl = const Value.absent(),
             Value<String?> notes = const Value.absent(),
             Value<int> timeSpentMinutes = const Value.absent(),
+            Value<String> completionCriteria = const Value.absent(),
+            Value<double> manualProgressPercentage = const Value.absent(),
+            Value<double?> targetHours = const Value.absent(),
+            Value<DateTime?> completedAt = const Value.absent(),
+            Value<String?> completionNote = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
             Value<int> rowid = const Value.absent(),
@@ -11830,6 +12944,11 @@ class $$ProjectsTableTableManager extends RootTableManager<
             repositoryUrl: repositoryUrl,
             notes: notes,
             timeSpentMinutes: timeSpentMinutes,
+            completionCriteria: completionCriteria,
+            manualProgressPercentage: manualProgressPercentage,
+            targetHours: targetHours,
+            completedAt: completedAt,
+            completionNote: completionNote,
             createdAt: createdAt,
             updatedAt: updatedAt,
             rowid: rowid,
@@ -11847,6 +12966,11 @@ class $$ProjectsTableTableManager extends RootTableManager<
             Value<String?> repositoryUrl = const Value.absent(),
             Value<String?> notes = const Value.absent(),
             Value<int> timeSpentMinutes = const Value.absent(),
+            Value<String> completionCriteria = const Value.absent(),
+            Value<double> manualProgressPercentage = const Value.absent(),
+            Value<double?> targetHours = const Value.absent(),
+            Value<DateTime?> completedAt = const Value.absent(),
+            Value<String?> completionNote = const Value.absent(),
             required DateTime createdAt,
             required DateTime updatedAt,
             Value<int> rowid = const Value.absent(),
@@ -11864,6 +12988,11 @@ class $$ProjectsTableTableManager extends RootTableManager<
             repositoryUrl: repositoryUrl,
             notes: notes,
             timeSpentMinutes: timeSpentMinutes,
+            completionCriteria: completionCriteria,
+            manualProgressPercentage: manualProgressPercentage,
+            targetHours: targetHours,
+            completedAt: completedAt,
+            completionNote: completionNote,
             createdAt: createdAt,
             updatedAt: updatedAt,
             rowid: rowid,
@@ -11872,10 +13001,14 @@ class $$ProjectsTableTableManager extends RootTableManager<
               .map((e) =>
                   (e.readTable(table), $$ProjectsTableReferences(db, table, e)))
               .toList(),
-          prefetchHooksCallback: ({milestonesRefs = false}) {
+          prefetchHooksCallback: (
+              {milestonesRefs = false, projectDeliverablesRefs = false}) {
             return PrefetchHooks(
               db: db,
-              explicitlyWatchedTables: [if (milestonesRefs) db.milestones],
+              explicitlyWatchedTables: [
+                if (milestonesRefs) db.milestones,
+                if (projectDeliverablesRefs) db.projectDeliverables
+              ],
               addJoins: null,
               getPrefetchedDataCallback: (items) async {
                 return [
@@ -11887,6 +13020,18 @@ class $$ProjectsTableTableManager extends RootTableManager<
                         managerFromTypedResult: (p0) =>
                             $$ProjectsTableReferences(db, table, p0)
                                 .milestonesRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems
+                                .where((e) => e.projectId == item.id),
+                        typedResults: items),
+                  if (projectDeliverablesRefs)
+                    await $_getPrefetchedData(
+                        currentTable: table,
+                        referencedTable: $$ProjectsTableReferences
+                            ._projectDeliverablesRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$ProjectsTableReferences(db, table, p0)
+                                .projectDeliverablesRefs,
                         referencedItemsForCurrentItem:
                             (item, referencedItems) => referencedItems
                                 .where((e) => e.projectId == item.id),
@@ -11909,7 +13054,8 @@ typedef $$ProjectsTableProcessedTableManager = ProcessedTableManager<
     $$ProjectsTableUpdateCompanionBuilder,
     (ProjectEntry, $$ProjectsTableReferences),
     ProjectEntry,
-    PrefetchHooks Function({bool milestonesRefs})>;
+    PrefetchHooks Function(
+        {bool milestonesRefs, bool projectDeliverablesRefs})>;
 typedef $$MilestonesTableCreateCompanionBuilder = MilestonesCompanion Function({
   required String id,
   required String projectId,
@@ -11919,6 +13065,7 @@ typedef $$MilestonesTableCreateCompanionBuilder = MilestonesCompanion Function({
   Value<bool> isCompleted,
   Value<DateTime?> completedAt,
   Value<int> orderIndex,
+  Value<int> weight,
   Value<int> rowid,
 });
 typedef $$MilestonesTableUpdateCompanionBuilder = MilestonesCompanion Function({
@@ -11930,6 +13077,7 @@ typedef $$MilestonesTableUpdateCompanionBuilder = MilestonesCompanion Function({
   Value<bool> isCompleted,
   Value<DateTime?> completedAt,
   Value<int> orderIndex,
+  Value<int> weight,
   Value<int> rowid,
 });
 
@@ -11980,6 +13128,9 @@ class $$MilestonesTableFilterComposer
 
   ColumnFilters<int> get orderIndex => $composableBuilder(
       column: $table.orderIndex, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get weight => $composableBuilder(
+      column: $table.weight, builder: (column) => ColumnFilters(column));
 
   $$ProjectsTableFilterComposer get projectId {
     final $$ProjectsTableFilterComposer composer = $composerBuilder(
@@ -12032,6 +13183,9 @@ class $$MilestonesTableOrderingComposer
   ColumnOrderings<int> get orderIndex => $composableBuilder(
       column: $table.orderIndex, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<int> get weight => $composableBuilder(
+      column: $table.weight, builder: (column) => ColumnOrderings(column));
+
   $$ProjectsTableOrderingComposer get projectId {
     final $$ProjectsTableOrderingComposer composer = $composerBuilder(
         composer: this,
@@ -12082,6 +13236,9 @@ class $$MilestonesTableAnnotationComposer
 
   GeneratedColumn<int> get orderIndex => $composableBuilder(
       column: $table.orderIndex, builder: (column) => column);
+
+  GeneratedColumn<int> get weight =>
+      $composableBuilder(column: $table.weight, builder: (column) => column);
 
   $$ProjectsTableAnnotationComposer get projectId {
     final $$ProjectsTableAnnotationComposer composer = $composerBuilder(
@@ -12135,6 +13292,7 @@ class $$MilestonesTableTableManager extends RootTableManager<
             Value<bool> isCompleted = const Value.absent(),
             Value<DateTime?> completedAt = const Value.absent(),
             Value<int> orderIndex = const Value.absent(),
+            Value<int> weight = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               MilestonesCompanion(
@@ -12146,6 +13304,7 @@ class $$MilestonesTableTableManager extends RootTableManager<
             isCompleted: isCompleted,
             completedAt: completedAt,
             orderIndex: orderIndex,
+            weight: weight,
             rowid: rowid,
           ),
           createCompanionCallback: ({
@@ -12157,6 +13316,7 @@ class $$MilestonesTableTableManager extends RootTableManager<
             Value<bool> isCompleted = const Value.absent(),
             Value<DateTime?> completedAt = const Value.absent(),
             Value<int> orderIndex = const Value.absent(),
+            Value<int> weight = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               MilestonesCompanion.insert(
@@ -12168,6 +13328,7 @@ class $$MilestonesTableTableManager extends RootTableManager<
             isCompleted: isCompleted,
             completedAt: completedAt,
             orderIndex: orderIndex,
+            weight: weight,
             rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0
@@ -12226,6 +13387,314 @@ typedef $$MilestonesTableProcessedTableManager = ProcessedTableManager<
     (MilestoneEntry, $$MilestonesTableReferences),
     MilestoneEntry,
     PrefetchHooks Function({bool projectId})>;
+typedef $$ProjectDeliverablesTableCreateCompanionBuilder
+    = ProjectDeliverablesCompanion Function({
+  required String id,
+  required String projectId,
+  required String title,
+  Value<bool> isCompleted,
+  Value<int> orderIndex,
+  Value<DateTime?> completedAt,
+  required DateTime createdAt,
+  Value<int> rowid,
+});
+typedef $$ProjectDeliverablesTableUpdateCompanionBuilder
+    = ProjectDeliverablesCompanion Function({
+  Value<String> id,
+  Value<String> projectId,
+  Value<String> title,
+  Value<bool> isCompleted,
+  Value<int> orderIndex,
+  Value<DateTime?> completedAt,
+  Value<DateTime> createdAt,
+  Value<int> rowid,
+});
+
+final class $$ProjectDeliverablesTableReferences extends BaseReferences<
+    _$AppDatabase, $ProjectDeliverablesTable, ProjectDeliverableEntry> {
+  $$ProjectDeliverablesTableReferences(
+      super.$_db, super.$_table, super.$_typedResult);
+
+  static $ProjectsTable _projectIdTable(_$AppDatabase db) =>
+      db.projects.createAlias($_aliasNameGenerator(
+          db.projectDeliverables.projectId, db.projects.id));
+
+  $$ProjectsTableProcessedTableManager get projectId {
+    final manager = $$ProjectsTableTableManager($_db, $_db.projects)
+        .filter((f) => f.id($_item.projectId));
+    final item = $_typedResult.readTableOrNull(_projectIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+}
+
+class $$ProjectDeliverablesTableFilterComposer
+    extends Composer<_$AppDatabase, $ProjectDeliverablesTable> {
+  $$ProjectDeliverablesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get title => $composableBuilder(
+      column: $table.title, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isCompleted => $composableBuilder(
+      column: $table.isCompleted, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get orderIndex => $composableBuilder(
+      column: $table.orderIndex, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get completedAt => $composableBuilder(
+      column: $table.completedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  $$ProjectsTableFilterComposer get projectId {
+    final $$ProjectsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.projectId,
+        referencedTable: $db.projects,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ProjectsTableFilterComposer(
+              $db: $db,
+              $table: $db.projects,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$ProjectDeliverablesTableOrderingComposer
+    extends Composer<_$AppDatabase, $ProjectDeliverablesTable> {
+  $$ProjectDeliverablesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get title => $composableBuilder(
+      column: $table.title, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get isCompleted => $composableBuilder(
+      column: $table.isCompleted, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get orderIndex => $composableBuilder(
+      column: $table.orderIndex, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get completedAt => $composableBuilder(
+      column: $table.completedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+
+  $$ProjectsTableOrderingComposer get projectId {
+    final $$ProjectsTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.projectId,
+        referencedTable: $db.projects,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ProjectsTableOrderingComposer(
+              $db: $db,
+              $table: $db.projects,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$ProjectDeliverablesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ProjectDeliverablesTable> {
+  $$ProjectDeliverablesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<bool> get isCompleted => $composableBuilder(
+      column: $table.isCompleted, builder: (column) => column);
+
+  GeneratedColumn<int> get orderIndex => $composableBuilder(
+      column: $table.orderIndex, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get completedAt => $composableBuilder(
+      column: $table.completedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  $$ProjectsTableAnnotationComposer get projectId {
+    final $$ProjectsTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.projectId,
+        referencedTable: $db.projects,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ProjectsTableAnnotationComposer(
+              $db: $db,
+              $table: $db.projects,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$ProjectDeliverablesTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $ProjectDeliverablesTable,
+    ProjectDeliverableEntry,
+    $$ProjectDeliverablesTableFilterComposer,
+    $$ProjectDeliverablesTableOrderingComposer,
+    $$ProjectDeliverablesTableAnnotationComposer,
+    $$ProjectDeliverablesTableCreateCompanionBuilder,
+    $$ProjectDeliverablesTableUpdateCompanionBuilder,
+    (ProjectDeliverableEntry, $$ProjectDeliverablesTableReferences),
+    ProjectDeliverableEntry,
+    PrefetchHooks Function({bool projectId})> {
+  $$ProjectDeliverablesTableTableManager(
+      _$AppDatabase db, $ProjectDeliverablesTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ProjectDeliverablesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ProjectDeliverablesTableOrderingComposer(
+                  $db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ProjectDeliverablesTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> id = const Value.absent(),
+            Value<String> projectId = const Value.absent(),
+            Value<String> title = const Value.absent(),
+            Value<bool> isCompleted = const Value.absent(),
+            Value<int> orderIndex = const Value.absent(),
+            Value<DateTime?> completedAt = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              ProjectDeliverablesCompanion(
+            id: id,
+            projectId: projectId,
+            title: title,
+            isCompleted: isCompleted,
+            orderIndex: orderIndex,
+            completedAt: completedAt,
+            createdAt: createdAt,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String id,
+            required String projectId,
+            required String title,
+            Value<bool> isCompleted = const Value.absent(),
+            Value<int> orderIndex = const Value.absent(),
+            Value<DateTime?> completedAt = const Value.absent(),
+            required DateTime createdAt,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              ProjectDeliverablesCompanion.insert(
+            id: id,
+            projectId: projectId,
+            title: title,
+            isCompleted: isCompleted,
+            orderIndex: orderIndex,
+            completedAt: completedAt,
+            createdAt: createdAt,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (
+                    e.readTable(table),
+                    $$ProjectDeliverablesTableReferences(db, table, e)
+                  ))
+              .toList(),
+          prefetchHooksCallback: ({projectId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                  T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (projectId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.projectId,
+                    referencedTable: $$ProjectDeliverablesTableReferences
+                        ._projectIdTable(db),
+                    referencedColumn: $$ProjectDeliverablesTableReferences
+                        ._projectIdTable(db)
+                        .id,
+                  ) as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ));
+}
+
+typedef $$ProjectDeliverablesTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $ProjectDeliverablesTable,
+    ProjectDeliverableEntry,
+    $$ProjectDeliverablesTableFilterComposer,
+    $$ProjectDeliverablesTableOrderingComposer,
+    $$ProjectDeliverablesTableAnnotationComposer,
+    $$ProjectDeliverablesTableCreateCompanionBuilder,
+    $$ProjectDeliverablesTableUpdateCompanionBuilder,
+    (ProjectDeliverableEntry, $$ProjectDeliverablesTableReferences),
+    ProjectDeliverableEntry,
+    PrefetchHooks Function({bool projectId})>;
 typedef $$SkillsTableCreateCompanionBuilder = SkillsCompanion Function({
   required String id,
   required String name,
@@ -12234,6 +13703,10 @@ typedef $$SkillsTableCreateCompanionBuilder = SkillsCompanion Function({
   Value<String> targetLevel,
   Value<String?> notes,
   Value<int> learningMinutes,
+  Value<String> progressMethod,
+  Value<int> targetMinutes,
+  Value<int> targetTopicsCount,
+  Value<double> manualProgressPercentage,
   required DateTime createdAt,
   required DateTime updatedAt,
   Value<int> rowid,
@@ -12246,6 +13719,10 @@ typedef $$SkillsTableUpdateCompanionBuilder = SkillsCompanion Function({
   Value<String> targetLevel,
   Value<String?> notes,
   Value<int> learningMinutes,
+  Value<String> progressMethod,
+  Value<int> targetMinutes,
+  Value<int> targetTopicsCount,
+  Value<double> manualProgressPercentage,
   Value<DateTime> createdAt,
   Value<DateTime> updatedAt,
   Value<int> rowid,
@@ -12319,6 +13796,21 @@ class $$SkillsTableFilterComposer
 
   ColumnFilters<int> get learningMinutes => $composableBuilder(
       column: $table.learningMinutes,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get progressMethod => $composableBuilder(
+      column: $table.progressMethod,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get targetMinutes => $composableBuilder(
+      column: $table.targetMinutes, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get targetTopicsCount => $composableBuilder(
+      column: $table.targetTopicsCount,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get manualProgressPercentage => $composableBuilder(
+      column: $table.manualProgressPercentage,
       builder: (column) => ColumnFilters(column));
 
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
@@ -12402,6 +13894,22 @@ class $$SkillsTableOrderingComposer
       column: $table.learningMinutes,
       builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get progressMethod => $composableBuilder(
+      column: $table.progressMethod,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get targetMinutes => $composableBuilder(
+      column: $table.targetMinutes,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get targetTopicsCount => $composableBuilder(
+      column: $table.targetTopicsCount,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get manualProgressPercentage => $composableBuilder(
+      column: $table.manualProgressPercentage,
+      builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnOrderings(column));
 
@@ -12438,6 +13946,18 @@ class $$SkillsTableAnnotationComposer
 
   GeneratedColumn<int> get learningMinutes => $composableBuilder(
       column: $table.learningMinutes, builder: (column) => column);
+
+  GeneratedColumn<String> get progressMethod => $composableBuilder(
+      column: $table.progressMethod, builder: (column) => column);
+
+  GeneratedColumn<int> get targetMinutes => $composableBuilder(
+      column: $table.targetMinutes, builder: (column) => column);
+
+  GeneratedColumn<int> get targetTopicsCount => $composableBuilder(
+      column: $table.targetTopicsCount, builder: (column) => column);
+
+  GeneratedColumn<double> get manualProgressPercentage => $composableBuilder(
+      column: $table.manualProgressPercentage, builder: (column) => column);
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -12519,6 +14039,10 @@ class $$SkillsTableTableManager extends RootTableManager<
             Value<String> targetLevel = const Value.absent(),
             Value<String?> notes = const Value.absent(),
             Value<int> learningMinutes = const Value.absent(),
+            Value<String> progressMethod = const Value.absent(),
+            Value<int> targetMinutes = const Value.absent(),
+            Value<int> targetTopicsCount = const Value.absent(),
+            Value<double> manualProgressPercentage = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
             Value<int> rowid = const Value.absent(),
@@ -12531,6 +14055,10 @@ class $$SkillsTableTableManager extends RootTableManager<
             targetLevel: targetLevel,
             notes: notes,
             learningMinutes: learningMinutes,
+            progressMethod: progressMethod,
+            targetMinutes: targetMinutes,
+            targetTopicsCount: targetTopicsCount,
+            manualProgressPercentage: manualProgressPercentage,
             createdAt: createdAt,
             updatedAt: updatedAt,
             rowid: rowid,
@@ -12543,6 +14071,10 @@ class $$SkillsTableTableManager extends RootTableManager<
             Value<String> targetLevel = const Value.absent(),
             Value<String?> notes = const Value.absent(),
             Value<int> learningMinutes = const Value.absent(),
+            Value<String> progressMethod = const Value.absent(),
+            Value<int> targetMinutes = const Value.absent(),
+            Value<int> targetTopicsCount = const Value.absent(),
+            Value<double> manualProgressPercentage = const Value.absent(),
             required DateTime createdAt,
             required DateTime updatedAt,
             Value<int> rowid = const Value.absent(),
@@ -12555,6 +14087,10 @@ class $$SkillsTableTableManager extends RootTableManager<
             targetLevel: targetLevel,
             notes: notes,
             learningMinutes: learningMinutes,
+            progressMethod: progressMethod,
+            targetMinutes: targetMinutes,
+            targetTopicsCount: targetTopicsCount,
+            manualProgressPercentage: manualProgressPercentage,
             createdAt: createdAt,
             updatedAt: updatedAt,
             rowid: rowid,
@@ -14394,8 +15930,11 @@ typedef $$FocusSessionsTableCreateCompanionBuilder = FocusSessionsCompanion
   Value<String?> projectId,
   Value<String?> skillId,
   required int durationMinutes,
+  Value<int> breakMinutes,
   Value<String> sessionType,
+  Value<DateTime?> startedAt,
   required DateTime completedAt,
+  Value<String?> notes,
   Value<int> rowid,
 });
 typedef $$FocusSessionsTableUpdateCompanionBuilder = FocusSessionsCompanion
@@ -14405,8 +15944,11 @@ typedef $$FocusSessionsTableUpdateCompanionBuilder = FocusSessionsCompanion
   Value<String?> projectId,
   Value<String?> skillId,
   Value<int> durationMinutes,
+  Value<int> breakMinutes,
   Value<String> sessionType,
+  Value<DateTime?> startedAt,
   Value<DateTime> completedAt,
+  Value<String?> notes,
   Value<int> rowid,
 });
 
@@ -14435,11 +15977,20 @@ class $$FocusSessionsTableFilterComposer
       column: $table.durationMinutes,
       builder: (column) => ColumnFilters(column));
 
+  ColumnFilters<int> get breakMinutes => $composableBuilder(
+      column: $table.breakMinutes, builder: (column) => ColumnFilters(column));
+
   ColumnFilters<String> get sessionType => $composableBuilder(
       column: $table.sessionType, builder: (column) => ColumnFilters(column));
 
+  ColumnFilters<DateTime> get startedAt => $composableBuilder(
+      column: $table.startedAt, builder: (column) => ColumnFilters(column));
+
   ColumnFilters<DateTime> get completedAt => $composableBuilder(
       column: $table.completedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get notes => $composableBuilder(
+      column: $table.notes, builder: (column) => ColumnFilters(column));
 }
 
 class $$FocusSessionsTableOrderingComposer
@@ -14467,11 +16018,21 @@ class $$FocusSessionsTableOrderingComposer
       column: $table.durationMinutes,
       builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<int> get breakMinutes => $composableBuilder(
+      column: $table.breakMinutes,
+      builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<String> get sessionType => $composableBuilder(
       column: $table.sessionType, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<DateTime> get startedAt => $composableBuilder(
+      column: $table.startedAt, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<DateTime> get completedAt => $composableBuilder(
       column: $table.completedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+      column: $table.notes, builder: (column) => ColumnOrderings(column));
 }
 
 class $$FocusSessionsTableAnnotationComposer
@@ -14498,11 +16059,20 @@ class $$FocusSessionsTableAnnotationComposer
   GeneratedColumn<int> get durationMinutes => $composableBuilder(
       column: $table.durationMinutes, builder: (column) => column);
 
+  GeneratedColumn<int> get breakMinutes => $composableBuilder(
+      column: $table.breakMinutes, builder: (column) => column);
+
   GeneratedColumn<String> get sessionType => $composableBuilder(
       column: $table.sessionType, builder: (column) => column);
 
+  GeneratedColumn<DateTime> get startedAt =>
+      $composableBuilder(column: $table.startedAt, builder: (column) => column);
+
   GeneratedColumn<DateTime> get completedAt => $composableBuilder(
       column: $table.completedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
 }
 
 class $$FocusSessionsTableTableManager extends RootTableManager<
@@ -14536,8 +16106,11 @@ class $$FocusSessionsTableTableManager extends RootTableManager<
             Value<String?> projectId = const Value.absent(),
             Value<String?> skillId = const Value.absent(),
             Value<int> durationMinutes = const Value.absent(),
+            Value<int> breakMinutes = const Value.absent(),
             Value<String> sessionType = const Value.absent(),
+            Value<DateTime?> startedAt = const Value.absent(),
             Value<DateTime> completedAt = const Value.absent(),
+            Value<String?> notes = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               FocusSessionsCompanion(
@@ -14546,8 +16119,11 @@ class $$FocusSessionsTableTableManager extends RootTableManager<
             projectId: projectId,
             skillId: skillId,
             durationMinutes: durationMinutes,
+            breakMinutes: breakMinutes,
             sessionType: sessionType,
+            startedAt: startedAt,
             completedAt: completedAt,
+            notes: notes,
             rowid: rowid,
           ),
           createCompanionCallback: ({
@@ -14556,8 +16132,11 @@ class $$FocusSessionsTableTableManager extends RootTableManager<
             Value<String?> projectId = const Value.absent(),
             Value<String?> skillId = const Value.absent(),
             required int durationMinutes,
+            Value<int> breakMinutes = const Value.absent(),
             Value<String> sessionType = const Value.absent(),
+            Value<DateTime?> startedAt = const Value.absent(),
             required DateTime completedAt,
+            Value<String?> notes = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               FocusSessionsCompanion.insert(
@@ -14566,8 +16145,11 @@ class $$FocusSessionsTableTableManager extends RootTableManager<
             projectId: projectId,
             skillId: skillId,
             durationMinutes: durationMinutes,
+            breakMinutes: breakMinutes,
             sessionType: sessionType,
+            startedAt: startedAt,
             completedAt: completedAt,
+            notes: notes,
             rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0
@@ -17060,6 +18642,8 @@ class $AppDatabaseManager {
       $$ProjectsTableTableManager(_db, _db.projects);
   $$MilestonesTableTableManager get milestones =>
       $$MilestonesTableTableManager(_db, _db.milestones);
+  $$ProjectDeliverablesTableTableManager get projectDeliverables =>
+      $$ProjectDeliverablesTableTableManager(_db, _db.projectDeliverables);
   $$SkillsTableTableManager get skills =>
       $$SkillsTableTableManager(_db, _db.skills);
   $$LearningModulesTableTableManager get learningModules =>

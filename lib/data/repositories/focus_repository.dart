@@ -24,7 +24,7 @@ class FocusRepository {
 
   FocusRepository(this._db);
 
-  Stream<List<FocusSessionWithDetails>> watchRecentSessions({int limit = 30}) {
+  Stream<List<FocusSessionWithDetails>> watchRecentSessions({int limit = 40}) {
     return (_db.select(_db.focusSessions)
           ..orderBy([(f) => OrderingTerm(expression: f.completedAt, mode: OrderingMode.desc)])
           ..limit(limit))
@@ -63,9 +63,13 @@ class FocusRepository {
     String? projectId,
     String? skillId,
     required int durationMinutes,
+    int breakMinutes = 0,
     String sessionType = 'pomodoro',
+    DateTime? startedAt,
+    DateTime? completedAt,
+    String? notes,
   }) async {
-    final now = DateTime.now();
+    final now = completedAt ?? DateTime.now();
     final id = _uuid.v4();
 
     await _db.into(_db.focusSessions).insert(FocusSessionsCompanion(
@@ -74,8 +78,11 @@ class FocusRepository {
           projectId: Value(projectId),
           skillId: Value(skillId),
           durationMinutes: Value(durationMinutes),
+          breakMinutes: Value(breakMinutes),
           sessionType: Value(sessionType),
+          startedAt: Value(startedAt ?? now.subtract(Duration(minutes: durationMinutes + breakMinutes))),
           completedAt: Value(now),
+          notes: Value(notes?.trim()),
         ));
 
     // Update associated task if any
@@ -123,9 +130,68 @@ class FocusRepository {
           entityType: const Value('focus'),
           entityId: Value(id),
           action: const Value('completed'),
-          summary: Value('Completed ${durationMinutes}m focus session'),
+          summary: Value('Completed ${durationMinutes}m focus session${breakMinutes > 0 ? " ($breakMinutes min break)" : ""}'),
           createdAt: Value(now),
         ));
+  }
+
+  /// Retroactive correction: Deletes a focus session and deducts minutes from linked entities
+  Future<void> deleteFocusSession(String sessionId) async {
+    final s = await (_db.select(_db.focusSessions)..where((sess) => sess.id.equals(sessionId))).getSingleOrNull();
+    if (s == null) return;
+
+    final duration = s.durationMinutes;
+
+    // Deduct from task
+    if (s.taskId != null) {
+      final t = await (_db.select(_db.tasks)..where((entry) => entry.id.equals(s.taskId!))).getSingleOrNull();
+      if (t != null) {
+        final newMins = (t.actualMinutes - duration).clamp(0, 999999);
+        await (_db.update(_db.tasks)..where((entry) => entry.id.equals(s.taskId!))).write(
+          TasksCompanion(actualMinutes: Value(newMins)),
+        );
+      }
+    }
+
+    // Deduct from project
+    if (s.projectId != null) {
+      final p = await (_db.select(_db.projects)..where((entry) => entry.id.equals(s.projectId!))).getSingleOrNull();
+      if (p != null) {
+        final newMins = (p.timeSpentMinutes - duration).clamp(0, 999999);
+        await (_db.update(_db.projects)..where((entry) => entry.id.equals(s.projectId!))).write(
+          ProjectsCompanion(timeSpentMinutes: Value(newMins)),
+        );
+      }
+    }
+
+    // Deduct from skill
+    if (s.skillId != null) {
+      final sk = await (_db.select(_db.skills)..where((entry) => entry.id.equals(s.skillId!))).getSingleOrNull();
+      if (sk != null) {
+        final newMins = (sk.learningMinutes - duration).clamp(0, 999999);
+        await (_db.update(_db.skills)..where((entry) => entry.id.equals(s.skillId!))).write(
+          SkillsCompanion(learningMinutes: Value(newMins)),
+        );
+      }
+    }
+
+    await (_db.delete(_db.focusSessions)..where((sess) => sess.id.equals(sessionId))).go();
+  }
+
+  /// Calculates total focus minutes across all sessions without double-counting
+  Future<int> getTotalFocusMinutes() async {
+    final sessions = await _db.select(_db.focusSessions).get();
+    return sessions.fold<int>(0, (sum, s) => sum + s.durationMinutes);
+  }
+
+  /// Calculates today's total focus minutes
+  Future<int> getTodayFocusMinutes() async {
+    final now = DateTime.now();
+    final startOfDay = DateTime(now.year, now.month, now.day);
+    final sessions = await (_db.select(_db.focusSessions)
+          ..where((s) => s.completedAt.isBiggerOrEqualValue(startOfDay)))
+        .get();
+    return sessions.fold<int>(0, (sum, s) => sum + s.durationMinutes);
   }
 }
 
@@ -138,4 +204,3 @@ final recentFocusSessionsProvider = StreamProvider<List<FocusSessionWithDetails>
   final repo = ref.watch(focusRepositoryProvider);
   return repo.watchRecentSessions();
 });
-

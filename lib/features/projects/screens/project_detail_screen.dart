@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_icons.dart';
+import '../../../core/theme/app_radii.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/utils/date_formatters.dart';
@@ -19,8 +21,10 @@ import '../../../data/repositories/project_repository.dart';
 import '../../../data/repositories/rewards_repository.dart';
 import '../../../data/repositories/task_repository.dart';
 import '../../../services/feedback_service.dart';
+import '../../../services/focus_timer_controller.dart';
 import '../../../services/widget_sync_service.dart';
 import '../../tasks/widgets/task_form_sheet.dart';
+import '../widgets/project_completion_sheet.dart';
 import '../widgets/project_form_sheet.dart';
 
 class ProjectDetailScreen extends ConsumerStatefulWidget {
@@ -34,10 +38,12 @@ class ProjectDetailScreen extends ConsumerStatefulWidget {
 
 class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
   final _newMilestoneController = TextEditingController();
+  final _newDeliverableController = TextEditingController();
 
   @override
   void dispose() {
     _newMilestoneController.dispose();
+    _newDeliverableController.dispose();
     super.dispose();
   }
 
@@ -50,6 +56,25 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
     _newMilestoneController.clear();
     await ref.read(feedbackServiceProvider).buttonTap();
     await ref.read(widgetSyncServiceProvider).syncAllWidgets();
+  }
+
+  Future<void> _addDeliverable() async {
+    final title = _newDeliverableController.text.trim();
+    if (title.isEmpty) return;
+
+    final repo = ref.read(projectRepositoryProvider);
+    await repo.addDeliverable(projectId: widget.projectId, title: title);
+    _newDeliverableController.clear();
+    await ref.read(feedbackServiceProvider).buttonTap();
+    await ref.read(widgetSyncServiceProvider).syncAllWidgets();
+  }
+
+  Future<void> _startProjectFocus() async {
+    final timerCtrl = ref.read(focusTimerProvider.notifier);
+    await timerCtrl.startSession(projectId: widget.projectId);
+    if (mounted) {
+      context.push('/focus');
+    }
   }
 
   @override
@@ -66,6 +91,11 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
       appBar: AppBar(
         title: const Text('Project Details'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.timer_outlined),
+            tooltip: 'Focus on project',
+            onPressed: _startProjectFocus,
+          ),
           IconButton(
             icon: const Icon(AppIcons.edit),
             tooltip: 'Edit project',
@@ -86,7 +116,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                 context,
                 title: 'Delete project?',
                 message:
-                    'Delete "${p?.project.name ?? 'this project'}"? Linked milestones will also be deleted.',
+                    'Delete "${p?.project.name ?? 'this project'}"? Linked milestones and deliverables will also be deleted.',
               );
               if (!confirmed) return;
               await feedback.destructiveAction();
@@ -123,6 +153,9 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
           final project = pWithD.project;
           final milestones = pWithD.milestones;
           final tasks = pWithD.tasks;
+          final deliverables = pWithD.deliverables;
+          final isCompleted = project.status == 'completed';
+
           final techTags = project.techStack
               .split(',')
               .map((s) => s.trim())
@@ -133,14 +166,15 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
             project.id,
             ...milestones.map((m) => m.id),
             ...tasks.map((t) => t.id),
+            ...deliverables.map((d) => d.id),
           };
           final timeline = (activitiesAsync.valueOrNull ?? const [])
               .where((a) => a.entityId != null && relatedIds.contains(a.entityId))
-              .take(8)
+              .take(12)
               .toList();
 
           return DefaultTabController(
-            length: 4,
+            length: 5,
             child: Column(
               children: [
                 // Project Summary Header Card
@@ -149,7 +183,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                     AppSpacing.pageHorizontal,
                     AppSpacing.sm,
                     AppSpacing.pageHorizontal,
-                    AppSpacing.md,
+                    AppSpacing.sm,
                   ),
                   child: AppCard(
                     child: Column(
@@ -161,47 +195,49 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                             Row(
                               children: [
                                 AppStatusBadge(status: project.status),
-                                const SizedBox(width: AppSpacing.sm),
+                                const SizedBox(width: AppSpacing.xs),
                                 AppBadge(label: project.category, color: AppColors.primary),
+                                const SizedBox(width: AppSpacing.xs),
+                                AppBadge(
+                                  label: pWithD.criteriaLabel,
+                                  color: AppColors.focusAccent,
+                                ),
                               ],
                             ),
                             AppPriorityBadge(priority: project.priority),
                           ],
                         ),
-                        const SizedBox(height: AppSpacing.md),
+                        const SizedBox(height: AppSpacing.sm),
                         Text(
                           project.name,
                           style: AppTypography.displayMedium.copyWith(
                             color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
                           ),
                         ),
-                        const SizedBox(height: AppSpacing.md),
+                        const SizedBox(height: AppSpacing.sm),
                         AppProgressBar(
                           progress: pWithD.progressPercentage,
-                          progressColor: AppColors.primary,
-                          label: 'Progress',
+                          progressColor: isCompleted ? AppColors.success : AppColors.primary,
+                          label: 'Progress (${pWithD.criteriaDescription})',
                           showPercentage: true,
                           height: 8.0,
                         ),
-                        const SizedBox(height: AppSpacing.sm),
+                        const SizedBox(height: AppSpacing.xs),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              'Started ${DateFormatters.monthDayYear(project.startDate)}',
+                              'Time Spent: ${(project.timeSpentMinutes / 60).toStringAsFixed(1)}h${project.targetHours != null ? " / ${project.targetHours!.toStringAsFixed(0)}h target" : ""}',
                               style: AppTypography.metadata.copyWith(
-                                color: isDark
-                                    ? AppColors.darkTextSecondary
-                                    : AppColors.textSecondary,
+                                color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                             if (project.targetDate != null)
                               Text(
                                 'Due ${DateFormatters.monthDayYear(project.targetDate!)}',
                                 style: AppTypography.metadata.copyWith(
-                                  color: isDark
-                                      ? AppColors.darkTextSecondary
-                                      : AppColors.textSecondary,
+                                  color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
                                 ),
                               ),
                           ],
@@ -211,16 +247,61 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                   ),
                 ),
 
+                // Quick Action Bar
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageHorizontal),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: _startProjectFocus,
+                          icon: const Icon(Icons.play_arrow_rounded, size: 18),
+                          label: const Text('Focus Timer'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppColors.focusAccent,
+                            side: const BorderSide(color: AppColors.focusAccent),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      Expanded(
+                        child: isCompleted
+                            ? OutlinedButton.icon(
+                                onPressed: () async {
+                                  await projectRepo.reopenProject(project.id);
+                                  await widgetSync.syncAllWidgets();
+                                  if (context.mounted) {
+                                    AppToast.show(context, 'Project reopened as active.', isSuccess: true);
+                                  }
+                                },
+                                icon: const Icon(Icons.restart_alt_rounded, size: 18),
+                                label: const Text('Reopen'),
+                              )
+                            : ElevatedButton.icon(
+                                onPressed: () => ProjectCompletionSheet.show(context, project: pWithD),
+                                icon: const Icon(Icons.check_circle_outline, size: 18),
+                                label: const Text('Complete'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.success,
+                                  foregroundColor: Colors.white,
+                                ),
+                              ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 6),
+
                 TabBar(
                   isScrollable: true,
                   tabAlignment: TabAlignment.start,
                   labelColor: isDark ? AppColors.primaryDark : AppColors.primary,
-                  unselectedLabelColor:
-                      isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+                  unselectedLabelColor: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
                   indicatorColor: isDark ? AppColors.primaryDark : AppColors.primary,
                   tabs: [
                     const Tab(text: 'Overview'),
                     Tab(text: 'Milestones (${milestones.length})'),
+                    Tab(text: 'Deliverables (${deliverables.length})'),
                     Tab(text: 'Tasks (${tasks.length})'),
                     const Tab(text: 'Timeline'),
                   ],
@@ -233,11 +314,44 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                       ListView(
                         padding: const EdgeInsets.fromLTRB(
                           AppSpacing.pageHorizontal,
-                          AppSpacing.lg,
+                          AppSpacing.md,
                           AppSpacing.pageHorizontal,
                           96.0,
                         ),
                         children: [
+                          if (isCompleted) ...[
+                            Container(
+                              padding: const EdgeInsets.all(AppSpacing.md),
+                              decoration: BoxDecoration(
+                                color: AppColors.success.withOpacity(isDark ? 0.2 : 0.1),
+                                borderRadius: AppRadii.roundedCard,
+                                border: Border.all(color: AppColors.success.withOpacity(0.3)),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      const Icon(Icons.verified_rounded, color: AppColors.success, size: 20),
+                                      const SizedBox(width: AppSpacing.xs),
+                                      Text(
+                                        'Project Completed${project.completedAt != null ? " on ${DateFormatters.monthDayYear(project.completedAt!)}" : ""}',
+                                        style: AppTypography.titleSmall.copyWith(color: AppColors.success),
+                                      ),
+                                    ],
+                                  ),
+                                  if (project.completionNote != null && project.completionNote!.isNotEmpty) ...[
+                                    const SizedBox(height: AppSpacing.xs),
+                                    Text(
+                                      project.completionNote!,
+                                      style: AppTypography.bodySmall.copyWith(fontStyle: FontStyle.italic),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: AppSpacing.md),
+                          ],
                           if (project.description != null && project.description!.isNotEmpty) ...[
                             AppCard(
                               child: Column(
@@ -270,8 +384,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                             ),
                             const SizedBox(height: AppSpacing.md),
                           ],
-                          if (project.repositoryUrl != null &&
-                              project.repositoryUrl!.isNotEmpty) ...[
+                          if (project.repositoryUrl != null && project.repositoryUrl!.isNotEmpty) ...[
                             AppCard(
                               onTap: () {
                                 Clipboard.setData(ClipboardData(text: project.repositoryUrl!));
@@ -312,7 +425,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                       ListView(
                         padding: const EdgeInsets.fromLTRB(
                           AppSpacing.pageHorizontal,
-                          AppSpacing.lg,
+                          AppSpacing.md,
                           AppSpacing.pageHorizontal,
                           96.0,
                         ),
@@ -324,7 +437,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                                   controller: _newMilestoneController,
                                   style: AppTypography.bodySmall,
                                   decoration: const InputDecoration(
-                                    hintText: 'Add project milestone...',
+                                    hintText: 'Add milestone...',
                                     isDense: true,
                                   ),
                                   onSubmitted: (_) => _addMilestone(),
@@ -343,17 +456,14 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                             const EmptyStateView(
                               icon: AppIcons.goals,
                               title: 'No milestones yet',
-                              description: 'Break the project into measurable checkpoints.',
+                              description: 'Break the project into checkpoints to calculate progress.',
                             )
                           else
                             ...milestones.map(
                               (m) => Padding(
                                 padding: const EdgeInsets.only(bottom: AppSpacing.sm),
                                 child: AppCard(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10.0,
-                                    vertical: 6.0,
-                                  ),
+                                  padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
                                   child: Row(
                                     children: [
                                       Checkbox(
@@ -377,14 +487,8 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                                                   summary: 'Milestone: ${m.title}',
                                                 );
                                             if (!context.mounted) return;
-                                            final xpNote = reward.xpAdded > 0
-                                                ? ' (+${reward.xpAdded} XP)'
-                                                : '';
-                                            AppToast.show(
-                                              context,
-                                              'Milestone completed.$xpNote',
-                                              isSuccess: true,
-                                            );
+                                            final xpNote = reward.xpAdded > 0 ? ' (+${reward.xpAdded} XP)' : '';
+                                            AppToast.show(context, 'Milestone completed.$xpNote', isSuccess: true);
                                             if (reward.newlyUnlocked.isNotEmpty) {
                                               await feedback.achievementUnlocked();
                                               if (context.mounted) {
@@ -402,17 +506,18 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                                         child: Text(
                                           m.title,
                                           style: AppTypography.bodyMedium.copyWith(
-                                            decoration: m.isCompleted
-                                                ? TextDecoration.lineThrough
-                                                : null,
+                                            decoration: m.isCompleted ? TextDecoration.lineThrough : null,
                                             color: m.isCompleted
-                                                ? (isDark
-                                                    ? AppColors.darkTextTertiary
-                                                    : AppColors.textTertiary)
+                                                ? (isDark ? AppColors.darkTextTertiary : AppColors.textTertiary)
                                                 : null,
                                           ),
                                         ),
                                       ),
+                                      if (m.weight > 1)
+                                        AppBadge(
+                                          label: '${m.weight}x',
+                                          color: AppColors.primary,
+                                        ),
                                       IconButton(
                                         icon: const Icon(AppIcons.close, size: 16.0),
                                         onPressed: () async {
@@ -428,11 +533,93 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                         ],
                       ),
 
-                      // 3. Linked Tasks
+                      // 3. Deliverables Checklist
                       ListView(
                         padding: const EdgeInsets.fromLTRB(
                           AppSpacing.pageHorizontal,
-                          AppSpacing.lg,
+                          AppSpacing.md,
+                          AppSpacing.pageHorizontal,
+                          96.0,
+                        ),
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: TextField(
+                                  controller: _newDeliverableController,
+                                  style: AppTypography.bodySmall,
+                                  decoration: const InputDecoration(
+                                    hintText: 'Add verifiable deliverable...',
+                                    isDense: true,
+                                  ),
+                                  onSubmitted: (_) => _addDeliverable(),
+                                ),
+                              ),
+                              const SizedBox(width: AppSpacing.sm),
+                              SecondaryButton(
+                                label: 'Add',
+                                size: AppButtonSize.small,
+                                onPressed: _addDeliverable,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: AppSpacing.md),
+                          if (deliverables.isEmpty)
+                            const EmptyStateView(
+                              icon: Icons.checklist_rounded,
+                              title: 'No deliverables added',
+                              description: 'Add concrete outcomes (e.g., Release APK, Documentation, Audit).',
+                            )
+                          else
+                            ...deliverables.map(
+                              (d) => Padding(
+                                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                                child: AppCard(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
+                                  child: Row(
+                                    children: [
+                                      Checkbox(
+                                        value: d.isCompleted,
+                                        onChanged: (val) async {
+                                          final completed = val ?? false;
+                                          await projectRepo.toggleDeliverable(d.id, completed);
+                                          await widgetSync.syncAllWidgets();
+                                          if (completed) {
+                                            await feedback.milestoneAchieved();
+                                          }
+                                        },
+                                      ),
+                                      Expanded(
+                                        child: Text(
+                                          d.title,
+                                          style: AppTypography.bodyMedium.copyWith(
+                                            decoration: d.isCompleted ? TextDecoration.lineThrough : null,
+                                            color: d.isCompleted
+                                                ? (isDark ? AppColors.darkTextTertiary : AppColors.textTertiary)
+                                                : null,
+                                          ),
+                                        ),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(AppIcons.close, size: 16.0),
+                                        onPressed: () async {
+                                          await projectRepo.deleteDeliverable(d.id);
+                                          await widgetSync.syncAllWidgets();
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+
+                      // 4. Linked Tasks
+                      ListView(
+                        padding: const EdgeInsets.fromLTRB(
+                          AppSpacing.pageHorizontal,
+                          AppSpacing.md,
                           AppSpacing.pageHorizontal,
                           96.0,
                         ),
@@ -441,17 +628,14 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                                 const EmptyStateView(
                                   icon: AppIcons.tasks,
                                   title: 'No linked tasks',
-                                  description: 'Tap Add Task to assign deliverables to this project.',
+                                  description: 'Tap Add Task below to assign work to this project.',
                                 ),
                               ]
                             : tasks.map((t) {
                                 return Padding(
                                   padding: const EdgeInsets.only(bottom: AppSpacing.sm),
                                   child: AppCard(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 10.0,
-                                      vertical: 6.0,
-                                    ),
+                                    padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
                                     child: Row(
                                       children: [
                                         Checkbox(
@@ -467,9 +651,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                                           child: Text(
                                             t.title,
                                             style: AppTypography.bodyMedium.copyWith(
-                                              decoration: t.isCompleted
-                                                  ? TextDecoration.lineThrough
-                                                  : null,
+                                              decoration: t.isCompleted ? TextDecoration.lineThrough : null,
                                             ),
                                           ),
                                         ),
@@ -481,11 +663,11 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                               }).toList(),
                       ),
 
-                      // 4. Activity Timeline
+                      // 5. Activity Timeline
                       ListView(
                         padding: const EdgeInsets.fromLTRB(
                           AppSpacing.pageHorizontal,
-                          AppSpacing.lg,
+                          AppSpacing.md,
                           AppSpacing.pageHorizontal,
                           96.0,
                         ),
@@ -517,9 +699,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                                               Text(
                                                 DateFormatters.dateTimeShort(a.createdAt),
                                                 style: AppTypography.metadata.copyWith(
-                                                  color: isDark
-                                                      ? AppColors.darkTextTertiary
-                                                      : AppColors.textTertiary,
+                                                  color: isDark ? AppColors.darkTextTertiary : AppColors.textTertiary,
                                                 ),
                                               ),
                                             ],

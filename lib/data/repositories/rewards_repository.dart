@@ -45,6 +45,7 @@ class RewardsRepository {
   static const int xpFocusCompleted = 20;
   static const int xpMilestoneCompleted = 30;
   static const int xpGoalAchieved = 50;
+  static const int xpProjectCompleted = 75;
 
   static const List<AchievementDefinition> catalog = [
     AchievementDefinition(

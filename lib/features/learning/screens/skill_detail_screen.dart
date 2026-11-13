@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_icons.dart';
 import '../../../core/theme/app_radii.dart';
@@ -17,6 +18,7 @@ import '../../../core/widgets/state_views.dart';
 import '../../../data/repositories/learning_repository.dart';
 import '../../../data/repositories/rewards_repository.dart';
 import '../../../services/feedback_service.dart';
+import '../../../services/focus_timer_controller.dart';
 import '../../../services/widget_sync_service.dart';
 import '../widgets/log_session_dialog.dart';
 import '../widgets/skill_form_sheet.dart';
@@ -50,6 +52,14 @@ class _SkillDetailScreenState extends ConsumerState<SkillDetailScreen> {
     await ref.read(feedbackServiceProvider).buttonTap();
   }
 
+  Future<void> _startStudyTimer() async {
+    final timerCtrl = ref.read(focusTimerProvider.notifier);
+    await timerCtrl.startSession(skillId: widget.skillId);
+    if (mounted) {
+      context.push('/focus');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -63,40 +73,23 @@ class _SkillDetailScreenState extends ConsumerState<SkillDetailScreen> {
         title: const Text('Skill Roadmap'),
         actions: [
           IconButton(
-            icon: const Icon(AppIcons.timer, color: AppColors.primary),
-            tooltip: 'Log learning session',
-            onPressed: () {
-              final s = skillsAsync.value
-                  ?.where((x) => x.skill.id == widget.skillId)
-                  .firstOrNull;
-              if (s != null) {
-                LogSessionDialog.show(
-                  context,
-                  skillId: s.skill.id,
-                  skillName: s.skill.name,
-                );
-              }
-            },
+            icon: const Icon(Icons.timer_outlined, color: AppColors.primary),
+            tooltip: 'Start study timer',
+            onPressed: _startStudyTimer,
           ),
           IconButton(
             icon: const Icon(AppIcons.edit),
             tooltip: 'Edit skill',
             onPressed: () {
-              final s = skillsAsync.value
-                  ?.where((x) => x.skill.id == widget.skillId)
-                  .firstOrNull;
-              if (s != null) {
-                SkillFormSheet.show(context, skillToEdit: s);
-              }
+              final s = skillsAsync.value?.where((x) => x.skill.id == widget.skillId).firstOrNull;
+              if (s != null) SkillFormSheet.show(context, skillToEdit: s);
             },
           ),
           IconButton(
             icon: const Icon(AppIcons.delete, color: AppColors.error),
             tooltip: 'Delete skill',
             onPressed: () async {
-              final s = skillsAsync.value
-                  ?.where((x) => x.skill.id == widget.skillId)
-                  .firstOrNull;
+              final s = skillsAsync.value?.where((x) => x.skill.id == widget.skillId).firstOrNull;
               final confirmed = await ConfirmationDialog.show(
                 context,
                 title: 'Delete skill?',
@@ -116,8 +109,7 @@ class _SkillDetailScreenState extends ConsumerState<SkillDetailScreen> {
         loading: () => const LoadingSkeleton(itemCount: 3, itemHeight: 110.0),
         error: (err, _) => ErrorStateView(message: err.toString()),
         data: (skills) {
-          final skillWithRoadmap =
-              skills.where((s) => s.skill.id == widget.skillId).firstOrNull;
+          final skillWithRoadmap = skills.where((s) => s.skill.id == widget.skillId).firstOrNull;
           if (skillWithRoadmap == null) {
             return const EmptyStateView(
               icon: AppIcons.learning,
@@ -128,6 +120,55 @@ class _SkillDetailScreenState extends ConsumerState<SkillDetailScreen> {
 
           final skill = skillWithRoadmap.skill;
           final modules = skillWithRoadmap.modules;
+
+          // Unified Session History combining manual and timer records
+          final allSessions = [
+            ...skillWithRoadmap.sessions.map((s) => _UnifiedSession(
+                  durationMinutes: s.durationMinutes,
+                  notes: s.notes,
+                  date: s.createdAt,
+                  isTimer: false,
+                )),
+            ...skillWithRoadmap.focusSessions.map((f) => _UnifiedSession(
+                  durationMinutes: f.durationMinutes,
+                  notes: f.notes,
+                  date: f.completedAt,
+                  isTimer: true,
+                )),
+          ]..sort((a, b) => b.date.compareTo(a.date));
+
+          // Determine progress presentation
+          final method = skill.progressMethod;
+          final double displayProgress;
+          final String progressLabel;
+          final bool isOverachieved = skillWithRoadmap.isTimeTargetExceeded;
+
+          if (method == 'time') {
+            if (skillWithRoadmap.hasTimeTarget) {
+              final pct = skillWithRoadmap.timeProgressPercentage!;
+              displayProgress = pct.clamp(0.0, 1.0);
+              if (isOverachieved) {
+                progressLabel =
+                    '${(skill.learningMinutes / 60).toStringAsFixed(1)}h / ${(skill.targetMinutes / 60).toStringAsFixed(0)}h • Target Exceeded! 🌟 (${(pct * 100).toStringAsFixed(0)}%)';
+              } else {
+                progressLabel =
+                    '${(skill.learningMinutes / 60).toStringAsFixed(1)}h of ${(skill.targetMinutes / 60).toStringAsFixed(0)}h target (${(pct * 100).toStringAsFixed(0)}%)';
+              }
+            } else {
+              displayProgress = 0.0;
+              progressLabel = 'No time target set • Tap Edit to define a target';
+            }
+          } else if (method == 'manual') {
+            displayProgress = skill.manualProgressPercentage;
+            progressLabel =
+                'User-reported mastery: ${(skill.manualProgressPercentage * 100).toStringAsFixed(0)}%';
+          } else {
+            // 'topics'
+            displayProgress = skillWithRoadmap.curriculumProgress;
+            progressLabel = skillWithRoadmap.totalTopics > 0
+                ? '${skillWithRoadmap.completedTopics} of ${skillWithRoadmap.totalTopics} topics completed'
+                : 'No curriculum topics added yet';
+          }
 
           return ListView(
             padding: const EdgeInsets.fromLTRB(
@@ -170,7 +211,7 @@ class _SkillDetailScreenState extends ConsumerState<SkillDetailScreen> {
                           '${DateFormatters.formatMinutes(skill.learningMinutes)} invested',
                           style: AppTypography.metadata.copyWith(
                             color: AppColors.learningAccent,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w700,
                             fontFeatures: AppTypography.tabularFigures,
                           ),
                         ),
@@ -187,23 +228,53 @@ class _SkillDetailScreenState extends ConsumerState<SkillDetailScreen> {
                     ],
                     const SizedBox(height: AppSpacing.md),
                     AppProgressBar(
-                      progress: skillWithRoadmap.progressPercentage,
-                      progressColor: AppColors.learningAccent,
-                      label:
-                          '${skillWithRoadmap.completedTopics} of ${skillWithRoadmap.totalTopics} topics completed',
-                      showPercentage: true,
+                      progress: displayProgress,
+                      progressColor: isOverachieved ? AppColors.warning : AppColors.learningAccent,
+                      label: progressLabel,
+                      showPercentage: method != 'time' || skillWithRoadmap.hasTimeTarget,
                       height: 8.0,
                     ),
                   ],
                 ),
               ),
+              const SizedBox(height: AppSpacing.sm),
+
+              // Contextual Action Row
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: _startStudyTimer,
+                      icon: const Icon(Icons.timer_outlined, size: 18),
+                      label: const Text('Start Study Timer'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.learningAccent,
+                        foregroundColor: Colors.white,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => LogSessionDialog.show(
+                        context,
+                        skillId: skill.id,
+                        skillName: skill.name,
+                      ),
+                      icon: const Icon(Icons.history_edu_rounded, size: 18),
+                      label: const Text('Log Past Time'),
+                    ),
+                  ),
+                ],
+              ),
               const SizedBox(height: AppSpacing.xl),
 
+              // Modules Header
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Modules & Topics',
+                    'Curriculum & Roadmap',
                     style: AppTypography.sectionTitle.copyWith(
                       color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
                     ),
@@ -222,7 +293,7 @@ class _SkillDetailScreenState extends ConsumerState<SkillDetailScreen> {
                 const EmptyStateView(
                   icon: AppIcons.learning,
                   title: 'No modules yet',
-                  description: 'Add a module below to break this skill into topics.',
+                  description: 'Add a module below to break this skill into learning topics.',
                 )
               else
                 ...modules.map((mWithT) {
@@ -372,12 +443,9 @@ class _SkillDetailScreenState extends ConsumerState<SkillDetailScreen> {
                                         Text(
                                           t.title,
                                           style: AppTypography.bodySmall.copyWith(
-                                            decoration:
-                                                isCompleted ? TextDecoration.lineThrough : null,
+                                            decoration: isCompleted ? TextDecoration.lineThrough : null,
                                             fontWeight: FontWeight.w500,
-                                            color: isDark
-                                                ? AppColors.darkTextPrimary
-                                                : AppColors.textPrimary,
+                                            color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
                                           ),
                                         ),
                                         if (t.resources.isNotEmpty)
@@ -454,30 +522,44 @@ class _SkillDetailScreenState extends ConsumerState<SkillDetailScreen> {
               const SizedBox(height: AppSpacing.xl),
 
               Text(
-                'Session History',
+                'Study & Focus History',
                 style: AppTypography.sectionTitle.copyWith(
                   color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
                 ),
               ),
               const SizedBox(height: AppSpacing.sm),
 
-              if (skillWithRoadmap.sessions.isEmpty)
+              if (allSessions.isEmpty)
                 AppCard(
                   child: Text(
-                    'No study sessions logged yet. Tap the timer button in the header to log time.',
+                    'No study sessions logged yet. Tap "Start Study Timer" above to begin.',
                     style: AppTypography.bodySmall.copyWith(
                       color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
                     ),
                   ),
                 )
               else
-                ...skillWithRoadmap.sessions.take(8).map(
+                ...allSessions.take(10).map(
                       (sess) => Padding(
                         padding: const EdgeInsets.only(bottom: AppSpacing.sm),
                         child: AppCard(
                           padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 12.0),
                           child: Row(
                             children: [
+                              Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: (sess.isTimer ? AppColors.focusAccent : AppColors.learningAccent)
+                                      .withOpacity(0.15),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  sess.isTimer ? Icons.timer_rounded : Icons.edit_note_rounded,
+                                  size: 16,
+                                  color: sess.isTimer ? AppColors.focusAccent : AppColors.learningAccent,
+                                ),
+                              ),
+                              const SizedBox(width: AppSpacing.sm),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -493,9 +575,7 @@ class _SkillDetailScreenState extends ConsumerState<SkillDetailScreen> {
                                       Text(
                                         sess.notes!,
                                         style: AppTypography.secondary.copyWith(
-                                          color: isDark
-                                              ? AppColors.darkTextSecondary
-                                              : AppColors.textSecondary,
+                                          color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
                                         ),
                                         maxLines: 2,
                                         overflow: TextOverflow.ellipsis,
@@ -505,11 +585,9 @@ class _SkillDetailScreenState extends ConsumerState<SkillDetailScreen> {
                               ),
                               const SizedBox(width: AppSpacing.sm),
                               Text(
-                                DateFormatters.dateTimeShort(sess.createdAt),
+                                DateFormatters.dateTimeShort(sess.date),
                                 style: AppTypography.metadata.copyWith(
-                                  color: isDark
-                                      ? AppColors.darkTextTertiary
-                                      : AppColors.textTertiary,
+                                  color: isDark ? AppColors.darkTextTertiary : AppColors.textTertiary,
                                 ),
                               ),
                             ],
@@ -523,4 +601,18 @@ class _SkillDetailScreenState extends ConsumerState<SkillDetailScreen> {
       ),
     );
   }
+}
+
+class _UnifiedSession {
+  final int durationMinutes;
+  final String? notes;
+  final DateTime date;
+  final bool isTimer;
+
+  const _UnifiedSession({
+    required this.durationMinutes,
+    this.notes,
+    required this.date,
+    required this.isTimer,
+  });
 }

@@ -48,12 +48,17 @@ class Projects extends Table {
   TextColumn get category => text().withDefault(const Constant('Development'))(); // Startup, Web, Flutter, ML, IoT, College, OSS
   DateTimeColumn get startDate => dateTime()();
   DateTimeColumn get targetDate => dateTime().nullable()();
-  TextColumn get status => text().withDefault(const Constant('active'))(); // planning, active, on_hold, completed, archived
+  TextColumn get status => text().withDefault(const Constant('active'))(); // not_started, in_progress, on_hold, completed, archived
   TextColumn get priority => text().withDefault(const Constant('medium'))();
   TextColumn get techStack => text().withDefault(const Constant(''))(); // Comma-separated tech list
   TextColumn get repositoryUrl => text().nullable()();
   TextColumn get notes => text().nullable()();
   IntColumn get timeSpentMinutes => integer().withDefault(const Constant(0))();
+  TextColumn get completionCriteria => text().withDefault(const Constant('milestone'))(); // milestone, task, deliverable, manual
+  RealColumn get manualProgressPercentage => real().withDefault(const Constant(0.0))();
+  RealColumn get targetHours => real().nullable()();
+  DateTimeColumn get completedAt => dateTime().nullable()();
+  TextColumn get completionNote => text().nullable()();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
 
@@ -72,6 +77,22 @@ class Milestones extends Table {
   BoolColumn get isCompleted => boolean().withDefault(const Constant(false))();
   DateTimeColumn get completedAt => dateTime().nullable()();
   IntColumn get orderIndex => integer().withDefault(const Constant(0))();
+  IntColumn get weight => integer().withDefault(const Constant(1))();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+// Project Deliverables Table
+@DataClassName('ProjectDeliverableEntry')
+class ProjectDeliverables extends Table {
+  TextColumn get id => text()();
+  TextColumn get projectId => text().references(Projects, #id, onDelete: KeyAction.cascade)();
+  TextColumn get title => text().withLength(min: 1, max: 250)();
+  BoolColumn get isCompleted => boolean().withDefault(const Constant(false))();
+  IntColumn get orderIndex => integer().withDefault(const Constant(0))();
+  DateTimeColumn get completedAt => dateTime().nullable()();
+  DateTimeColumn get createdAt => dateTime()();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -87,6 +108,10 @@ class Skills extends Table {
   TextColumn get targetLevel => text().withDefault(const Constant('intermediate'))();
   TextColumn get notes => text().nullable()();
   IntColumn get learningMinutes => integer().withDefault(const Constant(0))();
+  TextColumn get progressMethod => text().withDefault(const Constant('topics'))(); // topics, time, manual
+  IntColumn get targetMinutes => integer().withDefault(const Constant(0))();
+  IntColumn get targetTopicsCount => integer().withDefault(const Constant(0))();
+  RealColumn get manualProgressPercentage => real().withDefault(const Constant(0.0))();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
 
@@ -192,8 +217,11 @@ class FocusSessions extends Table {
   TextColumn get projectId => text().nullable()();
   TextColumn get skillId => text().nullable()();
   IntColumn get durationMinutes => integer()();
+  IntColumn get breakMinutes => integer().withDefault(const Constant(0))();
   TextColumn get sessionType => text().withDefault(const Constant('pomodoro'))(); // pomodoro, short_break, long_break, custom
+  DateTimeColumn get startedAt => dateTime().nullable()();
   DateTimeColumn get completedAt => dateTime()();
+  TextColumn get notes => text().nullable()();
 
   @override
   Set<Column> get primaryKey => {id};

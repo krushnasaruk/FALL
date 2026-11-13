@@ -18,11 +18,13 @@ class SkillWithRoadmap {
   final SkillEntry skill;
   final List<ModuleWithTopics> modules;
   final List<LearningSessionEntry> sessions;
+  final List<FocusSessionEntry> focusSessions;
 
   SkillWithRoadmap({
     required this.skill,
     required this.modules,
     required this.sessions,
+    this.focusSessions = const [],
   });
 
   int get totalTopics {
@@ -41,10 +43,42 @@ class SkillWithRoadmap {
     return count;
   }
 
-  double get progressPercentage {
+  /// Curriculum / topic-based progress: completedTopics / totalTopics
+  double get curriculumProgress {
     if (totalTopics == 0) return 0.0;
-    return completedTopics / totalTopics;
+    return (completedTopics / totalTopics).clamp(0.0, 1.0);
   }
+
+  bool get hasTimeTarget => skill.targetMinutes > 0;
+
+  /// Time progress against targetMinutes (null if no time target configured)
+  double? get timeProgressPercentage {
+    if (skill.targetMinutes <= 0) return null;
+    return skill.learningMinutes / skill.targetMinutes;
+  }
+
+  bool get isTimeTargetExceeded =>
+      skill.targetMinutes > 0 && skill.learningMinutes > skill.targetMinutes;
+
+  /// Primary progress based on skill.progressMethod:
+  /// - 'topics': curriculumProgress
+  /// - 'time': timeProgressPercentage clamped to 1.0 (or 0.0 if no target)
+  /// - 'manual': skill.manualProgressPercentage
+  double get primaryProgress {
+    switch (skill.progressMethod) {
+      case 'time':
+        if (!hasTimeTarget) return 0.0;
+        return (timeProgressPercentage ?? 0.0).clamp(0.0, 1.0);
+      case 'manual':
+        return skill.manualProgressPercentage.clamp(0.0, 1.0);
+      case 'topics':
+      default:
+        return curriculumProgress;
+    }
+  }
+
+  /// Backward-compatible getter
+  double get progressPercentage => primaryProgress;
 }
 
 class LearningRepository {
@@ -76,10 +110,16 @@ class LearningRepository {
               ..orderBy([(sess) => OrderingTerm(expression: sess.createdAt, mode: OrderingMode.desc)]))
             .get();
 
+        final focusSessions = await (_db.select(_db.focusSessions)
+              ..where((f) => f.skillId.equals(s.id))
+              ..orderBy([(f) => OrderingTerm(expression: f.completedAt, mode: OrderingMode.desc)]))
+            .get();
+
         result.add(SkillWithRoadmap(
           skill: s,
           modules: moduleList,
           sessions: sessions,
+          focusSessions: focusSessions,
         ));
       }
       return result;
@@ -109,7 +149,17 @@ class LearningRepository {
           ..orderBy([(sess) => OrderingTerm(expression: sess.createdAt, mode: OrderingMode.desc)]))
         .get();
 
-    return SkillWithRoadmap(skill: skill, modules: moduleList, sessions: sessions);
+    final focusSessions = await (_db.select(_db.focusSessions)
+          ..where((f) => f.skillId.equals(id))
+          ..orderBy([(f) => OrderingTerm(expression: f.completedAt, mode: OrderingMode.desc)]))
+        .get();
+
+    return SkillWithRoadmap(
+      skill: skill,
+      modules: moduleList,
+      sessions: sessions,
+      focusSessions: focusSessions,
+    );
   }
 
   Future<SkillEntry> createSkill({
@@ -118,6 +168,10 @@ class LearningRepository {
     String currentLevel = 'beginner',
     String targetLevel = 'intermediate',
     String? notes,
+    String progressMethod = 'topics',
+    int targetMinutes = 0,
+    int targetTopicsCount = 0,
+    double manualProgressPercentage = 0.0,
   }) async {
     final now = DateTime.now();
     final skillId = _uuid.v4();
@@ -130,6 +184,10 @@ class LearningRepository {
       targetLevel: Value(targetLevel),
       notes: Value(notes?.trim()),
       learningMinutes: const Value(0),
+      progressMethod: Value(progressMethod),
+      targetMinutes: Value(targetMinutes),
+      targetTopicsCount: Value(targetTopicsCount),
+      manualProgressPercentage: Value(manualProgressPercentage.clamp(0.0, 1.0)),
       createdAt: Value(now),
       updatedAt: Value(now),
     );
@@ -155,6 +213,10 @@ class LearningRepository {
     required String currentLevel,
     required String targetLevel,
     String? notes,
+    String? progressMethod,
+    int? targetMinutes,
+    int? targetTopicsCount,
+    double? manualProgressPercentage,
   }) async {
     final now = DateTime.now();
     await (_db.update(_db.skills)..where((s) => s.id.equals(id))).write(
@@ -164,6 +226,39 @@ class LearningRepository {
         currentLevel: Value(currentLevel),
         targetLevel: Value(targetLevel),
         notes: Value(notes?.trim()),
+        progressMethod: progressMethod != null ? Value(progressMethod) : const Value.absent(),
+        targetMinutes: targetMinutes != null ? Value(targetMinutes) : const Value.absent(),
+        targetTopicsCount: targetTopicsCount != null ? Value(targetTopicsCount) : const Value.absent(),
+        manualProgressPercentage: manualProgressPercentage != null
+            ? Value(manualProgressPercentage.clamp(0.0, 1.0))
+            : const Value.absent(),
+        updatedAt: Value(now),
+      ),
+    );
+  }
+
+  Future<void> updateSkillTargets({
+    required String id,
+    required String progressMethod,
+    required int targetMinutes,
+    int targetTopicsCount = 0,
+  }) async {
+    final now = DateTime.now();
+    await (_db.update(_db.skills)..where((s) => s.id.equals(id))).write(
+      SkillsCompanion(
+        progressMethod: Value(progressMethod),
+        targetMinutes: Value(targetMinutes),
+        targetTopicsCount: Value(targetTopicsCount),
+        updatedAt: Value(now),
+      ),
+    );
+  }
+
+  Future<void> updateManualProgress(String skillId, double progress) async {
+    final now = DateTime.now();
+    await (_db.update(_db.skills)..where((s) => s.id.equals(skillId))).write(
+      SkillsCompanion(
+        manualProgressPercentage: Value(progress.clamp(0.0, 1.0)),
         updatedAt: Value(now),
       ),
     );
@@ -250,8 +345,11 @@ class LearningRepository {
     String? notes,
   }) async {
     final now = DateTime.now();
+    final id = _uuid.v4();
+
+    // 1. Record in learningSessions
     await _db.into(_db.learningSessions).insert(LearningSessionsCompanion(
-          id: Value(_uuid.v4()),
+          id: Value(id),
           skillId: Value(skillId),
           topicId: Value(topicId),
           durationMinutes: Value(durationMinutes),
@@ -259,7 +357,17 @@ class LearningRepository {
           createdAt: Value(now),
         ));
 
-    // Update skill total minutes
+    // 2. Also record in focusSessions so global focus totals and calendar capture this study time
+    await _db.into(_db.focusSessions).insert(FocusSessionsCompanion(
+          id: Value(_uuid.v4()),
+          skillId: Value(skillId),
+          durationMinutes: Value(durationMinutes),
+          sessionType: const Value('study'),
+          completedAt: Value(now),
+          notes: Value(notes?.trim()),
+        ));
+
+    // 3. Update skill total minutes
     final skill = await (_db.select(_db.skills)..where((s) => s.id.equals(skillId))).getSingleOrNull();
     if (skill != null) {
       await (_db.update(_db.skills)..where((s) => s.id.equals(skillId))).write(
@@ -290,4 +398,3 @@ final allSkillsStreamProvider = StreamProvider<List<SkillWithRoadmap>>((ref) {
   final repo = ref.watch(learningRepositoryProvider);
   return repo.watchAllSkillsWithRoadmaps();
 });
-

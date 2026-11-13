@@ -130,7 +130,7 @@ class ProjectCard extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      '${projectWithDetails.completedMilestonesCount}/${projectWithDetails.totalMilestonesCount} milestones • ${projectWithDetails.totalTasksCount} tasks',
+                      projectWithDetails.criteriaDescription,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: AppTypography.metadata.copyWith(
