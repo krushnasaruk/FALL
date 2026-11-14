@@ -1,0 +1,178 @@
+{
+  "status": "ok",
+  "mode": "always_on_static",
+  "service": "progressos-radar",
+  "generated_at": "2026-11-14T11:17:41.920055+00:00",
+  "is_collecting": false,
+  "gemini_configured": true,
+  "github_configured": true,
+  "youtube_configured": true,
+  "gemini_daily_budget": 120,
+  "total_discoveries": 737,
+  "total_bookmarks": 0,
+  "total_follows": 0,
+  "total_trends": 226,
+  "gemini_requests_today": 13,
+  "recent_runs": [
+    {
+      "connector": "youtube",
+      "status": "success",
+      "items_fetched": 43,
+      "items_upserted": 43,
+      "finished_at": "2026-11-14T11:16:57.754136+00:00",
+      "error_message": null
+    },
+    {
+      "connector": "community",
+      "status": "success",
+      "items_fetched": 16,
+      "items_upserted": 16,
+      "finished_at": "2026-11-14T11:16:53.313284+00:00",
+      "error_message": null
+    },
+    {
+      "connector": "rss",
+      "status": "success",
+      "items_fetched": 36,
+      "items_upserted": 36,
+      "finished_at": "2026-11-14T11:16:52.345427+00:00",
+      "error_message": null
+    },
+    {
+      "connector": "arxiv",
+      "status": "success",
+      "items_fetched": 14,
+      "items_upserted": 14,
+      "finished_at": "2026-11-14T11:16:43.571855+00:00",
+      "error_message": null
+    },
+    {
+      "connector": "huggingface",
+      "status": "success",
+      "items_fetched": 15,
+      "items_upserted": 15,
+      "finished_at": "2026-11-14T11:16:43.031758+00:00",
+      "error_message": null
+    },
+    {
+      "connector": "hackernews",
+      "status": "success",
+      "items_fetched": 26,
+      "items_upserted": 26,
+      "finished_at": "2026-11-14T11:16:42.768861+00:00",
+      "error_message": null
+    },
+    {
+      "connector": "github",
+      "status": "success",
+      "items_fetched": 37,
+      "items_upserted": 37,
+      "finished_at": "2026-11-14T11:16:39.283526+00:00",
+      "error_message": null
+    },
+    {
+      "connector": "youtube",
+      "status": "success",
+      "items_fetched": 5,
+      "items_upserted": 5,
+      "finished_at": "2026-11-14T02:02:59.798781+00:00",
+      "error_message": null
+    },
+    {
+      "connector": "community",
+      "status": "success",
+      "items_fetched": 16,
+      "items_upserted": 16,
+      "finished_at": "2026-11-14T02:02:57.242441+00:00",
+      "error_message": null
+    },
+    {
+      "connector": "rss",
+      "status": "success",
+      "items_fetched": 36,
+      "items_upserted": 36,
+      "finished_at": "2026-11-14T02:02:56.623943+00:00",
+      "error_message": null
+    },
+    {
+      "connector": "arxiv",
+      "status": "success",
+      "items_fetched": 14,
+      "items_upserted": 14,
+      "finished_at": "2026-11-14T02:02:48.643941+00:00",
+      "error_message": null
+    },
+    {
+      "connector": "huggingface",
+      "status": "success",
+      "items_fetched": 15,
+      "items_upserted": 15,
+      "finished_at": "2026-11-14T02:02:48.082373+00:00",
+      "error_message": null
+    },
+    {
+      "connector": "hackernews",
+      "status": "success",
+      "items_fetched": 28,
+      "items_upserted": 28,
+      "finished_at": "2026-11-14T02:02:47.859114+00:00",
+      "error_message": null
+    },
+    {
+      "connector": "github",
+      "status": "success",
+      "items_fetched": 42,
+      "items_upserted": 42,
+      "finished_at": "2026-11-14T02:02:43.792024+00:00",
+      "error_message": null
+    },
+    {
+      "connector": "youtube",
+      "status": "success",
+      "items_fetched": 38,
+      "items_upserted": 38,
+      "finished_at": "2026-11-13T21:51:16.433439+00:00",
+      "error_message": null
+    },
+    {
+      "connector": "community",
+      "status": "success",
+      "items_fetched": 16,
+      "items_upserted": 16,
+      "finished_at": "2026-11-13T21:51:13.030272+00:00",
+      "error_message": null
+    },
+    {
+      "connector": "rss",
+      "status": "success",
+      "items_fetched": 36,
+      "items_upserted": 36,
+      "finished_at": "2026-11-13T21:51:12.421853+00:00",
+      "error_message": null
+    },
+    {
+      "connector": "arxiv",
+      "status": "success",
+      "items_fetched": 14,
+      "items_upserted": 14,
+      "finished_at": "2026-11-13T21:51:04.733994+00:00",
+      "error_message": null
+    },
+    {
+      "connector": "huggingface",
+      "status": "success",
+      "items_fetched": 15,
+      "items_upserted": 15,
+      "finished_at": "2026-11-13T21:51:04.169696+00:00",
+      "error_message": null
+    },
+    {
+      "connector": "hackernews",
+      "status": "success",
+      "items_fetched": 28,
+      "items_upserted": 28,
+      "finished_at": "2026-11-13T21:51:03.954147+00:00",
+      "error_message": null
+    }
+  ]
+}
