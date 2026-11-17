@@ -30,3 +30,4 @@ fi
 
 cd "$REPO_DIR" || exit 1
 exec python -m backend.radar_server.server
+

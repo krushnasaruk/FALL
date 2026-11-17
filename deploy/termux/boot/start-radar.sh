@@ -24,3 +24,4 @@ if command -v radar >/dev/null 2>&1; then
 elif [ -x "$HOME/FALL/deploy/termux/radar" ]; then
     "$HOME/FALL/deploy/termux/radar" start
 fi
+

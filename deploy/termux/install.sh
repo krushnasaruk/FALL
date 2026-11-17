@@ -139,3 +139,4 @@ echo "   radar boot enable"
 echo ""
 echo "Run 'radar help' anytime to view all available commands."
 echo "============================================================"
+
